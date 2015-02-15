@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Addon Author="Immé sama" APIVersion="9" Name="DruseraBossMods" Description="Drusera Boss Mods" Version="">
+    <!-- Forms -->
+    <Form Name="DruseraBossMods.xml"/>
+    <!-- Libraries -->
+    <Script Name="libs\GeminiLocale\GeminiLocale.lua"/>
+    <Script Name="libs\GeminiLogging\GeminiLogging.lua"/>
+    <Script Name="libs\GeminiDB\GeminiDB-1.0.lua"/>
+    <!-- Locales -->
+    <Script Name="locales\enUS.lua"/>
+    <Script Name="locales\frFR.lua"/>
+    <Script Name="locales\deDE.lua"/>
+    <Script Name="locales\koKR.lua"/>
+    <!-- LUA Script -->
+    <Script Name="DruseraBossMods.lua"/>
+    <Script Name="DruseraBossMods_CombatInterface.lua"/>
+    <Script Name="DruseraBossMods_CombatManager.lua"/>
+    <Script Name="DruseraBossMods_HUD.lua"/>
+    <Script Name="DruseraBossMods_GUI.lua"/>
+    <!-- Encounters:Genetic Archives -->
+    <Script Name="encounters\TEST\test.lua"/>
+    <Script Name="encounters\GA\ExperimentX89.lua"/>
+    <Script Name="encounters\GA\Kuralak.lua"/>
+    <Script Name="encounters\GA\Prototypes.lua"/>
+    <Script Name="encounters\GA\PhageMaw.lua"/>
+    <Script Name="encounters\GA\Convergence.lua"/>
+    <Script Name="encounters\GA\Ohmna.lua"/>
+    <Script Name="encounters\DS\SystemDaemon.lua"/>
+    <Script Name="encounters\DS\MaelstromAuthority.lua"/>
+</Addon>
