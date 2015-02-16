@@ -40,7 +40,7 @@ function DruseraBossMods:Init()
 end
 
 function DruseraBossMods:OnLoad()
-  Apollo.LoadSprites("Textures.xml")
+  Apollo.LoadSprites("DruseraBossMods_Sprites.xml")
   self.xmlDoc = XmlDoc.CreateFromFile("DruseraBossMods.xml")
   self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 end
