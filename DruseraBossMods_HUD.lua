@@ -49,7 +49,7 @@ local function HUDUpdateHealthBar(nId)
       MaxHealth = string.format("%.1fk", MaxHealth / 1000)
       HealthBar.wndShortHealth:SetText(Health .. "/" .. MaxHealth)
     else
-      DruseraBossMods:HUDRemoveHealthBar(nId)
+      DruseraBossMods:OnUnitNotValid(nId)
     end
   end
 end

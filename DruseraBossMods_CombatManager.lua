@@ -166,6 +166,14 @@ function DruseraBossMods:OnDestroyed(tUnit)
   RemoveFoeUnit(id)
 end
 
+function DruseraBossMods:OnUnitNotValid(nId)
+  local FoeUnit = tFoesUnits[nId]
+  if FoeUnit then
+    Add2FightHistory("Unit is not valid", id, FoeUnit.sName, nil)
+    RemoveFoeUnit(nId)
+  end
+end
+
 function DruseraBossMods:OnInCombat(tUnit)
   local id = tUnit:GetId()
   if id == GameLib:GetPlayerUnit():GetId() then
@@ -330,7 +338,7 @@ function DruseraBossMods:ManagerStart()
           FoesStartCombat(FoeUnit.nId)
         end
       else
-        Add2FightHistory("Unit is not valid", id, FoeUnit.sName, nil)
+        Add2FightHistory("On start, unit is not valid", id, FoeUnit.sName, nil)
         RemoveFoeUnit(id)
       end
     end
