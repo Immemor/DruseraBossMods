@@ -95,8 +95,10 @@ function DruseraBossMods:OnUnitCreated(tUnit)
       unit = tUnit,
       buffs = convertBuffs(tUnit:GetBuffs()),
       spell = {
-        bCasting = tUnit:IsCasting(),
-        sSpellName = tUnit:GetCastName(),
+        bCasting = false,
+        sSpellName = "",
+        CastEndTime = 0,
+        bSuccess = false,
       }
     }
     self:OnCreated(tUnit)
@@ -122,9 +124,10 @@ function DruseraBossMods:OnEnteredCombat(tUnit, bInCombat)
           unit = tUnit,
           buffs = convertBuffs(tUnit:GetBuffs()),
           spell = {
-            bCasting = tUnit:IsCasting(),
-            sSpellName = tUnit:GetCastName(),
-            TotalPourcent = tUnit:GetCastTotalPercent(),
+            bCasting = false,
+            sSpellName = "",
+            CastEndTime = 0,
+            bSuccess = false,
           }
         }
       end
@@ -253,7 +256,8 @@ function DruseraBossMods:OnSpellCastFailedEvent(
     tTrackedUnits[id].spell = {
       bCasting = false,
       sSpellName = '',
-      TotalPourcent = 0,
+      CastEndTime = 0,
+      bSuccess = false,
     }
   end
 end
