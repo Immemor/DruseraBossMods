@@ -29,7 +29,7 @@ local wndHealthContainer = nil
 -- Local functions.
 ------------------------------------------------------------------------------
 local function SortContentByTime(a, b)
-	return a:GetData() < b:GetData()
+  return a:GetData() < b:GetData()
 end
 
 local function HUDUpdateHealthBar(nId)

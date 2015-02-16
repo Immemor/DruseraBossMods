@@ -247,8 +247,8 @@ end
 
 function DruseraBossMods:OnSpellCastFailedEvent(
   eMessageType, eCastResult, UnitTarget, UnitSource, sMessage, sSpellName)
-	local id = UnitSource:GetId()
-	if tTrackedUnits[id] then
+  local id = UnitSource:GetId()
+  if tTrackedUnits[id] then
     self:OnSpellCastFailed(data.spell.sSpellName, id)
     tTrackedUnits[id].spell = {
       bCasting = false,
