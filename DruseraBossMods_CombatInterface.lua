@@ -74,12 +74,10 @@ local function UpdateSpellAndBuffRegistering(self)
   if bFilterSpell or bFilterBuff then
     if not bScanEnable then
       _ScanTimer:Start()
---      Apollo.RegisterEventHandler("SpellCastFailed","OnSpellCastFailedEvent", self)
       bScanEnable = true
     end
   elseif bScanEnable then
       _ScanTimer:Stop()
---      Apollo.RemoveEventHandler("SpellCastFailed", self)
       bScanEnable = false
   end
 end
@@ -245,20 +243,6 @@ function DruseraBossMods:OnUpdateTrackedUnits()
         end
       end
     end
-  end
-end
-
-function DruseraBossMods:OnSpellCastFailedEvent(
-  eMessageType, eCastResult, UnitTarget, UnitSource, sMessage, sSpellName)
-  local id = UnitSource:GetId()
-  if tTrackedUnits[id] then
-    self:OnSpellCastFailed(data.spell.sSpellName, id)
-    tTrackedUnits[id].spell = {
-      bCasting = false,
-      sSpellName = '',
-      CastEndTime = 0,
-      bSuccess = false,
-    }
   end
 end
 
