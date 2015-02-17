@@ -10,7 +10,6 @@
 
 require "Apollo"
 local DBM = Apollo.GetAddon("DruseraBossMods")
-local ExperimentX89 = {}
 local PhagetechCommander = {}
 local PhagetechAugmentor = {}
 local PhagetechProtector = {}
