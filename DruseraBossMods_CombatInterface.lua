@@ -30,7 +30,7 @@ local next = next
 ------------------------------------------------------------------------------
 -- Constants.
 ------------------------------------------------------------------------------
-local SCAN_PERIOD = 1.0 / 10 -- in Hertz.
+local SCAN_PERIOD = 0.1 -- in seconds.
 
 ------------------------------------------------------------------------------
 -- Counters of tracking events.
@@ -114,7 +114,6 @@ end
 function DruseraBossMods:OnEnteredCombat(tUnit, bInCombat)
   if tFilterUnit[tUnit:GetName()] then
     local id = tUnit:GetId()
-    -- start/stop tracking units entering/leaving combat if someone subscribed to our events
     if bInCombat then
       local name = tUnit:GetName()
       if not tTrackedUnits[id] then
