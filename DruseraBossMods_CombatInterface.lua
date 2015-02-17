@@ -162,7 +162,7 @@ function DruseraBossMods:OnUpdateTrackedUnits()
     if not data.unit:IsValid() then
       tTrackedUnits[id] = nil
     else
-      -- Process aura tracking
+      -- Process aura tracking.
       if bFilterBuff then
         local oldBuffs = data.buffs
         data.buffs = convertBuffs(data.unit:GetBuffs())
@@ -186,7 +186,7 @@ function DruseraBossMods:OnUpdateTrackedUnits()
           self:OnSpellAuraRemoved(id, buffId)
         end
       end
-      -- process spell_cast tracking
+      -- Process spell_cast tracking.
       if bFilterSpell then
         local bCasting = data.unit:IsCasting()
         if bCasting then
