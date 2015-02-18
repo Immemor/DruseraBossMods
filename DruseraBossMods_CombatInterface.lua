@@ -83,7 +83,7 @@ local function UpdateSpellAndBuffRegistering(self)
 end
 
 ------------------------------------------------------------------------------
--- Handlers for Carbine interface, which will start some FireGenericEvents.
+-- Handlers for Carbine interface.
 -- This layer will do a first layer of interpretation and filtering.
 ------------------------------------------------------------------------------
 function DruseraBossMods:OnUnitCreated(tUnit)
