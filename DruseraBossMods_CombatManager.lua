@@ -47,6 +47,12 @@ local tFightHistory = {}
 -- Fast and local functions.
 ------------------------------------------------------------------------------
 local function Add2FightHistory(sText, nId, sName, tExtraInfo)
+  if not sName and nId then
+    tUnit = GameLib.GetUnitById(nId)
+    if tUnit then
+      sName = tUnit:GetName()
+    end
+  end
   table.insert(tFightHistory, {sText, GetGameTime(), nId, sName, tExtraInfo})
 end
 
