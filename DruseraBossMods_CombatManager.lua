@@ -202,6 +202,17 @@ function DruseraBossMods:OnOutCombat(tUnit)
     tFoesUnits[id].bInCombat = false
     Add2FightHistory("Unit is out of combat", id, tFoesUnits[id].sName, nil)
     self:HUDRemoveHealthBar(id)
+    local CombatStilInProgress = false
+    for _,tFoeUnit in next, tFoesUnits do
+      if tFoeUnit.bInCombat then
+        CombatStilInProgress = true
+        break
+      end
+    end
+    if not CombatStilInProgress then
+      Add2FightHistory("All foes are out of combat", nil, nil, nil)
+      self:ManagerStop()
+    end
   end
 end
 
