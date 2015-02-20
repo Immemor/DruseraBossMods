@@ -87,15 +87,15 @@ end
 -- This layer will do a first layer of interpretation and filtering.
 ------------------------------------------------------------------------------
 function DruseraBossMods:OnUnitCreated(tUnit)
-  local id = tUnit:GetId()
-  if not tTrackedUnits[id] and tFilterUnit[tUnit:GetName()] then
-    tTrackedUnits[id] = {
-      unit = tUnit,
+  local nId = tUnit:GetId()
+  if not tTrackedUnits[nId] and tFilterUnit[tUnit:GetName()] then
+    tTrackedUnits[nId] = {
+      tUnit = tUnit,
       buffs = convertBuffs(tUnit:GetBuffs()),
-      spell = {
+      tSpell = {
         bCasting = false,
         sSpellName = "",
-        CastEndTime = 0,
+        nCastEndTime = 0,
         bSuccess = false,
       }
     }
@@ -104,33 +104,33 @@ function DruseraBossMods:OnUnitCreated(tUnit)
 end
 
 function DruseraBossMods:OnUnitDestroyed(tUnit)
-  local id = tUnit:GetId()
-  if tTrackedUnits[id] then
-    tTrackedUnits[id] = nil
+  local nId = tUnit:GetId()
+  if tTrackedUnits[nId] then
+    tTrackedUnits[nId] = nil
     self:OnDestroyed(tUnit)
   end
 end
 
 function DruseraBossMods:OnEnteredCombat(tUnit, bInCombat)
   if tFilterUnit[tUnit:GetName()] then
-    local id = tUnit:GetId()
+    local nId = tUnit:GetId()
     if bInCombat then
       local name = tUnit:GetName()
-      if not tTrackedUnits[id] then
-        tTrackedUnits[id] = {
-          unit = tUnit,
+      if not tTrackedUnits[nId] then
+        tTrackedUnits[nId] = {
+          tUnit = tUnit,
           buffs = convertBuffs(tUnit:GetBuffs()),
-          spell = {
+          tSpell = {
             bCasting = false,
             sSpellName = "",
-            CastEndTime = 0,
+            nCastEndTime = 0,
             bSuccess = false,
           }
         }
       end
       self:OnInCombat(tUnit)
     else
-      tTrackedUnits[id] = nil
+      tTrackedUnits[nId] = nil
       if tUnit:GetHealth() == 0 then
         -- A unit can be out of combat, but not dead. Not yet...
         self:OnDied(tUnit)
@@ -154,12 +154,12 @@ function DruseraBossMods:OnChatMessage(tChannelCurrent, tMessage)
 end
 
 function DruseraBossMods:OnUpdateTrackedUnits()
-  for id, data in next, tTrackedUnits do
+  for nId, data in next, tTrackedUnits do
     -- Clear units that:
     -- * Were destroyed w/o leaving combat.
     -- * We went out of range.
-    if not data.unit:IsValid() then
-      tTrackedUnits[id] = nil
+    if not data.tUnit:IsValid() then
+      tTrackedUnits[nId] = nil
     else
       -- Process aura tracking.
       if bFilterBuff then
@@ -187,56 +187,56 @@ function DruseraBossMods:OnUpdateTrackedUnits()
       end
       -- Process spell_cast tracking.
       if bFilterSpell then
-        local bCasting = data.unit:IsCasting()
+        local bCasting = data.tUnit:IsCasting()
         if bCasting then
-          local sSpellName = data.unit:GetCastName()
-          local CastDuration = data.unit:GetCastDuration()
-          local CastElapsed = data.unit:GetCastElapsed()
-          local CastEndTime = GetGameTime() + (CastDuration - CastElapsed) / 1000
-          if not data.spell.bCasting then
+          local sSpellName = data.tUnit:GetCastName()
+          local nCastDuration = data.tUnit:GetCastDuration()
+          local nCastElapsed = data.tUnit:GetCastElapsed()
+          local nCastEndTime = GetGameTime() + (nCastDuration - nCastElapsed) / 1000
+          if not data.tSpell.bCasting then
             -- New spell cast
-            data.spell = {
+            data.tSpell = {
               bCasting = true,
               sSpellName = sSpellName,
-              CastEndTime = CastEndTime,
+              nCastEndTime = nCastEndTime,
               bSuccess = false,
             }
-            self:OnSpellCastStart(data.spell.sSpellName, id)
-          elseif data.spell.bCasting then
-            if sSpellName ~= data.spell.sSpellName then
+            self:OnSpellCastStart(data.tSpell.sSpellName, nId)
+          elseif data.tSpell.bCasting then
+            if sSpellName ~= data.tSpell.sSpellName then
               -- New spell cast just after a previous one.
-              self:OnSpellCastSuccess(data.spell.sSpellName, id)
-              data.spell = {
+              self:OnSpellCastSuccess(data.tSpell.sSpellName, nId)
+              data.tSpell = {
                 bCasting = true,
                 sSpellName = sSpellName,
-                CastEndTime = CastEndTime,
+                nCastEndTime = nCastEndTime,
                 bSuccess = false,
               }
-              self:OnSpellCastStart(data.spell.sSpellName, id)
-            elseif not data.spell.bSuccess and CastElapsed >= CastDuration then
+              self:OnSpellCastStart(data.tSpell.sSpellName, nId)
+            elseif not data.tSpell.bSuccess and nCastElapsed >= nCastDuration then
               -- The spell have reached the end.
-              self:OnSpellCastSuccess(data.spell.sSpellName, id)
-              data.spell = {
+              self:OnSpellCastSuccess(data.tSpell.sSpellName, nId)
+              data.tSpell = {
                 bCasting = true,
                 sSpellName = sSpellName,
-                CastEndTime = 0,
+                nCastEndTime = 0,
                 bSuccess = true,
               }
             end
           end
-        elseif data.spell.bCasting then
-          if not data.spell.bSuccess then
-            -- Let's compare with the CastEndTime
-            if GetGameTime() < data.spell.CastEndTime then
-              self:OnSpellCastFailed(data.spell.sSpellName, id)
+        elseif data.tSpell.bCasting then
+          if not data.tSpell.bSuccess then
+            -- Let's compare with the nCastEndTime
+            if GetGameTime() < data.tSpell.nCastEndTime then
+              self:OnSpellCastFailed(data.tSpell.sSpellName, nId)
             else
-              self:OnSpellCastSuccess(data.spell.sSpellName, id)
+              self:OnSpellCastSuccess(data.tSpell.sSpellName, nId)
             end
           end
-          data.spell = {
+          data.tSpell = {
             bCasting = false,
             sSpellName = "",
-            CastEndTime = 0,
+            nCastEndTime = 0,
             bSuccess = false,
           }
         end
