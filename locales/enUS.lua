@@ -118,6 +118,13 @@ L["SOUTH_PURGE_NEXT"] = "[SOUTH] Purge Next"
 L["PROBE_1"] = "Probe 1"
 L["PROBE_2"] = "Probe 2"
 L["PROBE_3"] = "Probe 3"
+------ Encounter: (MiniBoss) Bio-Enhanced Broodmother
+L["BIO_ENHANCED_BROODMOTHER"] = "Bio-Enhanced Broodmother"
+L["AUGMENTED_VENOM"] = "Augmented Venom"
+------ Encounter: (MiniBoss) Fully-Optimized Canimid
+L["FULLY_OPTIMIZED_CANIMID"] = "Fully-Optimized Canimid"
+L["UNDERMINE"] = "Undermine"
+L["TERRAFORMATION"] = "Terra-forme" --<< XXX: check.
 ------ Encounter: Maelstrom Authority
 L["MAELSTROM_AUTHORITY"] = "Maelstrom Authority"
 L["THE_PLATFORM_SHAKES"] = "The platform shakes !"

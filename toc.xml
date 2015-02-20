@@ -24,6 +24,8 @@
     <Script Name="encounters\GA\PhageMaw.lua"/>
     <Script Name="encounters\GA\Convergence.lua"/>
     <Script Name="encounters\GA\Ohmna.lua"/>
+    <Script Name="encounters\DS\miniboss\BioEnhancedBroodmother.lua"/>
+    <Script Name="encounters\DS\miniboss\FullyOptimizedCanimid.lua"/>
     <Script Name="encounters\DS\SystemDaemon.lua"/>
     <Script Name="encounters\DS\MaelstromAuthority.lua"/>
 </Addon>
