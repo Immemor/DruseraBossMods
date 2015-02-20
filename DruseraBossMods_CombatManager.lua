@@ -108,7 +108,7 @@ local function AddFoeUnit(tUnit)
   AddHealthBar(id)
 end
 
-function SetCastAlert(CastType, tFoeUnit, strKey, fCallback)
+local function SetCastAlert(CastType, tFoeUnit, strKey, fCallback)
   local sSpellName = Locale[strKey]
   local bRegistered = tFoeUnit[CastType][sSpellName] ~= nil
 
