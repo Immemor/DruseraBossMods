@@ -10,17 +10,12 @@
 
 require "Apollo"
 local DBM = Apollo.GetAddon("DruseraBossMods")
-local MaelstromAuthority = {}
+local Avatus = {}
 
 ------------------------------------------------------------------------------
 -- OnStartCombat function.
 ------------------------------------------------------------------------------
-function MaelstromAuthority:OnStartCombat()
-  DBM:SetDatachronAlert(self, "THE_PLATFORM_SHAKES",
-  function(self)
-    -- Something
-    -- DBM:SetTimerAlert(self, "THIS_SHOULD_BE_1", 3, nil)
-  end)
+function Avatus:OnStartCombat()
 end
 
 ------------------------------------------------------------------------------
@@ -29,9 +24,9 @@ end
 do
   DBM:RegisterEncounter({
     RaidName = "DATASCAPE",
-    EncounterName = "MAELSTROM_AUTHORITY",
+    EncounterName = "AVATUS",
     ZoneName = "QUANTUM_VORTEX",
   },{
-    MAELSTROM_AUTHORITY = MaelstromAuthority,
+    MAELSTROM_AUTHORITY = Avatus,
   }, nil)
 end

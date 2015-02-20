@@ -27,5 +27,9 @@
     <Script Name="encounters\DS\miniboss\BioEnhancedBroodmother.lua"/>
     <Script Name="encounters\DS\miniboss\FullyOptimizedCanimid.lua"/>
     <Script Name="encounters\DS\SystemDaemon.lua"/>
+    <Script Name="encounters\DS\Gloomclaw.lua"/>
     <Script Name="encounters\DS\MaelstromAuthority.lua"/>
+    <Script Name="encounters\DS\VolatilityLattice.lua"/>
+    <Script Name="encounters\DS\LimboInfomatrix.lua"/>
+    <Script Name="encounters\DS\Avatus.lua"/>
 </Addon>

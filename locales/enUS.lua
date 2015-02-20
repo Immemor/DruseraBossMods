@@ -125,8 +125,15 @@ L["AUGMENTED_VENOM"] = "Augmented Venom"
 L["FULLY_OPTIMIZED_CANIMID"] = "Fully-Optimized Canimid"
 L["UNDERMINE"] = "Undermine"
 L["TERRAFORMATION"] = "Terra-forme" --<< XXX: check.
+------ Encounter: Gloomclaw
+L["GLOOMCLAW"] = "Gloomclaw"
 ------ Encounter: Maelstrom Authority
 L["MAELSTROM_AUTHORITY"] = "Maelstrom Authority"
 L["THE_PLATFORM_SHAKES"] = "The platform shakes !"
 L["NEXT_PLATFORM_SHAKES"] = "Next platform shakes"
-
+------ Encounter: Volatility Lattice
+L["VOLATILITY_LATTICE"] = "Volatility Lattice"
+------ Encounter: Limbo Infomatrix
+L["LIMBO_INFOMATRIX"] = "Limbo Infomatrix"
+------ Encounter: Avatus
+L["AVATUS"] = "Avatus"
