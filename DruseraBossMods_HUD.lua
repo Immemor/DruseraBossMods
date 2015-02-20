@@ -22,6 +22,7 @@ local HUD_UPDATE_PERIOD = 0.1
 local _TimerBars = {}
 local _HealthBars = {}
 local bTimerRunning = false
+local bLock = true
 local wndTimersContainer = nil
 local wndHealthContainer = nil
 
@@ -217,5 +218,28 @@ function DruseraBossMods:OnHUDProcess()
   if next(_TimerBars) == nil and next(_HealthBars) == nil then
     _UpdateHUDTimer:Stop()
     bTimerRunning = false
+  end
+end
+
+function DruseraBossMods:HUDToggleAnchorLock()
+  local windows = {wndTimersContainer, wndHealthContainer}
+  if bLock then
+    bLock = false
+    for _, wnd in next, windows do
+      wnd:SetBGColor('b0606060')
+      wnd:SetTextColor('ffffffff')
+      wnd:SetStyle("Moveable", true);
+      wnd:SetStyle("Sizable", true);
+      wnd:SetStyle("IgnoreMouse", false);
+    end
+  else
+    bLock = true
+    for _, wnd in next, windows do
+      wnd:SetBGColor('00000000')
+      wnd:SetTextColor('00000000')
+      wnd:SetStyle("Moveable", false);
+      wnd:SetStyle("Sizable", false);
+      wnd:SetStyle("IgnoreMouse", true);
+    end
   end
 end

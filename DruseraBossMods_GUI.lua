@@ -26,6 +26,7 @@ local GetGameTime = GameLib.GetGameTime
 local wndMainGUI = nil
 local wndFightHistory = nil
 local tAllFightHistory = {}
+local n = 1
 
 ------------------------------------------------------------------------------
 -- Local functions.
@@ -121,6 +122,6 @@ function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
   end
 end
 
-function DruseraBossMods:OnPrintAnchor(wndHandler, wndControl, eMouseButton)
-  Print ("Not available")
+function DruseraBossMods:OnToggleAnchorLock(wndHandler, wndControl, eMouseButton)
+  self:HUDToggleAnchorLock()
 end
