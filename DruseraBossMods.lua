@@ -50,13 +50,6 @@ end
 ------------------------------------------------------------------------------
 function DruseraBossMods:OnDocLoaded()
   if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
-    -- Better Logger for debugging purpose.
-    self.GeminiLogging = Apollo.GetPackage("Gemini:Logging-1.2").tPackage
-    self.Logger = self.GeminiLogging:GetLogger({
-      level = self.GeminiLogging.ERROR,
-      pattern = "[%c:%n]: %m",
-      appender = "GeminiConsole"})
-
     Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded",
                                 "OnInterfaceMenuListHasLoaded", self)
   end

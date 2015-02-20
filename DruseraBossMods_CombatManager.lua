@@ -97,8 +97,6 @@ local function AddFoeUnit(tUnit)
         bInCombat = tUnit:IsInCombat(),
       }, {__index = DataBase[name]})
       Add2FightHistory("Add foe unit", id, name, nil)
-    else
-      DruseraBossMods.Logger:warn("'" .. name .. "':" .. id .. " not wanted")
     end
   end
   AddHealthBar(id)
@@ -198,8 +196,6 @@ function DruseraBossMods:OnOutCombat(tUnit)
     tFoesUnits[id].bInCombat = false
     Add2FightHistory("Unit is out of combat", id, tFoesUnits[id].sName, nil)
     self:HUDRemoveHealthBar(id)
-  else
-    self.Logger:info("??? '" .. tUnit:GetName() .. "':" .. id .. " is out of combat and not dead")
   end
 end
 
@@ -273,7 +269,6 @@ function DruseraBossMods:OnNPCSay(sMessage)
         callback(tFoesUnits[nId])
       else
         -- Auto clean.
-        self.Logger:info("NPCSay, auto clean on '" .. sMessage .. "'")
         tNPCSayAlerts[sMessage][nId] = nil
         if next(tNPCSayAlerts[sMessage]) == nil then
           tNPCSayAlerts[sMessage] = nil
@@ -294,7 +289,6 @@ function DruseraBossMods:OnDatachron(sMessage)
         callback(tFoesUnits[nId])
       else
         -- Auto clean.
-        self.Logger:info("Datachron, auto clean on '" .. sMessage .. "'")
         tDatachronAlerts[sMessage][nId] = nil
         if next(tDatachronAlerts[sMessage]) == nil then
           tDatachronAlerts[sMessage] = nil
