@@ -23,8 +23,7 @@ local _TimerBars = {}
 local _HealthBars = {}
 local bTimerRunning = false
 local bLock = true
-local wndTimersContainer = nil
-local wndHealthContainer = nil
+local wnds = {}
 
 ------------------------------------------------------------------------------
 -- Local functions.
@@ -60,9 +59,15 @@ end
 ------------------------------------------------------------------------------
 function DruseraBossMods:HUDInit()
   -- Create containers
-  wndTimersContainer = Apollo.LoadForm(self.xmlDoc, "TimerContainer", nil, self)
-  wndHealthContainer = Apollo.LoadForm(self.xmlDoc, "HealthContainer", nil, self)
+  wnds["Timers"] = Apollo.LoadForm(self.xmlDoc, "TimerContainer", nil, self)
+  wnds["Healths"] = Apollo.LoadForm(self.xmlDoc, "HealthContainer", nil, self)
 
+  for name,wnd in next, wnds do
+    Event_FireGenericEvent('WindowManagementAdd', {
+      wnd = wnd,
+      strName = "DruseraBossMods: " .. name,
+    })
+  end
   _UpdateHUDTimer = ApolloTimer.Create(HUD_UPDATE_PERIOD, true,
                                        "OnHUDProcess", self)
   _UpdateHUDTimer:Stop()
@@ -72,7 +77,7 @@ end
 function DruseraBossMods:HUDCreateHealthBar(tHealth, tOptions)
   if not _HealthBars[tHealth.nId] and tHealth.tUnit:IsValid() then
     local tUnit = tHealth.tUnit
-    local wndParent = wndHealthContainer
+    local wndParent = wnds["Healths"]
     local wndFrame = Apollo.LoadForm(self.xmlDoc, "HealthTemplate", wndParent, self)
     HealthBar = {
       sLabel = tHealth.sLabel,
@@ -128,7 +133,7 @@ function DruseraBossMods:HUDCreateTimerBar(tTimer, tOptions)
   -- If the nDuration is 0, the timer is destroyed.
   if nEndTime > nCurrentTime then
     local nRemaining = nEndTime - nCurrentTime
-    local wndParent = wndTimersContainer
+    local wndParent = wnds["Timers"]
     local wndFrame = Apollo.LoadForm(self.xmlDoc, "TimerTemplate", wndParent, self)
     local TimerBar = {
       -- About timer itself.
@@ -222,10 +227,9 @@ function DruseraBossMods:OnHUDProcess()
 end
 
 function DruseraBossMods:HUDToggleAnchorLock()
-  local windows = {wndTimersContainer, wndHealthContainer}
   if bLock then
     bLock = false
-    for _, wnd in next, windows do
+    for _, wnd in next, wnds do
       wnd:SetBGColor('b0606060')
       wnd:SetTextColor('ffffffff')
       wnd:SetStyle("Moveable", true);
@@ -234,7 +238,7 @@ function DruseraBossMods:HUDToggleAnchorLock()
     end
   else
     bLock = true
-    for _, wnd in next, windows do
+    for _, wnd in next, wnds do
       wnd:SetBGColor('00000000')
       wnd:SetTextColor('00000000')
       wnd:SetStyle("Moveable", false);
