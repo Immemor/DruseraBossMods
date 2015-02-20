@@ -37,6 +37,7 @@ function DruseraBossMods:Init()
   local tDependencies = {}
   Apollo.RegisterAddon(self, bHasConfigureFunction,
     strConfigureButtonText, tDependencies)
+  self.db = Apollo.GetPackage("Gemini:DB-1.0").tPackage:New(self)
 end
 
 function DruseraBossMods:OnLoad()
@@ -65,8 +66,17 @@ function DruseraBossMods:OnInterfaceMenuListHasLoaded()
   self:HUDInit()
   self:ManagerInit()
   self:InterfaceInit()
+
+  self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
+  self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
+  self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
+  self:RefreshConfig()
+
   -- Send signal.
   Event_FireGenericEvent("InterfaceMenuList_NewAddOn", "DruseraBossMods", {"OnToggleMainGUI", "", ""})
+end
+
+function DruseraBossMods:RefreshConfig()
 end
 
 function DruseraBossMods:RegisterEncounter(
