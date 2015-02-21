@@ -134,6 +134,8 @@ L["AUGMENTED_VENOM"] = "Bio-soie augmentée"
 L["FULLY_OPTIMIZED_CANIMID"] = "Canimide entièrement optimisé"
 L["UNDERMINE"] = "Ébranler"
 L["TERRAFORMATION"] = "Terra-forme"
+------ Encounter: (MiniBoss) Logic Guided Rockslide
+L["LOGIC_GUIDED_ROCKSLIDE"] = "Éboulement guidé par la logique"
 ------ Encounter: Gloomclaw
 L["GLOOMCLAW"] = "Gloomclaw"
 ------ Encounter: Maelstrom Authority

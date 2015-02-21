@@ -125,6 +125,8 @@ L["AUGMENTED_VENOM"] = "Augmented Venom"
 L["FULLY_OPTIMIZED_CANIMID"] = "Fully-Optimized Canimid"
 L["UNDERMINE"] = "Undermine"
 L["TERRAFORMATION"] = "Terra-forme" --<< XXX: check.
+------ Encounter: (MiniBoss) Logic Guided Rockslide
+L["LOGIC_GUIDED_ROCKSLIDE"] = "Logic Guided Rockslide"
 ------ Encounter: Gloomclaw
 L["GLOOMCLAW"] = "Gloomclaw"
 ------ Encounter: Maelstrom Authority

@@ -26,6 +26,7 @@
     <Script Name="encounters\GA\Ohmna.lua"/>
     <Script Name="encounters\DS\miniboss\BioEnhancedBroodmother.lua"/>
     <Script Name="encounters\DS\miniboss\FullyOptimizedCanimid.lua"/>
+    <Script Name="encounters\DS\miniboss\LogicGuidedRockslide.lua"/>
     <Script Name="encounters\DS\SystemDaemon.lua"/>
     <Script Name="encounters\DS\Gloomclaw.lua"/>
     <Script Name="encounters\DS\MaelstromAuthority.lua"/>
