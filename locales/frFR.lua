@@ -137,7 +137,16 @@ L["TERRAFORMATION"] = "Terra-forme"
 ------ Encounter: (MiniBoss) Logic Guided Rockslide
 L["LOGIC_GUIDED_ROCKSLIDE"] = "Éboulement guidé par la logique"
 ------ Encounter: Gloomclaw
-L["GLOOMCLAW"] = "Gloomclaw"
+L["GLOOMCLAW"] = "Serrenox"
+L["CORRUPTED_RAVAGER"] = "Ravageur Corrompu" --XXX to check
+L["EMPOWERED_RAVAGER"] = "Ravageur Surpuissant" --XXX to check
+L["RUPTURE"] = "Rupture"
+L["DATACHRON_GLOOMCLAW_IS_REDUCED"] = "Serrenox a été affaibli !"
+L["DATACHRON_GLOOMCLAW_IS_PUSHED_BACK"] = "Serrenox est repoussé par la purification des essences !"
+L["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche pour corrompre davantage essences !"
+L["GLOOMCLAW_IS_PUSHED_BACK"] = "Serrenox est repoussé"
+L["GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche"
+L["CORRUPTING_RAYS"] = "Rayons Corrompus" --XXX to check
 ------ Encounter: Maelstrom Authority
 L["MAELSTROM_AUTHORITY"] = "Contrôleur du Maelstrom"
 L["THE_PLATFORM_SHAKES"] = "La plateforme tremble !"

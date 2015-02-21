@@ -449,3 +449,17 @@ function DruseraBossMods:SetNPCSayAlert(tFoeUnit, strKey, fCallback)
     self:SetFilterNPCSay(true)
   end
 end
+
+function DruseraBossMods:GetDistBetween2Unit(tUnitFrom, tUnitTo)
+  if not tUnitFrom or not tUnitTo then
+    return nil
+  end
+  local sPos = tUnitFrom:GetPosition()
+  local tPos = tUnitTo:GetPosition()
+
+  local sVec = Vector3.New(sPos.x, sPos.y, sPos.z)
+  local tVec = Vector3.New(tPos.x, tPos.y, tPos.z)
+  local dist = (tVec - sVec):Length()
+
+  return tonumber(dist)
+end

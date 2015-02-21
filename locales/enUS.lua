@@ -129,6 +129,15 @@ L["TERRAFORMATION"] = "Terra-forme" --<< XXX: check.
 L["LOGIC_GUIDED_ROCKSLIDE"] = "Logic Guided Rockslide"
 ------ Encounter: Gloomclaw
 L["GLOOMCLAW"] = "Gloomclaw"
+L["CORRUPTED_RAVAGER"] = "Corrupted Ravager"
+L["EMPOWERED_RAVAGER"] = "Empowered Ravager"
+L["RUPTURE"] = "Rupture"
+L["DATACHRON_GLOOMCLAW_IS_REDUCED"] = "Gloomclaw is reduced to a weakened state!"
+L["DATACHRON_GLOOMCLAW_IS_PUSHED_BACK"] = "Gloomclaw is pushed back by the purification of the essences!"
+L["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Gloomclaw is moving forward to corrupt more essences!"
+L["GLOOMCLAW_IS_PUSHED_BACK"] = "Glooclaw is pushed back"
+L["GLOOMCLAW_IS_MOVING_FORWARD"] = "Glooclaw is moving forward"
+L["CORRUPTING_RAYS"] = "Corrupting Rays"
 ------ Encounter: Maelstrom Authority
 L["MAELSTROM_AUTHORITY"] = "Maelstrom Authority"
 L["THE_PLATFORM_SHAKES"] = "The platform shakes !"
