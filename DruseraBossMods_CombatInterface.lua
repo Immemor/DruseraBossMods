@@ -17,6 +17,7 @@
 --
 ------------------------------------------------------------------------------
 require "Apollo"
+require "GameLib"
 require "ChatSystemLib"
 
 ------------------------------------------------------------------------------
@@ -25,130 +26,94 @@ require "ChatSystemLib"
 ------------------------------------------------------------------------------
 local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
 local GetGameTime = GameLib.GetGameTime
+local GetPlayerUnit = GameLib.GetPlayerUnit
 local next = next
 
 ------------------------------------------------------------------------------
 -- Constants.
 ------------------------------------------------------------------------------
 local SCAN_PERIOD = 0.1 -- in seconds.
+local CHANNEL_NPCSAY = ChatSystemLib.ChatChannel_NPCSay
+local CHANNEL_DATACHRON = ChatSystemLib.ChatChannel_Datachron
 
 ------------------------------------------------------------------------------
 -- Counters of tracking events.
 ------------------------------------------------------------------------------
 local tTrackedUnits = {}
 local tFilterUnit = {}
-local bFilterBuff = false
-local bFilterSpell = false
-local bFilterNPCSay = false
-local bFilterDatachron = false
-
-local bChatMessageEnable = false
-local bScanEnable = false
 
 ------------------------------------------------------------------------------
 -- Local functions.
 ------------------------------------------------------------------------------
-local function convertBuffs(tBuffs)
-  local tBuffsOut = {}
-  for _, buffType in next, tBuffs do
-    for _, buff in next, buffType do
-      tBuffsOut[buff.splEffect:GetId()] = buff.nCount
-    end
+local function GetHalfBuffs(tUnit)
+  local Buffs = tUnit:GetBuffs()
+  local r = {}
+  -- Track only interresting buffs, and drop "normal" buff.
+  local eType = tUnit:IsACharacter() and "arHarmful" or "arBeneficial"
+  for _,obj in next, Buffs[eType] do
+    r[obj.idBuff] = {
+      eType = eType,
+      nCount = obj.nCount,
+      nIdBuff = obj.idBuff,
+      splEffect = obj.splEffect,
+    }
   end
-  return tBuffsOut
-end
-
-local function UpdateChatEventRegistering(self)
-  if bFilterNPCSay or bFilterDatachron then
-    if not bChatMessageEnable then
-      Apollo.RegisterEventHandler("ChatMessage","OnChatMessage", self)
-      bChatMessageEnable = true
-    end
-  elseif bChatMessageEnable then
-      Apollo.RemoveEventHandler("ChatMessage", self)
-      bChatMessageEnable = false
-  end
-end
-
-local function UpdateSpellAndBuffRegistering(self)
-  if bFilterSpell or bFilterBuff then
-    if not bScanEnable then
-      _ScanTimer:Start()
-      bScanEnable = true
-    end
-  elseif bScanEnable then
-      _ScanTimer:Stop()
-      bScanEnable = false
-  end
+  return r
 end
 
 ------------------------------------------------------------------------------
 -- Handlers for Carbine interface.
 -- This layer will do a first layer of interpretation and filtering.
 ------------------------------------------------------------------------------
-function DruseraBossMods:OnUnitCreated(tUnit)
-  local nId = tUnit:GetId()
-  if not tTrackedUnits[nId] and tFilterUnit[tUnit:GetName()] then
-    tTrackedUnits[nId] = {
-      tUnit = tUnit,
-      buffs = convertBuffs(tUnit:GetBuffs()),
-      tSpell = {
-        bCasting = false,
-        sSpellName = "",
-        nCastEndTime = 0,
-        bSuccess = false,
-      }
-    }
-    self:OnCreated(tUnit)
-  end
-end
-
-function DruseraBossMods:OnUnitDestroyed(tUnit)
-  local nId = tUnit:GetId()
-  if tTrackedUnits[nId] then
-    tTrackedUnits[nId] = nil
-    self:OnDestroyed(tUnit)
-  end
-end
-
 function DruseraBossMods:OnEnteredCombat(tUnit, bInCombat)
-  if tFilterUnit[tUnit:GetName()] then
-    local nId = tUnit:GetId()
+  local nId = tUnit:GetId()
+  local sUnitType = nil
+
+  if nId == GetPlayerUnit():GetId() then
+    sUnitType = "Player"
+  elseif tFilterUnit[tUnit:GetName()] then
+    sUnitType = "Foe"
+  elseif tUnit:IsInYourGroup() then
+    -- Be careful, player is also in the group.
+    sUnitType = "Friend"
+  end
+
+  if sUnitType then
     if bInCombat then
-      local name = tUnit:GetName()
       if not tTrackedUnits[nId] then
         tTrackedUnits[nId] = {
           tUnit = tUnit,
-          buffs = convertBuffs(tUnit:GetBuffs()),
+          tBuffs = GetHalfBuffs(tUnit),
           tSpell = {
             bCasting = false,
             sSpellName = "",
             nCastEndTime = 0,
             bSuccess = false,
-          }
+          },
         }
       end
-      self:OnInCombat(tUnit)
     else
       tTrackedUnits[nId] = nil
-      if tUnit:GetHealth() == 0 then
-        -- A unit can be out of combat, but not dead. Not yet...
-        self:OnDied(tUnit)
-      else
-        self:OnOutCombat(tUnit)
-      end
+    end
+
+    if bInCombat then
+      self:OnUnitInCombat(sUnitType, tUnit)
+    elseif tUnit:GetHealth() == 0 then
+      -- A unit can be out of combat, but not dead. Not yet...
+      self:OnUnitDied(sUnitType, tUnit)
+    else
+      self:OnUnitOutCombat(sUnitType, tUnit)
     end
   end
 end
 
 function DruseraBossMods:OnChatMessage(tChannelCurrent, tMessage)
   local ChannelType = tChannelCurrent:GetType()
+  local sMessage = tMessage.arMessageSegments[1].strText
 
-  if bFilterNPCSay and ChatSystemLib.ChatChannel_NPCSay == ChannelType then
-    local sMessage = tMessage.arMessageSegments[1].strText
+  if CHANNEL_NPCSAY == ChannelType then
     self:OnNPCSay(sMessage)
-  elseif bFilterDatachron and ChatSystemLib.ChatChannel_Datachron == ChannelType then
-    local sMessage = tMessage.arMessageSegments[1].strText
+  elseif CHANNEL_DATACHRON == ChannelType then
     self:OnDatachron(sMessage)
   end
 end
@@ -160,33 +125,31 @@ function DruseraBossMods:OnUpdateTrackedUnits()
     -- * We went out of range.
     if not data.tUnit:IsValid() then
       tTrackedUnits[nId] = nil
+      self:OnInvalidUnit(nId)
     else
-      -- Process aura tracking.
-      if bFilterBuff then
-        local oldBuffs = data.buffs
-        data.buffs = convertBuffs(data.unit:GetBuffs())
+      -- Process buff tracking.
+      local tOldBuffs = data.tBuffs
+      data.tBuffs = GetHalfBuffs(data.tUnit)
 
-        for buffId, stackCount in next, data.buffs do
-          local oldStackCount = oldBuffs[buffId]
-          if oldStackCount then
-            if stackCount == oldStackCount then
-              oldBuffs[buffId] = nil
-            elseif stackCount > oldStackCount then
-              self:OnSpellAppliedDose(id, buffId, stackCount)
-            else
-              self:OnSpellRemovedDose(id, buffId, stackCount)
-            end
-          else
-            self:OnSpellAuraApplied(id, buffId, stackCount)
+      for i,tBuff in next, data.tBuffs do
+        if tOldBuffs[i] then
+          local old = tOldBuffs[i].nCount
+          local new = tBuff.nCount
+
+          if new ~= old then
+            self:OnBuffUpdate(nId, tBuff)
           end
-        end
-
-        for buffId, stackCount in next, oldBuffs do
-          self:OnSpellAuraRemoved(id, buffId)
+          tOldBuffs[i] = nil
+        else
+          self:OnBuffUpdate(nId, tBuff)
         end
       end
+      for _,tBuff in next, tOldBuffs do
+        tBuff.nCount = 0
+        self:OnBuffUpdate(nId, tBuff)
+      end
       -- Process spell_cast tracking.
-      if bFilterSpell then
+      if not data.tUnit:IsACharacter() then
         local bCasting = data.tUnit:IsCasting()
         if bCasting then
           local sSpellName = data.tUnit:GetCastName()
@@ -250,16 +213,8 @@ end
 ------------------------------------------------------------------------------
 
 function DruseraBossMods:InterfaceInit()
-  bFilterBuff = false
-  bFilterSpell = false
-  bFilterNPCSay = false
-  bFilterDatachron = false
   tTrackedUnits = {}
   -- Don't reset tFilterUnit
-  if false then
-    Apollo.RegisterEventHandler("UnitCreated", "OnUnitCreated", self)
-    Apollo.RegisterEventHandler("UnitDestroyed", "OnUnitDestroyed", self)
-  end
   Apollo.RegisterEventHandler("UnitEnteredCombat", "OnEnteredCombat", self)
   _ScanTimer = ApolloTimer.Create(SCAN_PERIOD, true, "OnUpdateTrackedUnits", self)
   _ScanTimer:Stop()
@@ -268,30 +223,17 @@ end
 ------------------------------------------------------------------------------
 -- Set filter functions.
 ------------------------------------------------------------------------------
-
 function DruseraBossMods:SetFilterUnit(list)
-  -- Expected example : { "My Boss Name" = true, "My Friend" = false }
-  -- Always add the player itself.
-  list[GameLib:GetPlayerUnit():GetName()] = true
+  -- Expected example : { "My Boss Name" = true, "Boss2" = false }
   tFilterUnit = list
 end
 
-function DruseraBossMods:SetFilterBuff(bEnable)
-  bFilterBuff = bEnable
-  UpdateSpellAndBuffRegistering(self)
+function DruseraBossMods:StartCombatInterface()
+  Apollo.RegisterEventHandler("ChatMessage","OnChatMessage", self)
+  _ScanTimer:Start()
 end
 
-function DruseraBossMods:SetFilterSpell(bEnable)
-  bFilterSpell = bEnable
-  UpdateSpellAndBuffRegistering(self)
-end
-
-function DruseraBossMods:SetFilterNPCSay(bEnable)
-  bFilterNPCSay = bEnable
-  UpdateChatEventRegistering(self)
-end
-
-function DruseraBossMods:SetFilterDatachron(bEnable)
-  bFilterDatachron = bEnable
-  UpdateChatEventRegistering(self)
+function DruseraBossMods:StopCombatInterface()
+  _ScanTimer:Stop()
+  Apollo.RemoveEventHandler("ChatMessage", self)
 end

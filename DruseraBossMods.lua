@@ -64,7 +64,7 @@ function DruseraBossMods:OnInterfaceMenuListHasLoaded()
   -- From highest layer to lowest layer.
   self:GUIInit()
   self:HUDInit()
-  self:ManagerInit()
+  self:CombatManagerInit()
   self:InterfaceInit()
 
   self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")

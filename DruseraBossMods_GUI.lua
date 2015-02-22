@@ -99,6 +99,13 @@ function DruseraBossMods:OnToggleFightHistory()
           data[1] == "Datachron processed" or
           data[1] == "Datachron, no callbacks" then
           wndgrid:SetCellText(idx, 5, data[5])
+        elseif data[1] == "Buff update" then
+          local txt = ""
+          txt = txt .. "BuffType='" .. data[5][2].eType .. "', "
+          txt = txt .. "SpellId='" .. data[5][2].splEffect:GetId() .. "', "
+          txt = txt .. "Count=" .. data[5][2].nCount .. ", "
+          txt = txt .. "SpellName='" .. data[5][2].splEffect:GetName() .. "'"
+          wndgrid:SetCellText(idx, 5, txt)
         end
       end
     end

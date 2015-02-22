@@ -25,6 +25,7 @@ local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
 local Locale = GeminiLocale:GetLocale("DruseraBossMods")
 local DataBase = {} -- Copy will be done on init.
 local next = next
+local GetPlayerUnit = GameLib.GetPlayerUnit
 local GetGameTime = GameLib.GetGameTime
 
 ------------------------------------------------------------------------------
@@ -36,7 +37,6 @@ local UPDATE_HUD_FREQUENCY = 10 -- in Hertz.
 -- Working variables.
 ------------------------------------------------------------------------------
 local tFoesUnits = {}
-local nSpellCastAlert_cnt = 0
 local bEncounterInProgress = false
 local nFightStartTime = 0
 local tNPCSayAlerts = {}
@@ -67,7 +67,7 @@ end
 
 local function RemoveFoeUnit(id)
   local FoeUnit = tFoesUnits[id]
-  if tFoesUnits[id] then
+  if FoeUnit then
     DruseraBossMods:HUDRemoveHealthBar(id)
     DruseraBossMods:HUDRemoveTimerBars(id)
     tFoesUnits[id] = nil
@@ -78,34 +78,12 @@ local function RemoveFoeUnit(id)
   end
 end
 
-local function AddHealthBar(id)
-  if bEncounterInProgress and tFoesUnits[id] then
-    DruseraBossMods:HUDCreateHealthBar({
-      sLabel = tFoesUnits[id].DisplayName,
-      tUnit = tFoesUnits[id].tUnit,
-      nId = id,
-    }, nil)
-  end
-end
-
-local function AddFoeUnit(tUnit)
-  local id = tUnit:GetId()
-  if not tFoesUnits[id] then
-    local name = tUnit:GetName()
-    if DataBase[name] then
-      tFoesUnits[id] = setmetatable({
-        tUnit = tUnit,
-        sName = name,
-        nId = id,
-        tSpellCastStartAlerts = {},
-        tSpellCastFailedAlerts = {},
-        tSpellCastSuccessAlerts = {},
-        bInCombat = tUnit:IsInCombat(),
-      }, {__index = DataBase[name]})
-      Add2FightHistory("Add foe unit", id, name, nil)
-    end
-  end
-  AddHealthBar(id)
+local function AddHealthBar(nId)
+  DruseraBossMods:HUDCreateHealthBar({
+    sLabel = tFoesUnits[nId].DisplayName,
+    tUnit = tFoesUnits[nId].tUnit,
+    nId = nId,
+  }, nil)
 end
 
 local function SetCastAlert(CastType, tFoeUnit, strKey, fCallback)
@@ -113,25 +91,12 @@ local function SetCastAlert(CastType, tFoeUnit, strKey, fCallback)
   local bRegistered = tFoeUnit[CastType][sSpellName] ~= nil
 
   tFoeUnit[CastType][sSpellName] = fCallback
-
-  local old = nSpellCastAlert_cnt
-  if not bRegistered and fCallback then
-    nSpellCastAlert_cnt = nSpellCastAlert_cnt + 1
-  elseif bRegistered and not fCallback then
-    nSpellCastAlert_cnt = nSpellCastAlert_cnt - 1
-  end
-
-  if old == 0 and nSpellCastAlert_cnt > 0 then
-    DruseraBossMods:SetFilterSpell(true)
-  elseif nSpellCastAlert_cnt == 0 and old > 0 then
-    DruseraBossMods:SetFilterSpell(false)
-  end
 end
 
 ------------------------------------------------------------------------------
 -- Manager Initialization.
 ------------------------------------------------------------------------------
-function DruseraBossMods:ManagerInit()
+function DruseraBossMods:CombatManagerInit()
   -- Copy the database to improve performance.
   DataBase = self.DataBase
   -- Configure filters
@@ -139,7 +104,7 @@ function DruseraBossMods:ManagerInit()
   for name,tInfo in next, DataBase do
     FoesWanted[name] = tInfo.bEnable
   end
-  DruseraBossMods:SetFilterUnit(FoesWanted)
+  self:SetFilterUnit(FoesWanted)
 end
 
 ------------------------------------------------------------------------------
@@ -158,74 +123,62 @@ function DruseraBossMods:OnTimerTimeout(tTimeOutBars)
   end
 end
 
-function DruseraBossMods:OnCreated(tUnit)
-  if not tUnit:IsACharacter() then
-    AddFoeUnit(tUnit)
-  end
-end
-
-function DruseraBossMods:OnDestroyed(tUnit)
-  local id = tUnit:GetId()
-  Add2FightHistory("Unit is destroyed", id, tUnit:GetName(), nil)
-  RemoveFoeUnit(id)
-end
-
-function DruseraBossMods:OnUnitNotValid(nId)
-  local FoeUnit = tFoesUnits[nId]
-  if FoeUnit then
-    Add2FightHistory("Unit is not valid", id, FoeUnit.sName, nil)
-    RemoveFoeUnit(nId)
-  end
-end
-
-function DruseraBossMods:OnInCombat(tUnit)
-  local id = tUnit:GetId()
-  if id == GameLib:GetPlayerUnit():GetId() then
+function DruseraBossMods:OnUnitInCombat(sUnitType, tUnit)
+  if sUnitType == "Player" then
     self:ManagerStart()
-  elseif not tUnit:IsACharacter() then
-    AddFoeUnit(tUnit)
-    tFoesUnits[id].bInCombat = true
+  elseif sUnitType == "Foe" then
+    local nId = tUnit:GetId()
+    local sName = tUnit:GetName()
+    tFoesUnits[nId] = setmetatable({
+      tUnit = tUnit,
+      sName = sName,
+      nId = nId,
+      bInCombat = true,
+      tSpellCastStartAlerts = {},
+      tSpellCastFailedAlerts = {},
+      tSpellCastSuccessAlerts = {},
+      tBuffAlerts = {},
+    }, {__index = DataBase[sName]})
+    Add2FightHistory("Add foe unit", nId, sName, nil)
     if bEncounterInProgress then
-      FoesStartCombat(id)
+      AddHealthBar(nId)
+      FoesStartCombat(nId)
     end
   end
 end
 
-function DruseraBossMods:OnOutCombat(tUnit)
-  local id = tUnit:GetId()
-  if id == GameLib:GetPlayerUnit():GetId() then
+function DruseraBossMods:OnUnitOutCombat(sUnitType, tUnit)
+  if sUnitType == "Player" then
     if bEncounterInProgress then
       Add2FightHistory("Player is out of combat", nil, nil, nil)
       self:ManagerStop()
     end
-  elseif tFoesUnits[id] then
-    tFoesUnits[id].bInCombat = false
-    Add2FightHistory("Unit is out of combat", id, tFoesUnits[id].sName, nil)
-    self:HUDRemoveHealthBar(id)
-    local CombatStilInProgress = false
-    for _,tFoeUnit in next, tFoesUnits do
-      if tFoeUnit.bInCombat then
-        CombatStilInProgress = true
-        break
-      end
-    end
-    if not CombatStilInProgress then
-      Add2FightHistory("All foes are out of combat", nil, nil, nil)
-      self:ManagerStop()
+  elseif sUnitType == "Foe" then
+    local id = tUnit:GetId()
+    local FoeUnit = tFoesUnits[id]
+    if FoeUnit then
+      Add2FightHistory("Unit is out of combat", id, FoeUnit.sName, nil)
+      RemoveFoeUnit(id)
     end
   end
 end
 
-function DruseraBossMods:OnDied(tUnit)
-  local id = tUnit:GetId()
-  if id == GameLib:GetPlayerUnit():GetId() then
+function DruseraBossMods:OnUnitDied(sUnitType, tUnit)
+  if sUnitType == "Player" then
     -- Don't stop the encounter on the player death.
     -- That could be the raid leader.
     Add2FightHistory("Player is dead", nil, nil, nil)
-  else
-    local name = tUnit:GetName()
-    Add2FightHistory("Unit is dead", id, name, nil)
+  elseif sUnitType == "Foe" then
+    local id = tUnit:GetId()
+    Add2FightHistory("Foe is dead", id, nil, nil)
     RemoveFoeUnit(id)
+  end
+end
+
+function DruseraBossMods:OnInvalidUnit(nId)
+  if tFoesUnits[nId] then
+    Add2FightHistory("Invalid foe unit", nId, nil, nil)
+    RemoveFoeUnit(nId)
   end
 end
 
@@ -317,20 +270,15 @@ function DruseraBossMods:OnDatachron(sMessage)
   end
 end
 
-function DruseraBossMods:OnSpellAuraAppliedDose(UnitId, BuffId, StackCount)
-  Add2FightHistory("Spell aura applied dose ignored", nil, nil, nil)
-end
-
-function DruseraBossMods:OnSpellAuraRemovedDose(UnitId, BuffId, StackCount)
-  Add2FightHistory("Spell aura removed dose ignored", nil, nil, nil)
-end
-
-function DruseraBossMods:OnSpellAuraApplied(UnitId, BuffId, StackCount)
-  Add2FightHistory("Spell aura applied ignored", nil, nil, nil)
-end
-
-function DruseraBossMods:OnSpellAuraRemoved(UnitId, BuffId)
-  Add2FightHistory("Spell aura removes ignored", nil, nil, nil)
+function DruseraBossMods:OnBuffUpdate(nTargetId, tBuff)
+  Add2FightHistory("Buff update", nTargetId, nil, {nTargetId, tBuff})
+  local nSpellId = tBuff.splEffect:GetId()
+  for _,tFoeUnit in next, tFoesUnits do
+    local callback = tFoeUnit.tBuffAlerts[nSpellId]
+    if callback then
+      callback(tFoeUnit)
+    end
+  end
 end
 
 ----------------------------------------------------------------------------
@@ -339,6 +287,7 @@ end
 function DruseraBossMods:ManagerStart()
   if not bEncounterInProgress then
     bEncounterInProgress = true
+    self:StartCombatInterface()
     nFightStartTime = GetGameTime()
     Add2FightHistory("Start encounter", nil, nil, nFightStartTime)
 
@@ -359,14 +308,11 @@ end
 function DruseraBossMods:ManagerStop()
   if bEncounterInProgress then
     bEncounterInProgress = false
+    self:StopCombatInterface()
     Add2FightHistory("Stop encounter", nil, nil, nil)
     for id, FoeUnit in next, tFoesUnits do
       RemoveFoeUnit(id)
     end
-    self:SetFilterSpell(false)
-    self:SetFilterDatachron(false)
-    self:SetFilterNPCSay(false)
-    nSpellCastAlert_cnt = 0
     tNPCSayAlerts = {}
     tDatachronAlerts = {}
     self:SaveFightHistory(tFightHistory)
@@ -407,7 +353,6 @@ end
 function DruseraBossMods:SetDatachronAlert(tFoeUnit, strKey, fCallback)
   local msg = Locale[strKey]
   local state = fCallback and true or false
-  local WasEnable = next(tDatachronAlerts) ~= nil
   if state then
     if not tDatachronAlerts[msg] then
       tDatachronAlerts[msg] = {}
@@ -419,18 +364,11 @@ function DruseraBossMods:SetDatachronAlert(tFoeUnit, strKey, fCallback)
       tDatachronAlerts[msg] = nil
     end
   end
-  local IsEnable = next(tDatachronAlerts) ~= nil
-  if WasEnable and not IsEnable then
-    self:SetFilterDatachron(false)
-  elseif not WasEnable and IsEnable then
-    self:SetFilterDatachron(true)
-  end
 end
 
 function DruseraBossMods:SetNPCSayAlert(tFoeUnit, strKey, fCallback)
   local msg = Locale[strKey]
   local state = fCallback and true or false
-  local WasEnable = next(tNPCSayAlerts) ~= nil
   if state then
     if not tNPCSayAlerts[msg] then
       tNPCSayAlerts[msg] = {}
@@ -441,12 +379,6 @@ function DruseraBossMods:SetNPCSayAlert(tFoeUnit, strKey, fCallback)
     if next(tNPCSayAlerts[msg]) == nil then
       tNPCSayAlerts[msg] = nil
     end
-  end
-  local IsEnable = next(tNPCSayAlerts) ~= nil
-  if WasEnable and not IsEnable then
-    self:SetFilterNPCSay(false)
-  elseif not WasEnable and IsEnable then
-    self:SetFilterNPCSay(true)
   end
 end
 
@@ -462,4 +394,11 @@ function DruseraBossMods:GetDistBetween2Unit(tUnitFrom, tUnitTo)
   local dist = (tVec - sVec):Length()
 
   return tonumber(dist)
+end
+
+function DruseraBossMods:SetBuffAlert(tFoeUnit, nSpellId, fCallback)
+  assert(nSpellId)
+  assert(tFoeUnit)
+  local bRegistered = tFoeUnit.tBuffAlerts[nSpellId] ~= nil
+  tFoeUnit.tBuffAlerts[nSpellId] = fCallback
 end
