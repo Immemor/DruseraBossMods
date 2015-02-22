@@ -117,3 +117,5 @@ end
 
 local DruseraBossModsInst = DruseraBossMods:new()
 DruseraBossModsInst:Init()
+-- For debugging purpose through GeminiConsole, quite useful.
+_G["DBM"] = DruseraBossModsInst
