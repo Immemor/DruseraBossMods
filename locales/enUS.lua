@@ -134,6 +134,7 @@ L["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Gloomclaw is moving forward to cor
 L["GLOOMCLAW_IS_PUSHED_BACK"] = "Glooclaw is pushed back"
 L["GLOOMCLAW_IS_MOVING_FORWARD"] = "Glooclaw is moving forward"
 L["CORRUPTING_RAYS"] = "Corrupting Rays"
+L["INTERRUPT_CORRUPTING_RAYS"] = "Interrupt: Corrupting Rays !"
 ------ Encounter: Maelstrom Authority
 L["MAELSTROM_AUTHORITY"] = "Maelstrom Authority"
 L["THE_PLATFORM_SHAKES"] = "The platform shakes !"

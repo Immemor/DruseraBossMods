@@ -9,7 +9,10 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
+require "GameLib"
+
 local DBM = Apollo.GetAddon("DruseraBossMods")
+local GetPlayerUnit = GameLib.GetPlayerUnit
 local Gloomclaw = {}
 local CorruptedRavager = {}
 local EmpoweredRavager = {}
@@ -19,10 +22,13 @@ local nSection = 1
 -- Extra functions.
 ------------------------------------------------------------------------------
 local function OnCorruptingRays(self)
-  local d = DBM:GetDistBetween2Unit(GameLib:GetPlayerUnit(), self.tUnit)
+  local d = DBM:GetDistBetween2Unit(GetPlayerUnit(), self.tUnit)
   if d and d < 35 then
-    -- Kick this spell!
-    Print("Kick the Corrupting Rays")
+    DBM:SetMessage({
+      sLabel = "INTERRUPT_CORRUPTING_RAYS",
+      nDuration = 3,
+      bHighlight = true,
+    })
   end
 end
 
@@ -59,10 +65,12 @@ function Gloomclaw:OnStartCombat()
     DBM:ClearAllTimerAlert()
   end)
   DBM:SetDatachronAlert(self, "DATACHRON_GLOOMCLAW_IS_PUSHED_BACK", function(self)
+    DBM:ClearAllTimerAlert()
     nSection = nSection + 1
     DBM:SetTimerAlert(self, "GLOOMCLAW_IS_PUSHED_BACK", 9, NewSection)
   end)
   DBM:SetDatachronAlert(self, "DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD", function(self)
+    DBM:ClearAllTimerAlert()
     nSection = nSection - 1
     DBM:SetTimerAlert(self, "GLOOMCLAW_IS_MOVING_FORWARD", 10, NewSection)
   end)

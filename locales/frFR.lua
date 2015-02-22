@@ -143,6 +143,7 @@ L["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche pour corrompre
 L["GLOOMCLAW_IS_PUSHED_BACK"] = "Serrenox est repoussé"
 L["GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche"
 L["CORRUPTING_RAYS"] = "Rayons Corrompus" --XXX to check
+L["INTERRUPT_CORRUPTING_RAYS"] = "Coupez: Rayons Corrompus !"
 ------ Encounter: Maelstrom Authority
 L["MAELSTROM_AUTHORITY"] = "Contrôleur du Maelstrom"
 L["THE_PLATFORM_SHAKES"] = "La plateforme tremble !"
