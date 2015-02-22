@@ -17,6 +17,7 @@ local Locale = GeminiLocale:GetLocale("DruseraBossMods")
 local next = next
 local GetGameTime = GameLib.GetGameTime
 local HUD_UPDATE_PERIOD = 0.1
+local THRESHOLD_HIGHLIGHT_TIMERS = 6.0
 
 ------------------------------------------------------------------------------
 -- Working variables.
@@ -55,6 +56,54 @@ local function HUDUpdateHealthBar(nId)
     end
   end
 end
+
+local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, nId, tOptions)
+  local nCurrentTime = GetGameTime()
+  if nEndTime > nCurrentTime then
+    local nRemaining = nEndTime - nCurrentTime
+    local wndParent = nRemaining >= THRESHOLD_HIGHLIGHT_TIMERS and wnds["Timers"] or wnds["HighlightTimers"]
+    local wndFrame = Apollo.LoadForm(DruseraBossMods.xmlDoc, "TimerTemplate", wndParent, DruseraBossMods)
+    local TimerBar = {
+      -- About timer itself.
+      sLabel = sLabel,
+      nDuration = nDuration,
+      nEndTime = nEndTime,
+      -- Data to return on time out.
+      fCallback = fCallback,
+      nId = nId,
+      -- Windows objects.
+      wndParent = wndParent,
+      wndFrame = wndFrame,
+      wndLabel = wndFrame:FindChild("Bar"):FindChild("Label"),
+      wndTimeLeft = wndFrame:FindChild("Bar"):FindChild("TimeLeft"),
+      wndProgressBar = wndFrame:FindChild("Bar"):FindChild("ProgressBar"),
+    }
+    _TimerBars[sLabel] = TimerBar
+    TimerBar.wndFrame:SetData(nEndTime)
+    TimerBar.wndProgressBar:SetMax(nDuration)
+    TimerBar.wndProgressBar:SetProgress(nRemaining)
+    TimerBar.wndLabel:SetText(sLabel)
+    TimerBar.wndTimeLeft:SetText(string.format("%.1fs", nRemaining))
+    if wndParent == wnds["HighlightTimers"] then
+      TimerBar.wndProgressBar:SetBarColor("red")
+      TimerBar.wndLabel:SetFont("CRB_Interface12_B")
+      TimerBar.wndTimeLeft:SetFont("CRB_Interface12_B")
+      TimerBar.wndFrame:SetAnchorOffsets(0,0,0,30)
+    elseif tOptions then
+      if tOptions.color then
+        TimerBar.wndProgressBar:SetBarColor(tOptions.color)
+      end
+    end
+    wndParent:ArrangeChildrenVert(
+    Window.CodeEnumArrangeOrigin.LeftOrTop,
+    SortContentByTime)
+    if not bTimerRunning then
+      _UpdateHUDTimer:Start()
+      bTimerRunning = true
+    end
+  end
+end
+
 
 ------------------------------------------------------------------------------
 -- Public functions.
@@ -126,6 +175,16 @@ function DruseraBossMods:HUDRemoveHealthBar(nId)
   end
 end
 
+function DruseraBossMods:_HUDMoveTimerBar(i)
+  local TimerBar = _TimerBars[i]
+  if TimerBar then
+    self:HUDRemoveTimerBar(i)
+    CreateTimerBar(TimerBar.nEndTime, TimerBar.sLabel,
+                   THRESHOLD_HIGHLIGHT_TIMERS, TimerBar.fCallback,
+                   TimerBar.nId, nil)
+  end
+end
+
 function DruseraBossMods:HUDCreateTimerBar(tTimer, tOptions)
   assert (tTimer)
   assert (tTimer.sLabel)
@@ -139,42 +198,8 @@ function DruseraBossMods:HUDCreateTimerBar(tTimer, tOptions)
   self:HUDRemoveTimerBar(sLabel)
   -- If the nDuration is 0, the timer is destroyed.
   if nEndTime > nCurrentTime then
-    local nRemaining = nEndTime - nCurrentTime
-    local wndParent = wnds["Timers"]
-    local wndFrame = Apollo.LoadForm(self.xmlDoc, "TimerTemplate", wndParent, self)
-    local TimerBar = {
-      -- About timer itself.
-      sLabel = sLabel,
-      nDuration = tTimer.nDuration,
-      nEndTime = nEndTime,
-      -- Data to return on time out.
-      fCallback = tTimer.fCallback,
-      nId = tTimer.nId,
-      -- Windows objects.
-      wndParent = wndParent,
-      wndFrame = wndFrame,
-      wndLabel = wndFrame:FindChild("Bar"):FindChild("Label"),
-      wndTimeLeft = wndFrame:FindChild("Bar"):FindChild("TimeLeft"),
-      wndProgressBar = wndFrame:FindChild("Bar"):FindChild("ProgressBar"),
-    }
-    _TimerBars[sLabel] = TimerBar
-    TimerBar.wndFrame:SetData(nEndTime)
-    TimerBar.wndProgressBar:SetMax(nDuration)
-    TimerBar.wndProgressBar:SetProgress(nRemaining)
-    TimerBar.wndLabel:SetText(sLabel)
-    TimerBar.wndTimeLeft:SetText(string.format("%.1fs", nRemaining))
-    if tOptions then
-      if tOptions.color then
-        TimerBar.wndProgressBar:SetBarColor(tOptions.color)
-      end
-    end
-    wndParent:ArrangeChildrenVert(
-      Window.CodeEnumArrangeOrigin.LeftOrTop,
-      SortContentByTime)
-    if not bTimerRunning then
-      _UpdateHUDTimer:Start()
-      bTimerRunning = true
-    end
+    CreateTimerBar(nEndTime, sLabel, tTimer.nDuration,
+                   tTimer.fCallback, tTimer.nId, tOptions)
   end
 end
 
@@ -212,6 +237,11 @@ function DruseraBossMods:OnHUDProcess()
       local nRemaining = TimerBar.nEndTime - nCurrentTime
       TimerBar.wndProgressBar:SetProgress(nRemaining)
       TimerBar.wndTimeLeft:SetText(string.format("%.1fs", nRemaining))
+
+      if nRemaining < THRESHOLD_HIGHLIGHT_TIMERS then
+        -- Move from TimersContainer to HighligthTimersContainers.
+        self:_HUDMoveTimerBar(i)
+      end
     else
       if TimerBar.fCallback then
         table.insert(Timeout, {TimerBar.fCallback, TimerBar.nId})
