@@ -18,12 +18,14 @@ local next = next
 local GetGameTime = GameLib.GetGameTime
 local HUD_UPDATE_PERIOD = 0.1
 local THRESHOLD_HIGHLIGHT_TIMERS = 6.0
+local DEFAULT_FADEOFF_MESSAGE = 6.0
 
 ------------------------------------------------------------------------------
 -- Working variables.
 ------------------------------------------------------------------------------
 local _TimerBars = {}
 local _HealthBars = {}
+local _MessagesBars = {}
 local bTimerRunning = false
 local bLock = true
 local wnds = {}
@@ -143,10 +145,10 @@ function DruseraBossMods:HUDCreateHealthBar(tHealth, tOptions)
       -- Windows objects.
       wndParent = wndParent,
       wndFrame = wndFrame,
-      wndLabel = wndFrame:FindChild("Label"),
-      wndPercent = wndFrame:FindChild("Percent"),
-      wndShortHealth = wndFrame:FindChild("ShortHealth"),
-      wndProgressBar = wndFrame:FindChild("ProgressBar"),
+      wndLabel = wndFrame:FindChild("Bar"):FindChild("Label"),
+      wndPercent = wndFrame:FindChild("Bar"):FindChild("Percent"),
+      wndShortHealth = wndFrame:FindChild("Bar"):FindChild("ShortHealth"),
+      wndProgressBar = wndFrame:FindChild("Bar"):FindChild("ProgressBar"),
     }
     local MaxHealth = tUnit:GetMaxHealth()
     local Health = tUnit:GetHealth()
@@ -232,10 +234,68 @@ function DruseraBossMods:HUDRemoveAllTimerBar()
   end
 end
 
+function DruseraBossMods:HUDCreateMessage(tMessage)
+  local sLabel = tMessage.sLabel
+  local nDuration = tMessage.nDuration or DEFAULT_FADEOFF_MESSAGE
+  local nCurrentTime = GetGameTime()
+  local nEndTime = nCurrentTime + nDuration
+  local bHighlight = tMessage.bHighlight or false
+  local wndParent = bHighlight and wnds["HighlightMessages"] or wnds["Messages"]
+  local wndFrame = Apollo.LoadForm(self.xmlDoc, "MessageTemplate", wndParent, self)
+
+  self:HUDRemoveMessage(sLabel)
+  local MessageBar = {
+    nId = tMessage.nId,
+    nEndTime = nEndTime,
+    nDuration = nDuration,
+    Fading = false,
+    -- Windows objects.
+    wndFrame = wndFrame,
+    wndParent = wndParent,
+    wndLabel = wndFrame:FindChild("Label"),
+  }
+  MessageBar.wndFrame:SetData(nEndTime)
+  MessageBar.wndLabel:SetText(sLabel)
+  _MessagesBars[sLabel] = MessageBar
+
+  if bHighlight then
+    MessageBar.wndLabel:SetTextColor("red")
+    MessageBar.wndLabel:SetFont("CRB_Interface14_B")
+  end
+
+  wndParent:ArrangeChildrenVert(
+    Window.CodeEnumArrangeOrigin.LeftOrTop,
+    SortContentByTime)
+
+  if not bTimerRunning then
+    _UpdateHUDTimer:Start()
+    bTimerRunning = true
+  end
+end
+
+function DruseraBossMods:HUDRemoveMessage(sLabel)
+  if _MessagesBars[sLabel] then
+    _MessagesBars[sLabel].wndFrame:Destroy()
+    _MessagesBars[sLabel].wndParent:ArrangeChildrenVert(
+      Window.CodeEnumArrangeOrigin.LeftOrTop,
+      SortContentByTime)
+    _MessagesBars[sLabel] = nil
+  end
+end
+
+function DruseraBossMods:HUDRemoveMessages(nId)
+  assert(nId)
+  for i, MessageBar in next, _MessagesBars do
+    if MessageBar.nId == nId then
+      self:HUDRemoveTimerBar(MessageBar.sLabel)
+    end
+  end
+end
+
 function DruseraBossMods:OnHUDProcess()
   local Timeout = {}
   local nCurrentTime = GetGameTime()
-  for i, TimerBar in next, _TimerBars do
+  for i,TimerBar in next, _TimerBars do
     if nCurrentTime < TimerBar.nEndTime then
       local nRemaining = TimerBar.nEndTime - nCurrentTime
       TimerBar.wndProgressBar:SetProgress(nRemaining)
@@ -252,8 +312,18 @@ function DruseraBossMods:OnHUDProcess()
       self:HUDRemoveTimerBar(i)
     end
   end
-  for i, HealthBar in next, _HealthBars do
+  for i,HealthBar in next, _HealthBars do
     HUDUpdateHealthBar(HealthBar.nId)
+  end
+  for i,MessageBar in next, _MessagesBars do
+    if nCurrentTime > MessageBar.nEndTime then
+      if not MessageBar.Fading then
+        MessageBar.Fading = true
+        MessageBar.wndFrame:SetStyle("AutoFade", true);
+      elseif nCurrentTime > MessageBar.nEndTime + 1 then
+        self:HUDRemoveMessage(i)
+      end
+    end
   end
   -- Provide all timers with callback to CombatManager.
   for _, TimerBar in next, Timeout do
@@ -261,7 +331,7 @@ function DruseraBossMods:OnHUDProcess()
   end
   -- Be careful, stop the timer only after callbacks.
   -- Because a callback can add timer bars or health bars.
-  if next(_TimerBars) == nil and next(_HealthBars) == nil then
+  if next(_TimerBars) == nil and next(_HealthBars) == nil and next(_MessagesBars) == nil then
     _UpdateHUDTimer:Stop()
     bTimerRunning = false
   end

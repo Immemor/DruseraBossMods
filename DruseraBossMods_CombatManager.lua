@@ -70,6 +70,7 @@ local function RemoveFoeUnit(id)
   if FoeUnit then
     DruseraBossMods:HUDRemoveHealthBar(id)
     DruseraBossMods:HUDRemoveTimerBars(id)
+    DruseraBossMods:HUDRemoveMessages(id)
     tFoesUnits[id] = nil
   end
   if bEncounterInProgress and next(tFoesUnits) == nil then
@@ -325,6 +326,11 @@ end
 ------------------------------------------------------------------------------
 function DruseraBossMods:ClearAllTimerAlert()
   self:HUDRemoveAllTimerBar()
+end
+
+function DruseraBossMods:SetMessage(tMessage)
+  tMessage.sLabel = Locale[tMessage.sLabel]
+  self:HUDCreateMessage(tMessage)
 end
 
 function DruseraBossMods:SetTimerAlert(FoeUnit, strKey, duration, fCallback)

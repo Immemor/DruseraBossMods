@@ -121,10 +121,6 @@ function DruseraBossMods:OnToggleFightHistory()
   end
 end
 
-function DruseraBossMods:OnEndOfTest(data)
-  DruseraBossMods:HUDRemoveHealthBar(GameLib.GetPlayerUnit():GetId())
-end
-
 function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
   local tPlayerUnit = GameLib.GetPlayerUnit()
   self:HUDCreateHealthBar({
@@ -134,13 +130,43 @@ function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
   })
   self:HUDCreateTimerBar({
     sLabel = Locale["END_OF_TEST"],
-    nDuration = 50,
-    fCallback = self.OnEndOfTest,
+    nDuration = 33,
+    fCallback = function(self)
+      self:HUDRemoveHealthBar(GameLib.GetPlayerUnit():GetId())
+    end,
   }, nil)
-  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_4"], nDuration = 40}, nil)
-  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_2"], nDuration = 20}, nil)
-  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_3"], nDuration = 30}, nil)
-  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_1"], nDuration = 10}, nil)
+  self:HUDCreateTimerBar({
+    sLabel = Locale["THIS_SHOULD_BE_4"],
+    nDuration = 28,
+    fCallback = function(self)
+      self:HUDCreateMessage({sLabel = Locale["YOU_ARE_DEATH_AGAIN"]})
+    end
+  }, nil)
+  self:HUDCreateTimerBar({
+    sLabel = Locale["THIS_SHOULD_BE_2"],
+    nDuration = 10,
+    fCallback = function(self)
+      self:HUDCreateMessage({sLabel = Locale["ARE_YOU_READY"]})
+    end
+  }, nil)
+  self:HUDCreateTimerBar({
+    sLabel = Locale["THIS_SHOULD_BE_3"],
+    nDuration = 20,
+    fCallback = function(self)
+      self:HUDCreateMessage({
+        sLabel = Locale["INTERRUPT_THIS_CAST"],
+        bHighlight = true,
+        nDuration=3
+      })
+    end
+  }, nil)
+  self:HUDCreateTimerBar({
+    sLabel = Locale["THIS_SHOULD_BE_1"],
+    nDuration = 6,
+    fCallback = function(self)
+      self:HUDCreateMessage({sLabel = Locale["WELCOME_IN_DBM"], bHighlight = true})
+    end,
+  }, nil)
 end
 
 function DruseraBossMods:OnToggleAnchorLock(wndHandler, wndControl, eMouseButton)
