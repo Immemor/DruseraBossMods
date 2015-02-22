@@ -30,6 +30,7 @@ local _MessagesBars = {}
 local bTimerRunning = false
 local bLock = true
 local wnds = {}
+_G['dd'] = wnds
 
 ------------------------------------------------------------------------------
 -- Local functions.
@@ -54,6 +55,20 @@ local function HUDUpdateHealthBar(nId)
       Health = string.format("%.1fk", Health / 1000)
       MaxHealth = string.format("%.1fk", MaxHealth / 1000)
       HealthBar.wndShortHealth:SetText(Health .. "/" .. MaxHealth)
+
+      local nCastDuration = HealthBar.tUnit:GetCastDuration()
+      local nCastElapsed = HealthBar.tUnit:GetCastElapsed()
+      if HealthBar.tUnit:IsCasting() and nCastElapsed < nCastDuration then
+        HealthBar.wndShortHealth:Show(false)
+        HealthBar.wndCastBar:Show(true)
+        HealthBar.wndProgressCastBar:SetProgress(nCastElapsed)
+        HealthBar.wndProgressCastBar:SetMax(nCastDuration)
+        HealthBar.wndLabelCastBar:SetText(HealthBar.tUnit:GetCastName())
+        HealthBar.wndTimeCastBar:SetText(string.format("%.1f/%.1f", nCastElapsed / 1000, nCastDuration / 1000))
+      else
+        HealthBar.wndShortHealth:Show(true)
+        HealthBar.wndCastBar:Show(false)
+      end
     else
       DruseraBossMods:OnUnitNotValid(nId)
     end
@@ -121,12 +136,15 @@ function DruseraBossMods:HUDInit()
   wnds["Messages"] = Apollo.LoadForm(self.xmlDoc, "MessagesContainer", nil, self)
 
   for name,wnd in next, wnds do
-    wnd:SetTextColor('00000000')
-    wnd:SetText(Locale[wnd:GetText()])
     Event_FireGenericEvent('WindowManagementAdd', {
       wnd = wnd,
       strName = "DruseraBossMods: " .. name,
     })
+    wnd:SetStyle("Moveable", false);
+    wnd:SetStyle("Sizable", false);
+    wnd:SetStyle("IgnoreMouse", true);
+    wnd:SetTextColor('00000000')
+    wnd:SetText(Locale[wnd:GetText()])
   end
   _UpdateHUDTimer = ApolloTimer.Create(HUD_UPDATE_PERIOD, true,
                                        "OnHUDProcess", self)
@@ -150,6 +168,10 @@ function DruseraBossMods:HUDCreateHealthBar(tHealth, tOptions)
       wndPercent = wndFrame:FindChild("Bar"):FindChild("Percent"),
       wndShortHealth = wndFrame:FindChild("Bar"):FindChild("ShortHealth"),
       wndProgressBar = wndFrame:FindChild("Bar"):FindChild("ProgressBar"),
+      wndCastBar = wndFrame:FindChild("Bar"):FindChild("Cast"),
+      wndProgressCastBar = wndFrame:FindChild("Bar"):FindChild("Cast"):FindChild("ProgressBar"),
+      wndLabelCastBar = wndFrame:FindChild("Bar"):FindChild("Cast"):FindChild("Label"),
+      wndTimeCastBar = wndFrame:FindChild("Bar"):FindChild("Cast"):FindChild("TimeElapse"),
     }
     local MaxHealth = tUnit:GetMaxHealth()
     local Health = tUnit:GetHealth()
