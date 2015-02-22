@@ -7,7 +7,7 @@
         <Frame Texture="DruseraBossMods\sprites\bartex2.tga" x0="0" x1="2" x2="2" x3="117" x4="198" x5="200" y0="0" y1="0" y2="0" y3="2" y4="78" y5="80" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="default" Cycle="1">
-        <Frame Texture="DruseraBossMods\sprites\default.tga" x0="0" x1="0" x2="0" x3="252" x4="256" x5="256" y0="0" y1="2" y2="2" y3="2" y4="30" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="DruseraBossMods\sprites\default.tga" x0="0" x1="100" x2="100" x3="152" x4="256" x5="256" y0="0" y1="2" y2="2" y3="2" y4="30" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="charcoal" Cycle="1">
         <Frame Texture="DruseraBossMods\sprites\Charcoal.tga" x0="0" x1="0" x2="0" x3="0" x4="128" x5="128" y0="0" y1="0" y2="9" y3="118" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
