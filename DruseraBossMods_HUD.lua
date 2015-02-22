@@ -19,6 +19,7 @@ local GetGameTime = GameLib.GetGameTime
 local HUD_UPDATE_PERIOD = 0.1
 local THRESHOLD_HIGHLIGHT_TIMERS = 6.0
 local DEFAULT_FADEOFF_MESSAGE = 6.0
+local AUTOFADE_TIMING = 0.5
 
 ------------------------------------------------------------------------------
 -- Working variables.
@@ -320,7 +321,7 @@ function DruseraBossMods:OnHUDProcess()
       if not MessageBar.Fading then
         MessageBar.Fading = true
         MessageBar.wndFrame:SetStyle("AutoFade", true);
-      elseif nCurrentTime > MessageBar.nEndTime + 1 then
+      elseif nCurrentTime > MessageBar.nEndTime + AUTOFADE_TIMING then
         self:HUDRemoveMessage(i)
       end
     end
