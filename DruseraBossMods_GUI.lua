@@ -40,6 +40,15 @@ function DruseraBossMods:GUIInit()
   wndFightHistory = Apollo.LoadForm(self.xmlDoc, "FightHistory", nil, self)
   wndFightHistory:Show(false)
 
+  Event_FireGenericEvent('WindowManagementAdd', {
+    wnd = wndMainGUI,
+    strName = "DruseraBossMods: MainGui",
+  })
+  Event_FireGenericEvent('WindowManagementAdd', {
+    wnd = wndFightHistory,
+    strName = "DruseraBossMods: FightHistory",
+  })
+
   Apollo.RegisterSlashCommand("dbm", "OnToggleMainGUI", self)
   Apollo.RegisterSlashCommand("DruseraBossMods", "OnToggleMainGUI", self)
   Apollo.RegisterSlashCommand("dbmhistory", "OnToggleFightHistory", self)

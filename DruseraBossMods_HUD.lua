@@ -12,6 +12,8 @@
 -- Constants.
 ------------------------------------------------------------------------------
 local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
+local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
+local Locale = GeminiLocale:GetLocale("DruseraBossMods")
 local next = next
 local GetGameTime = GameLib.GetGameTime
 local HUD_UPDATE_PERIOD = 0.1
@@ -59,10 +61,15 @@ end
 ------------------------------------------------------------------------------
 function DruseraBossMods:HUDInit()
   -- Create containers
-  wnds["Timers"] = Apollo.LoadForm(self.xmlDoc, "TimerContainer", nil, self)
-  wnds["Healths"] = Apollo.LoadForm(self.xmlDoc, "HealthContainer", nil, self)
+  wnds["Healths"] = Apollo.LoadForm(self.xmlDoc, "HealthsContainer", nil, self)
+  wnds["HighlightTimers"] = Apollo.LoadForm(self.xmlDoc, "HighlightTimersContainer", nil, self)
+  wnds["Timers"] = Apollo.LoadForm(self.xmlDoc, "TimersContainer", nil, self)
+  wnds["HighlightMessages"] = Apollo.LoadForm(self.xmlDoc, "HighlightMessagesContainer", nil, self)
+  wnds["Messages"] = Apollo.LoadForm(self.xmlDoc, "MessagesContainer", nil, self)
 
   for name,wnd in next, wnds do
+    wnd:SetTextColor('00000000')
+    wnd:SetText(Locale[wnd:GetText()])
     Event_FireGenericEvent('WindowManagementAdd', {
       wnd = wnd,
       strName = "DruseraBossMods: " .. name,

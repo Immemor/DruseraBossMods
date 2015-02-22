@@ -148,3 +148,11 @@ L["VOLATILITY_LATTICE"] = "Volatility Lattice"
 L["LIMBO_INFOMATRIX"] = "Limbo Infomatrix"
 ------ Encounter: Avatus
 L["AVATUS"] = "Avatus"
+
+
+------- Graphic User Interface
+L["HEALTH_BARS"] = "Health bars"
+L["HIGHLIGHT_TIMERS"] = "Highlight Timers"
+L["TIMER_BARS"] = "Timers"
+L["HIGHLIGHT_MESSAGES"] = "Highlight Messages"
+L["MESSAGES"] = "Messages"
