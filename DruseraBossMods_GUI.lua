@@ -121,21 +121,26 @@ function DruseraBossMods:OnToggleFightHistory()
   end
 end
 
+function DruseraBossMods:OnEndOfTest(data)
+  DruseraBossMods:HUDRemoveHealthBar(GameLib.GetPlayerUnit():GetId())
+end
+
 function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
-  n = math.random(40)
-  c = math.random(5)
-  local color = {"red", "green", "yellow","xkcdBrightPurple", "blue"}
-  local m = 0
-  for _,loc in next, Locale do
-    m = m + 1
-    if m == n then
-      self:HUDCreateTimerBar({
-        sLabel = loc,
-        nDuration = math.random(10, 40),
-      }, { color = color[c], })
-      break
-    end
-  end
+  local tPlayerUnit = GameLib.GetPlayerUnit()
+  self:HUDCreateHealthBar({
+    tUnit = tPlayerUnit,
+    nId = tPlayerUnit:GetId(),
+    sLabel = tPlayerUnit:GetName(),
+  })
+  self:HUDCreateTimerBar({
+    sLabel = Locale["END_OF_TEST"],
+    nDuration = 50,
+    fCallback = self.OnEndOfTest,
+  }, nil)
+  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_4"], nDuration = 40}, nil)
+  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_2"], nDuration = 20}, nil)
+  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_3"], nDuration = 30}, nil)
+  self:HUDCreateTimerBar({sLabel = Locale["THIS_SHOULD_BE_1"], nDuration = 10}, nil)
 end
 
 function DruseraBossMods:OnToggleAnchorLock(wndHandler, wndControl, eMouseButton)

@@ -57,7 +57,7 @@ local function HUDUpdateHealthBar(nId)
   end
 end
 
-local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, nId, tOptions)
+local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_data, nId, tOptions)
   local nCurrentTime = GetGameTime()
   if nEndTime > nCurrentTime then
     local nRemaining = nEndTime - nCurrentTime
@@ -70,6 +70,7 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, nId, tOpti
       nEndTime = nEndTime,
       -- Data to return on time out.
       fCallback = fCallback,
+      tCallback_data = tCallback_data,
       nId = nId,
       -- Windows objects.
       wndParent = wndParent,
@@ -180,7 +181,8 @@ function DruseraBossMods:_HUDMoveTimerBar(i)
   if TimerBar then
     self:HUDRemoveTimerBar(i)
     CreateTimerBar(TimerBar.nEndTime, TimerBar.sLabel,
-                   THRESHOLD_HIGHLIGHT_TIMERS, TimerBar.fCallback,
+                   THRESHOLD_HIGHLIGHT_TIMERS,
+                   TimerBar.fCallback, TimerBar.tCallback_data,
                    TimerBar.nId, nil)
   end
 end
@@ -199,7 +201,8 @@ function DruseraBossMods:HUDCreateTimerBar(tTimer, tOptions)
   -- If the nDuration is 0, the timer is destroyed.
   if nEndTime > nCurrentTime then
     CreateTimerBar(nEndTime, sLabel, tTimer.nDuration,
-                   tTimer.fCallback, tTimer.nId, tOptions)
+                   tTimer.fCallback, tTimer.tCallback_data,
+                   tTimer.nId, tOptions)
   end
 end
 
@@ -244,7 +247,7 @@ function DruseraBossMods:OnHUDProcess()
       end
     else
       if TimerBar.fCallback then
-        table.insert(Timeout, {TimerBar.fCallback, TimerBar.nId})
+        table.insert(Timeout, {TimerBar.fCallback, TimerBar.tCallback_data})
       end
       self:HUDRemoveTimerBar(i)
     end
@@ -253,10 +256,11 @@ function DruseraBossMods:OnHUDProcess()
     HUDUpdateHealthBar(HealthBar.nId)
   end
   -- Provide all timers with callback to CombatManager.
-  if next(Timeout) ~= nil then
-    self:OnTimerTimeout(Timeout)
+  for _, TimerBar in next, Timeout do
+    TimerBar[1](self, TimerBar[2])
   end
   -- Be careful, stop the timer only after callbacks.
+  -- Because a callback can add timer bars or health bars.
   if next(_TimerBars) == nil and next(_HealthBars) == nil then
     _UpdateHUDTimer:Stop()
     bTimerRunning = false

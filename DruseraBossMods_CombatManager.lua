@@ -110,10 +110,10 @@ end
 ------------------------------------------------------------------------------
 -- Handlers for CombatInterface.lua and timers.
 ------------------------------------------------------------------------------
-function DruseraBossMods:OnTimerTimeout(tTimeOutBars)
-  for _, obj in next, tTimeOutBars do
-    local fCallback = obj[1]
-    local nId = obj[2]
+function DruseraBossMods:OnTimerTimeout(data)
+  if data then
+    local nId = data[1]
+    local fCallback = data[2]
     if fCallback and nId then
       local FoeUnit = tFoesUnits[nId]
       if FoeUnit and FoeUnit.tUnit:IsValid() then
@@ -333,8 +333,9 @@ function DruseraBossMods:SetTimerAlert(FoeUnit, strKey, duration, fCallback)
   self:HUDCreateTimerBar({
     sLabel = sLabel,
     nDuration = duration,
-    fCallback = fCallback,
     nId = FoeUnit.nId,
+    fCallback = self.OnTimerTimeout,
+    tCallback_data = {FoeUnit.nId, fCallback},
   }, tOptions)
 end
 
