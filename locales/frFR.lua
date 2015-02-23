@@ -10,16 +10,11 @@
 ------------------------------------------------------------------------------
 -- Be careful with Apollo editor from carbine, this last don't manage UTF-8.
 -- And the game expected UTF-8 string. I recommend Notepad++ for lua or vim.
---
--- And sometimes a dev from carbine have inserted some no-break-space, for
--- fun.
 ------------------------------------------------------------------------------
 
 local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
 local L = GeminiLocale:NewLocale("DruseraBossMods", "frFR")
 if not L then return end
-
-local NO_BREAK_SPACE = string.char(194, 160)
 
 ------------------------------------------------------------------------------
 -- French / Francais.
@@ -105,8 +100,8 @@ L["HALLS_OF_THE_INFINITE_MIND"] = "Salles de l'Esprit infini"
 L["QUANTUM_VORTEX"] = "Vortex quantique"
 ------ Encounter: System Daemon
 L["SYSTEM_DAEMON"] = "Système Daemon"
-L["NULL_SYSTEM_DAEMON"] = "Daemon" .. NO_BREAK_SPACE .. "1.0"
-L["BINARY_SYSTEM_DAEMON"] = "Daemon" .. NO_BREAK_SPACE .. "2.0"
+L["NULL_SYSTEM_DAEMON"] = "Daemon 1.0"
+L["BINARY_SYSTEM_DAEMON"] = "Daemon 2.0"
 L["DEFRAGMENTATION_UNIT"] = "Unité de défragmentation"
 L["RADIATION_DISPERSION_UNIT"] = "Unité de dispersion de radiations"
 L["PURGE"] = "Purge"

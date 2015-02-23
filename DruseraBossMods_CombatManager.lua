@@ -32,6 +32,7 @@ local GetGameTime = GameLib.GetGameTime
 -- Constants.
 ------------------------------------------------------------------------------
 local UPDATE_HUD_FREQUENCY = 10 -- in Hertz.
+local NO_BREAK_SPACE = string.char(194, 160)
 
 ------------------------------------------------------------------------------
 -- Working variables.
@@ -50,7 +51,7 @@ local function Add2FightHistory(sText, nId, sName, tExtraInfo)
   if not sName and nId then
     tUnit = GameLib.GetUnitById(nId)
     if tUnit then
-      sName = tUnit:GetName()
+      sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
     end
   end
   table.insert(tFightHistory, {sText, GetGameTime(), nId, sName, tExtraInfo})
@@ -129,7 +130,7 @@ function DruseraBossMods:OnUnitInCombat(sUnitType, tUnit)
     self:ManagerStart()
   elseif sUnitType == "Foe" then
     local nId = tUnit:GetId()
-    local sName = tUnit:GetName()
+    local sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
     tFoesUnits[nId] = setmetatable({
       tUnit = tUnit,
       sName = sName,

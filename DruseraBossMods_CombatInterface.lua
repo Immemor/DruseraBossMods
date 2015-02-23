@@ -35,6 +35,7 @@ local next = next
 local SCAN_PERIOD = 0.1 -- in seconds.
 local CHANNEL_NPCSAY = ChatSystemLib.ChatChannel_NPCSay
 local CHANNEL_DATACHRON = ChatSystemLib.ChatChannel_Datachron
+local NO_BREAK_SPACE = string.char(194, 160)
 
 ------------------------------------------------------------------------------
 -- Counters of tracking events.
@@ -110,6 +111,10 @@ end
 function DruseraBossMods:OnChatMessage(tChannelCurrent, tMessage)
   local ChannelType = tChannelCurrent:GetType()
   local sMessage = tMessage.arMessageSegments[1].strText
+
+  -- Sometimes Carbine have inserted some no-break-space, for fun.
+  -- Behavior seen with french language.
+  sMessage = string.gsub(sMessage, NO_BREAK_SPACE, " ")
 
   if CHANNEL_NPCSAY == ChannelType then
     self:OnNPCSay(sMessage)
