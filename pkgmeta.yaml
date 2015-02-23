@@ -3,6 +3,3 @@ externals:
         url: https://github.com/wildstarnasa/GeminiLocale.git
     libs/GeminiDB:
         url: https://github.com/wildstarnasa/GeminiDB.git
-
-ignore:
-  - encounters/TEST
