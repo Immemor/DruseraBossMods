@@ -59,6 +59,11 @@ end
 function Gloomclaw:OnStartCombat()
   nSection = 2
   DBM:SetCastStartAlert(self, "RUPTURE", function(self)
+    DBM:SetMessage({
+      sLabel = "INTERRUPT_THIS_CAST",
+      nDuration = 3,
+      bHighlight = true,
+    })
     DBM:SetTimerAlert(self, "RUPTURE", 43, nil)
   end)
   DBM:SetDatachronAlert(self, "DATACHRON_GLOOMCLAW_IS_REDUCED", function(self)
