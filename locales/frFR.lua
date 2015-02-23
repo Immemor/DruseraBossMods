@@ -129,15 +129,15 @@ L["TERRAFORMATION"] = "Terra-forme"
 L["LOGIC_GUIDED_ROCKSLIDE"] = "Éboulement guidé par la logique"
 ------ Encounter: Gloomclaw
 L["GLOOMCLAW"] = "Serrenox"
-L["CORRUPTED_RAVAGER"] = "Ravageur Corrompu" --XXX to check
-L["EMPOWERED_RAVAGER"] = "Ravageur Surpuissant" --XXX to check
+L["CORRUPTED_RAVAGER"] = "Ravageur corrompu"
+L["EMPOWERED_RAVAGER"] = "Ravageur renforcé"
 L["RUPTURE"] = "Rupture"
 L["DATACHRON_GLOOMCLAW_IS_REDUCED"] = "Serrenox a été affaibli !"
 L["DATACHRON_GLOOMCLAW_IS_PUSHED_BACK"] = "Serrenox est repoussé par la purification des essences !"
-L["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche pour corrompre davantage essences !"
+L["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche pour corrompre davantage d'essences !"
 L["GLOOMCLAW_IS_PUSHED_BACK"] = "Serrenox est repoussé"
 L["GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche"
-L["CORRUPTING_RAYS"] = "Rayons Corrompus" --XXX to check
+L["CORRUPTING_RAYS"] = "Rayons de corruption"
 L["INTERRUPT_CORRUPTING_RAYS"] = "Coupez: Rayons Corrompus !"
 ------ Encounter: Maelstrom Authority
 L["MAELSTROM_AUTHORITY"] = "Contrôleur du Maelstrom"

@@ -16,7 +16,7 @@ local GetPlayerUnit = GameLib.GetPlayerUnit
 local Gloomclaw = {}
 local CorruptedRavager = {}
 local EmpoweredRavager = {}
-local nSection = 1
+local nSection = 2
 
 ------------------------------------------------------------------------------
 -- Extra functions.
@@ -57,7 +57,7 @@ end
 -- OnStartCombat function.
 ------------------------------------------------------------------------------
 function Gloomclaw:OnStartCombat()
-  nSection = 1
+  nSection = 2
   DBM:SetCastStartAlert(self, "RUPTURE", function(self)
     DBM:SetTimerAlert(self, "RUPTURE", 43, nil)
   end)
@@ -67,12 +67,12 @@ function Gloomclaw:OnStartCombat()
   DBM:SetDatachronAlert(self, "DATACHRON_GLOOMCLAW_IS_PUSHED_BACK", function(self)
     DBM:ClearAllTimerAlert()
     nSection = nSection + 1
-    DBM:SetTimerAlert(self, "GLOOMCLAW_IS_PUSHED_BACK", 9, NewSection)
+    DBM:SetTimerAlert(self, "GLOOMCLAW_IS_PUSHED_BACK", 10, NewSection)
   end)
   DBM:SetDatachronAlert(self, "DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD", function(self)
     DBM:ClearAllTimerAlert()
     nSection = nSection - 1
-    DBM:SetTimerAlert(self, "GLOOMCLAW_IS_MOVING_FORWARD", 10, NewSection)
+    DBM:SetTimerAlert(self, "GLOOMCLAW_IS_MOVING_FORWARD", 3, NewSection)
   end)
 
   NewSection(self)
@@ -101,7 +101,7 @@ do
   }, {
     GLOOMCLAW = {
       BarsCustom = {
-        RUPTURE = { color = "xkcdBrightRed" },
+        RUPTURE = { color = "xkcdBrightOrange" },
         NEXT_ADD_WAVE = { color = "xkcdBrightGreen" }
       },
     },
