@@ -136,6 +136,16 @@ function DruseraBossMods:HUDInit()
   wnds["Messages"] = Apollo.LoadForm(self.xmlDoc, "MessagesContainer", nil, self)
 
   for name,wnd in next, wnds do
+    wnd:SetText(Locale[wnd:GetText()])
+  end
+  _UpdateHUDTimer = ApolloTimer.Create(HUD_UPDATE_PERIOD, true,
+                                       "OnHUDProcess", self)
+  _UpdateHUDTimer:Stop()
+  bTimerRunning = false
+end
+
+function DruseraBossMods:HUDWindowsManagementAdd()
+  for name,wnd in next, wnds do
     Event_FireGenericEvent('WindowManagementAdd', {
       wnd = wnd,
       strName = "DruseraBossMods: " .. name,
@@ -144,12 +154,7 @@ function DruseraBossMods:HUDInit()
     wnd:SetStyle("Sizable", false);
     wnd:SetStyle("IgnoreMouse", true);
     wnd:SetTextColor('00000000')
-    wnd:SetText(Locale[wnd:GetText()])
   end
-  _UpdateHUDTimer = ApolloTimer.Create(HUD_UPDATE_PERIOD, true,
-                                       "OnHUDProcess", self)
-  _UpdateHUDTimer:Stop()
-  bTimerRunning = false
 end
 
 function DruseraBossMods:HUDCreateHealthBar(tHealth, tOptions)

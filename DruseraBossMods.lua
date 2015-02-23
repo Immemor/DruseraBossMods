@@ -22,6 +22,7 @@ require "Apollo"
 local DruseraBossMods = {}
 local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
 local Locale = GeminiLocale:GetLocale("DruseraBossMods")
+local defaults = {}
 
 function DruseraBossMods:new(o)
   o = o or {}
@@ -32,12 +33,11 @@ function DruseraBossMods:new(o)
 end
 
 function DruseraBossMods:Init()
-  local bHasConfigureFunction = true
+  local bHasConfigureFunction = false
   local strConfigureButtonText = "DruseraBossMods"
   local tDependencies = {}
-  Apollo.RegisterAddon(self, bHasConfigureFunction,
-    strConfigureButtonText, tDependencies)
-  self.db = Apollo.GetPackage("Gemini:DB-1.0").tPackage:New(self)
+  Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
+  self.db = Apollo.GetPackage("Gemini:DB-1.0").tPackage:New(self, defaults)
 end
 
 function DruseraBossMods:OnLoad()
@@ -50,33 +50,19 @@ end
 -- DruseraBossMods OnDocLoaded
 ------------------------------------------------------------------------------
 function DruseraBossMods:OnDocLoaded()
-  if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
-    Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded",
-                                "OnInterfaceMenuListHasLoaded", self)
-  end
-end
+  if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 
-function DruseraBossMods:OnConfigure(strCommand, strParam)
-  self:OnToggleMainGUI()
-end
-
-function DruseraBossMods:OnInterfaceMenuListHasLoaded()
+  Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
   -- From highest layer to lowest layer.
   self:GUIInit()
   self:HUDInit()
   self:CombatManagerInit()
   self:InterfaceInit()
-
-  self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
-  self.db.RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
-  self.db.RegisterCallback(self, "OnProfileReset", "RefreshConfig")
-  self:RefreshConfig()
-
-  -- Send signal.
-  Event_FireGenericEvent("InterfaceMenuList_NewAddOn", "DruseraBossMods", {"OnToggleMainGUI", "", ""})
 end
 
-function DruseraBossMods:RefreshConfig()
+function DruseraBossMods:OnWindowManagementReady()
+  self:GUIWindowsManagementAdd()
+  self:HUDWindowsManagementAdd()
 end
 
 function DruseraBossMods:RegisterEncounter(
