@@ -70,7 +70,7 @@ local function HUDUpdateHealthBar(nId)
         HealthBar.wndCastBar:Show(false)
       end
     else
-      DruseraBossMods:OnUnitNotValid(nId)
+      DruseraBossMods:OnInvalidUnit(nId)
     end
   end
 end
