@@ -86,6 +86,7 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_
       sLabel = sLabel,
       nDuration = nDuration,
       nEndTime = nEndTime,
+      tOptions = tOptions,
       -- Data to return on time out.
       fCallback = fCallback,
       tCallback_data = tCallback_data,
@@ -104,11 +105,11 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_
     TimerBar.wndLabel:SetText(sLabel)
     TimerBar.wndTimeLeft:SetText(string.format("%.1fs", nRemaining))
     if wndParent == wnds["HighlightTimers"] then
-      TimerBar.wndProgressBar:SetBarColor("red")
       TimerBar.wndLabel:SetFont("CRB_Interface12_B")
       TimerBar.wndTimeLeft:SetFont("CRB_Interface12_B")
       TimerBar.wndFrame:SetAnchorOffsets(0,0,0,30)
-    elseif tOptions then
+    end
+    if tOptions then
       if tOptions.color then
         TimerBar.wndProgressBar:SetBarColor(tOptions.color)
       end
@@ -213,7 +214,7 @@ function DruseraBossMods:_HUDMoveTimerBar(i)
     CreateTimerBar(TimerBar.nEndTime, TimerBar.sLabel,
                    THRESHOLD_HIGHLIGHT_TIMERS,
                    TimerBar.fCallback, TimerBar.tCallback_data,
-                   TimerBar.nId, nil)
+                   TimerBar.nId, TimerBar.tOptions)
   end
 end
 

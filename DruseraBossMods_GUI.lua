@@ -149,7 +149,7 @@ function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
     fCallback = function(self)
       self:HUDCreateMessage({sLabel = Locale["ARE_YOU_READY"]})
     end
-  }, nil)
+  }, { color = "xkcdBrightOrange"})
   self:HUDCreateTimerBar({
     sLabel = Locale["THIS_SHOULD_BE_3"],
     nDuration = 20,
@@ -160,7 +160,7 @@ function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
         nDuration=3
       })
     end
-  }, nil)
+  }, { color = "xkcdBrightYellow"})
   self:HUDCreateTimerBar({
     sLabel = Locale["THIS_SHOULD_BE_1"],
     nDuration = 6,
