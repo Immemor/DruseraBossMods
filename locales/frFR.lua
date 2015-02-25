@@ -44,7 +44,7 @@ L["RUN"] = "Run!"
 L["MSG_SMALL_BOMB"] = "Petite bombe! Allez au bord!"
 L["MSG_BIG_BOMB"] = "Grosse bombe! Sautez!"
 ------ Encounter: Kuralak the Defiler
-L["KURALAK_THE_DEFILER"] = "Kuralak le Profanateur"
+L["KURALAK_THE_DEFILER"] = "Kuralak la Profanatrice"
 L["CULTIVATE_CORRUPTION"] = "Nourrir la corruption"
 L["CHROMOSOME_CORRUPTION"] = "Corruption chromosomique"
 L["OUTBREAK"] = "Invasion"
