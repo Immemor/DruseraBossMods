@@ -69,10 +69,11 @@ end
 function DruseraBossMods:OnEnteredCombat(tUnit, bInCombat)
   local nId = tUnit:GetId()
   local sUnitType = nil
+  local sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
 
   if nId == GetPlayerUnit():GetId() then
     sUnitType = "Player"
-  elseif tFilterUnit[tUnit:GetName()] then
+  elseif tFilterUnit[sName] then
     sUnitType = "Foe"
   elseif tUnit:IsInYourGroup() then
     -- Be careful, player is also in the group.
