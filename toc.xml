@@ -16,7 +16,7 @@
     <Script Name="DruseraBossMods_CombatManager.lua"/>
     <Script Name="DruseraBossMods_HUD.lua"/>
     <Script Name="DruseraBossMods_GUI.lua"/>
-    <!-- Encounters:Genetic Archives -->
+    <!-- Encounters -->
     <Script Name="encounters\TEST\test.lua"/>
     <Script Name="encounters\GA\ExperimentX89.lua"/>
     <Script Name="encounters\GA\Kuralak.lua"/>

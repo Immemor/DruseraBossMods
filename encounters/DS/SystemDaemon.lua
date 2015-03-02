@@ -19,6 +19,7 @@ local RadiationDispersionUnit = {}
 -- Extra functions.
 ------------------------------------------------------------------------------
 function NewAddWave(self)
+  DBM:PlaySound("Info")
   DBM:SetTimerAlert(self, "NEXT_ADD_WAVE", 50, NewAddWave)
   DBM:SetTimerAlert(self, "PROBE_1", 10, function(self)
     DBM:SetTimerAlert(self, "PROBE_2", 10, function(self)
@@ -31,6 +32,7 @@ end
 -- OnStartCombat functions.
 ------------------------------------------------------------------------------
 function BinarySystemDaemon:OnStartCombat()
+  DBM:CreateHealthBar(self, "NORTH_DAEMON")
   -- Next disconnect.
   DBM:SetCastSuccessAlert(self, "DISCONNECT",
   function(self)
@@ -53,6 +55,7 @@ function BinarySystemDaemon:OnStartCombat()
 end
 
 function NullSystemDaemon:OnStartCombat()
+  DBM:CreateHealthBar(self, "SOUTH_DAEMON")
   -- Next disconnect event.
   DBM:SetCastSuccessAlert(self, "DISCONNECT",
   function(self)
@@ -69,30 +72,32 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "DATASCAPE",
-    EncounterName = "SYSTEM_DAEMON",
-    ZoneName = "HALLS_OF_THE_INFINITE_MIND",
-  },{
-    BINARY_SYSTEM_DAEMON = BinarySystemDaemon, --North boss
-    NULL_SYSTEM_DAEMON = NullSystemDaemon, -- South boss
-    DEFRAGMENTATION_UNIT = DefragmentationUnit, -- Miniboss
-    RADIATION_DISPERSION_UNIT = RadiationDispersionUnit, -- Miniboss
-  },{
-    BINARY_SYSTEM_DAEMON = {
-      DisplayName = "NORTH_DAEMON",
-      BarsCustom = {
-        NEXT_DISCONNECT = { color = "xkcdBrightPurple" },
-        NEXT_ADD_WAVE = { color = "xkcdBrightOrange" },
-        PROBE_1 = { color = "xkcdBrightYellow" },
-        PROBE_2 = { color = "xkcdBrightYellow" },
-        PROBE_3 = { color = "xkcdBrightYellow" },
-        SOUTH_PURGE_NEXT = { color = "xkcdBrightGreen" },
-      },
+    nZoneMapParentId = 98,
+    nZoneMapId = 105,
+    sEncounterName = "SYSTEM_DAEMON",
+    tTriggerNames = { "BINARY_SYSTEM_DAEMON", "NULL_SYSTEM_DAEMON" },
+    tUnits = {
+      BINARY_SYSTEM_DAEMON = BinarySystemDaemon, --North boss
+      NULL_SYSTEM_DAEMON = NullSystemDaemon, -- South boss
+      DEFRAGMENTATION_UNIT = DefragmentationUnit, -- Miniboss
+      RADIATION_DISPERSION_UNIT = RadiationDispersionUnit, -- Miniboss
     },
-    NULL_SYSTEM_DAEMON = {
-      DisplayName = "SOUTH_DAEMON",
-      BarsCustom = {
-        NORTH_PURGE_NEXT = { color = "xkcdBrightGreen" },
+    tCustom = {
+      BINARY_SYSTEM_DAEMON = {
+        BarsCustom = {
+          NEXT_DISCONNECT = { color = "xkcdBrightPurple" },
+          NEXT_ADD_WAVE = { color = "xkcdBrightOrange" },
+          PROBE_1 = { color = "xkcdBrightYellow" },
+          PROBE_2 = { color = "xkcdBrightYellow" },
+          PROBE_3 = { color = "xkcdBrightYellow" },
+          SOUTH_PURGE_NEXT = { color = "xkcdBrightGreen" },
+        },
+      },
+      NULL_SYSTEM_DAEMON = {
+        BarsCustom = {
+          NEXT_DISCONNECT = { color = "xkcdBrightPurple" },
+          NORTH_PURGE_NEXT = { color = "xkcdBrightGreen" },
+        },
       },
     },
   })

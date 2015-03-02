@@ -32,6 +32,7 @@ end
 -- OnStartCombat functions.
 ------------------------------------------------------------------------------
 function CrimsonSpiderbot:OnStartCombat()
+  DBM:CreateHealthBar(self, "MAELSTROM_AUTHORITY")
   my_var = 3
   DBM:SetCastStartAlert(self, "PHASER_COMBO", function(self)
     DBM:SetTimerAlert(self, "INTERRUPT_THIS_CAST", my_var, nil)
@@ -41,12 +42,6 @@ function CrimsonSpiderbot:OnStartCombat()
   end)
   DBM:SetCastFailedAlert(self, "PHASER_COMBO", OnPhaseComboFailed)
 
-  -- Fake datachron registering.
-  DBM:SetDatachronAlert(self, "COMMENCING_ENHANCEMENT_SEQUENCE",
-  function(self)
-    DBM:SetTimerAlert(self, "NEXT_DISCONNECT", 87, nil)
-  end)
-
   DBM:SetTimerAlert(self, "NEXT_DISCONNECT", 120, nil)
 end
 
@@ -55,21 +50,23 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "GALERAS",
-    EncounterName = "CRIMSON_SPIDERBOT",
-    ZoneName = "GALERAS",
-  },{
-    -- This mob is close Thayd.
-    CRIMSON_SPIDERBOT = CrimsonSpiderbot,
-  },{
-    CRIMSON_SPIDERBOT = {
-      DisplayName = "MAELSTROM_AUTHORITY",
-      BarsCustom = {
-        INTERRUPT_THIS_CAST = { color = "red" },
-        THIS_SHOULD_BE_1 = { color = "green" },
-        THIS_SHOULD_BE_2 = { color = "xkcdBrightOrange" },
-        THIS_SHOULD_BE_3 = { color = "yellow" },
-        THIS_SHOULD_BE_4 = { color = "xkcdBrightPurple" },
+    nZoneMapParentId = 0,
+    nZoneMapId = 16,
+    sEncounterName = "CRIMSON_SPIDERBOT",
+    tTriggerNames = {"CRIMSON_SPIDERBOT", },
+    tUnits = {
+      -- All units allow to be tracked.
+      CRIMSON_SPIDERBOT = CrimsonSpiderbot,
+    },
+    tCustom = {
+      CRIMSON_SPIDERBOT = {
+        BarsCustom = {
+          INTERRUPT_THIS_CAST = { color = "red" },
+          THIS_SHOULD_BE_1 = { color = "green" },
+          THIS_SHOULD_BE_2 = { color = "xkcdBrightOrange" },
+          THIS_SHOULD_BE_3 = { color = "yellow" },
+          THIS_SHOULD_BE_4 = { color = "xkcdBrightPurple" },
+        },
       },
     },
   })

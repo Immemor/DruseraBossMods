@@ -8,14 +8,15 @@
 -- Server Name: Jabbit(EU)
 ------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
--- Constants.
-------------------------------------------------------------------------------
 local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
 local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
 local Locale = GeminiLocale:GetLocale("DruseraBossMods")
 local next = next
 local GetGameTime = GameLib.GetGameTime
+
+------------------------------------------------------------------------------
+-- Constants.
+------------------------------------------------------------------------------
 local HUD_UPDATE_PERIOD = 0.1
 local THRESHOLD_HIGHLIGHT_TIMERS = 6.0
 local DEFAULT_FADEOFF_MESSAGE = 6.0
@@ -27,10 +28,9 @@ local AUTOFADE_TIMING = 0.5
 local _TimerBars = {}
 local _HealthBars = {}
 local _MessagesBars = {}
-local bTimerRunning = false
-local bLock = true
-local wnds = {}
-_G['dd'] = wnds
+local _bTimerRunning = false
+local _bLock = true
+local _wnds = {}
 
 ------------------------------------------------------------------------------
 -- Local functions.
@@ -69,8 +69,6 @@ local function HUDUpdateHealthBar(nId)
         HealthBar.wndShortHealth:Show(true)
         HealthBar.wndCastBar:Show(false)
       end
-    else
-      DruseraBossMods:OnInvalidUnit(nId)
     end
   end
 end
@@ -79,7 +77,7 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_
   local nCurrentTime = GetGameTime()
   if nEndTime > nCurrentTime then
     local nRemaining = nEndTime - nCurrentTime
-    local wndParent = nRemaining >= THRESHOLD_HIGHLIGHT_TIMERS and wnds["Timers"] or wnds["HighlightTimers"]
+    local wndParent = nRemaining >= THRESHOLD_HIGHLIGHT_TIMERS and _wnds["Timers"] or _wnds["HighlightTimers"]
     local wndFrame = Apollo.LoadForm(DruseraBossMods.xmlDoc, "TimerTemplate", wndParent, DruseraBossMods)
     local TimerBar = {
       -- About timer itself.
@@ -104,7 +102,7 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_
     TimerBar.wndProgressBar:SetProgress(nRemaining)
     TimerBar.wndLabel:SetText(sLabel)
     TimerBar.wndTimeLeft:SetText(string.format("%.1fs", nRemaining))
-    if wndParent == wnds["HighlightTimers"] then
+    if wndParent == _wnds["HighlightTimers"] then
       TimerBar.wndLabel:SetFont("CRB_Interface12_B")
       TimerBar.wndTimeLeft:SetFont("CRB_Interface12_B")
       TimerBar.wndFrame:SetAnchorOffsets(0,0,0,30)
@@ -117,9 +115,9 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_
     wndParent:ArrangeChildrenVert(
     Window.CodeEnumArrangeOrigin.LeftOrTop,
     SortContentByTime)
-    if not bTimerRunning then
+    if not _bTimerRunning then
       _UpdateHUDTimer:Start()
-      bTimerRunning = true
+      _bTimerRunning = true
     end
   end
 end
@@ -130,23 +128,23 @@ end
 ------------------------------------------------------------------------------
 function DruseraBossMods:HUDInit()
   -- Create containers
-  wnds["Healths"] = Apollo.LoadForm(self.xmlDoc, "HealthsContainer", nil, self)
-  wnds["HighlightTimers"] = Apollo.LoadForm(self.xmlDoc, "HighlightTimersContainer", nil, self)
-  wnds["Timers"] = Apollo.LoadForm(self.xmlDoc, "TimersContainer", nil, self)
-  wnds["HighlightMessages"] = Apollo.LoadForm(self.xmlDoc, "HighlightMessagesContainer", nil, self)
-  wnds["Messages"] = Apollo.LoadForm(self.xmlDoc, "MessagesContainer", nil, self)
+  _wnds["Healths"] = Apollo.LoadForm(self.xmlDoc, "HealthsContainer", nil, self)
+  _wnds["HighlightTimers"] = Apollo.LoadForm(self.xmlDoc, "HighlightTimersContainer", nil, self)
+  _wnds["Timers"] = Apollo.LoadForm(self.xmlDoc, "TimersContainer", nil, self)
+  _wnds["HighlightMessages"] = Apollo.LoadForm(self.xmlDoc, "HighlightMessagesContainer", nil, self)
+  _wnds["Messages"] = Apollo.LoadForm(self.xmlDoc, "MessagesContainer", nil, self)
 
-  for name,wnd in next, wnds do
+  for name,wnd in next, _wnds do
     wnd:SetText(Locale[wnd:GetText()])
   end
   _UpdateHUDTimer = ApolloTimer.Create(HUD_UPDATE_PERIOD, true,
                                        "OnHUDProcess", self)
   _UpdateHUDTimer:Stop()
-  bTimerRunning = false
+  _bTimerRunning = false
 end
 
 function DruseraBossMods:HUDWindowsManagementAdd()
-  for name,wnd in next, wnds do
+  for name,wnd in next, _wnds do
     Event_FireGenericEvent('WindowManagementAdd', {
       wnd = wnd,
       strName = "DruseraBossMods: " .. name,
@@ -161,7 +159,7 @@ end
 function DruseraBossMods:HUDCreateHealthBar(tHealth, tOptions)
   if not _HealthBars[tHealth.nId] and tHealth.tUnit:IsValid() then
     local tUnit = tHealth.tUnit
-    local wndParent = wnds["Healths"]
+    local wndParent = _wnds["Healths"]
     local wndFrame = Apollo.LoadForm(self.xmlDoc, "HealthTemplate", wndParent, self)
     HealthBar = {
       sLabel = tHealth.sLabel,
@@ -189,9 +187,9 @@ function DruseraBossMods:HUDCreateHealthBar(tHealth, tOptions)
     wndParent:ArrangeChildrenVert(
       Window.CodeEnumArrangeOrigin.LeftOrTop,
       SortContentByTime)
-    if not bTimerRunning then
+    if not _bTimerRunning then
       _UpdateHUDTimer:Start()
-      bTimerRunning = true
+      _bTimerRunning = true
     end
   end
 end
@@ -269,7 +267,7 @@ function DruseraBossMods:HUDCreateMessage(tMessage)
   local nCurrentTime = GetGameTime()
   local nEndTime = nCurrentTime + nDuration
   local bHighlight = tMessage.bHighlight or false
-  local wndParent = bHighlight and wnds["HighlightMessages"] or wnds["Messages"]
+  local wndParent = bHighlight and _wnds["HighlightMessages"] or _wnds["Messages"]
   local wndFrame = Apollo.LoadForm(self.xmlDoc, "MessageTemplate", wndParent, self)
 
   self:HUDRemoveMessage(sLabel)
@@ -296,9 +294,9 @@ function DruseraBossMods:HUDCreateMessage(tMessage)
     Window.CodeEnumArrangeOrigin.LeftOrTop,
     SortContentByTime)
 
-  if not bTimerRunning then
+  if not _bTimerRunning then
     _UpdateHUDTimer:Start()
-    bTimerRunning = true
+    _bTimerRunning = true
   end
 end
 
@@ -362,14 +360,14 @@ function DruseraBossMods:OnHUDProcess()
   -- Because a callback can add timer bars or health bars.
   if next(_TimerBars) == nil and next(_HealthBars) == nil and next(_MessagesBars) == nil then
     _UpdateHUDTimer:Stop()
-    bTimerRunning = false
+    _bTimerRunning = false
   end
 end
 
 function DruseraBossMods:HUDToggleAnchorLock()
-  if bLock then
-    bLock = false
-    for _, wnd in next, wnds do
+  if _bLock then
+    _bLock = false
+    for _, wnd in next, _wnds do
       wnd:SetBGColor('b0606060')
       wnd:SetTextColor('ffffffff')
       wnd:SetStyle("Moveable", true);
@@ -377,8 +375,8 @@ function DruseraBossMods:HUDToggleAnchorLock()
       wnd:SetStyle("IgnoreMouse", false);
     end
   else
-    bLock = true
-    for _, wnd in next, wnds do
+    _bLock = true
+    for _, wnd in next, _wnds do
       wnd:SetBGColor('00000000')
       wnd:SetTextColor('00000000')
       wnd:SetStyle("Moveable", false);

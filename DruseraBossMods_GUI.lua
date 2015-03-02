@@ -26,6 +26,7 @@ local GetGameTime = GameLib.GetGameTime
 local wndMainGUI = nil
 local wndFightHistory = nil
 local tAllFightHistory = {}
+local wnds = {}
 local n = 1
 
 ------------------------------------------------------------------------------
@@ -35,7 +36,7 @@ local n = 1
 -- Public functions.
 ------------------------------------------------------------------------------
 function DruseraBossMods:GUIInit()
-  wndMainGUI = Apollo.LoadForm(self.xmlDoc, "MainGUI", nil, self)
+  wndMainGUI = Apollo.LoadForm(self.xmlDoc, "DruseraBossMods", nil, self)
   wndMainGUI:Show(false)
   wndFightHistory = Apollo.LoadForm(self.xmlDoc, "FightHistory", nil, self)
   wndFightHistory:Show(false)
@@ -46,7 +47,8 @@ function DruseraBossMods:GUIInit()
 end
 
 function DruseraBossMods:GUIWindowsManagementAdd()
-  local wnds = {MainGui = wndMainGUI, FightHistory = wndFightHistory}
+  wnds["MainGui"] = wndMainGUI
+  wnds["FightHistory"] = wndFightHistory
   for name,wnd in next, wnds do
     Event_FireGenericEvent('WindowManagementAdd', {
       wnd = wnd,
@@ -122,7 +124,7 @@ function DruseraBossMods:OnToggleFightHistory()
   end
 end
 
-function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
+function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)
   local tPlayerUnit = GameLib.GetPlayerUnit()
   self:HUDCreateHealthBar({
     tUnit = tPlayerUnit,
@@ -170,6 +172,6 @@ function DruseraBossMods:OnTestBar(wndHandler, wndControl, eMouseButton)
   }, nil)
 end
 
-function DruseraBossMods:OnToggleAnchorLock(wndHandler, wndControl, eMouseButton)
+function DruseraBossMods:OnToggleAnchors(wndHandler, wndControl, eMouseButton)
   self:HUDToggleAnchorLock()
 end

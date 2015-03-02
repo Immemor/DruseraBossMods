@@ -17,12 +17,14 @@ require "GameLib"
 require "Apollo"
 
 ------------------------------------------------------------------------------
+-- Constantes
+------------------------------------------------------------------------------
+local DRUSERABOSSMODS_VERSION =  "0.14-alpha" -- "@project-version@"
+
+------------------------------------------------------------------------------
 -- Initialization
 ------------------------------------------------------------------------------
 local DruseraBossMods = {}
-local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
-local Locale = GeminiLocale:GetLocale("DruseraBossMods")
-local defaults = {}
 
 function DruseraBossMods:new(o)
   o = o or {}
@@ -33,11 +35,14 @@ function DruseraBossMods:new(o)
 end
 
 function DruseraBossMods:Init()
-  local bHasConfigureFunction = false
-  local strConfigureButtonText = "DruseraBossMods"
-  local tDependencies = {}
-  Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
-  self.db = Apollo.GetPackage("Gemini:DB-1.0").tPackage:New(self, defaults)
+  Apollo.RegisterAddon(self, false, "", {})
+  self.L = Apollo.GetPackage("Gemini:Locale-1.0").tPackage:GetLocale("DruseraBossMods")
+  self.db = Apollo.GetPackage("Gemini:DB-1.0").tPackage:New(self, {})
+end
+
+function DruseraBossMods:OnDependencyError(strDep, strError)
+  Print("OnDependencyError: " .. strDep .. "  " ..strError)
+  return false
 end
 
 function DruseraBossMods:OnLoad()
@@ -46,9 +51,6 @@ function DruseraBossMods:OnLoad()
   self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 end
 
-------------------------------------------------------------------------------
--- DruseraBossMods OnDocLoaded
-------------------------------------------------------------------------------
 function DruseraBossMods:OnDocLoaded()
   if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 
@@ -56,8 +58,7 @@ function DruseraBossMods:OnDocLoaded()
   -- From highest layer to lowest layer.
   self:GUIInit()
   self:HUDInit()
-  self:CombatManagerInit()
-  self:InterfaceInit()
+  self.CombatManager = self:CombatManagerInit()
 end
 
 function DruseraBossMods:OnWindowManagementReady()
@@ -65,42 +66,9 @@ function DruseraBossMods:OnWindowManagementReady()
   self:HUDWindowsManagementAdd()
 end
 
-function DruseraBossMods:RegisterEncounter(
-    tEncounterInfo, tUnitsInfo, tCustom)
-  local RaidName = Locale[tEncounterInfo.RaidName]
-  local EncounterName = Locale[tEncounterInfo.EncounterName]
-  local ZoneName = Locale[tEncounterInfo.ZoneName]
-
-  for sUnitName, tInfo in pairs(tUnitsInfo) do
-    local UnitName = Locale[sUnitName] or ""
-    tInfo.RaidName = RaidName
-    tInfo.EncounterName = EncounterName
-    tInfo.ZoneName = ZoneName
-    tInfo.DisplayName = UnitName
-    tInfo.bEnable = true
-    tInfo.BarsCustom = {}
-
-    if tCustom and tCustom[sUnitName] then
-      for key,rule in next, tCustom[sUnitName] do
-        if key == "DisplayName" then
-          tInfo.DisplayName = Locale[rule]
-        elseif key == "BarsCustom" then
-          for SpellName, options in next, rule do
-            local name = Locale[SpellName]
-            tInfo.BarsCustom[name] = options
-          end
-        end
-      end
-    end
-
-    self.DataBase[UnitName] = tInfo
-  end
-end
-
 ------------------------------------------------------------------------------
 -- DruseraBossMods Instance
 ------------------------------------------------------------------------------
-
 local DruseraBossModsInst = DruseraBossMods:new()
 DruseraBossModsInst:Init()
 -- For debugging purpose through GeminiConsole, quite useful.
