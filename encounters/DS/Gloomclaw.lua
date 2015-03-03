@@ -18,6 +18,7 @@ local Gloomclaw = {}
 local DangerousMobs = {}
 local InsignifiantMobs = {}
 
+local _FirstMove = true
 local _nSection = 2
 local _nWaveIndex = 0
 local _nLastPopMobsTime = 0
@@ -36,7 +37,8 @@ local _tWavePopTiming = {
 
 local function NewSection(self)
   _nWaveIndex = 0
-  DBM:SetTimerAlert(self, "RUPTURE", 33, nil)
+  local nFirstRupture = _nSection == 1 and 31 or 25
+  DBM:SetTimerAlert(self, "RUPTURE", nFirstRupture, nil)
 end
 
 ------------------------------------------------------------------------------
@@ -44,6 +46,7 @@ end
 ------------------------------------------------------------------------------
 function Gloomclaw:OnStartCombat()
   _GloomclawContext = self
+  _FirstMove = true
   _nSection = 2
   _nLastPopMobsTime = 0
   DBM:CreateHealthBar(self, "GLOOMCLAW")
@@ -67,10 +70,10 @@ function Gloomclaw:OnStartCombat()
   DBM:SetDatachronAlert(self, "DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD", function(self)
     DBM:ClearAllTimerAlert()
     _nSection = _nSection - 1
-    DBM:SetTimerAlert(self, "GLOOMCLAW_IS_MOVING_FORWARD", 3, NewSection)
+    local nMoveTiming = _FirstMove and 3 or 10
+    _FirstMove = false
+    DBM:SetTimerAlert(self, "GLOOMCLAW_IS_MOVING_FORWARD", nMoveTiming, NewSection)
   end)
-
-  NewSection(self)
 end
 
 function DangerousMobs:OnStartCombat()
@@ -100,7 +103,6 @@ function InsignifiantMobs:OnStartCombat()
       sLabel = "ADDS_WAVE",
       nDuration = 3,
     })
-    DBM:PlaySound("Info")
     if _nSection == 5 then
       if _nWaveIndex == 1 then
         DBM:SetTimerAlert(_GloomclawContext, "NEXT_ADD_WAVE", 20.5, nil)
