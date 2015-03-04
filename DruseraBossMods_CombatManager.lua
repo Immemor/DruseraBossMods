@@ -292,7 +292,9 @@ end
 
 function CombatManager:UnitDetected(tUnit, nId, sName)
   SearchAndAdd(nId, sName, false)
-  return _tFoes[nId] ~= nil
+  if _tFoes[nId] ~= nil then
+    _CombatInterface:TrackThisUnit(nId)
+  end
 end
 
 function CombatManager:UnitDestroyed(tUnit, nId, sName)
@@ -309,18 +311,20 @@ function CombatManager:UnitEnteringCombat(tUnit, nId, sName)
   else
     bExist = self:UnknownUnitInCombat(tUnit, nId, sName)
   end
-  return bExist
+  if not bExist then
+    _CombatInterface:UnTrackThisUnit(nId)
+  end
 end
 
 function CombatManager:UnknownUnitInCombat(tUnit, nId, sName)
   SearchAndAdd(nId, sName, true)
   local bExist = _tFoes[nId] ~= nil
   if bExist then
+    _CombatInterface:TrackThisUnit(nId)
     FoesStartCombat(nId)
   else
     Add2Logs("Foe ignored", nId)
   end
-  return bExist
 end
 
 function CombatManager:UnitDead(tUnit, nId, sName)
