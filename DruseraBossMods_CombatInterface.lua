@@ -53,7 +53,7 @@ local _bRunning = false
 local _bCheckMembers = false
 local _tScanTimer = nil
 local _tTrackedUnits = {}
-local _tMembersUnits = {}
+local _tMembers = {}
 local _tHandlers = {
   UnitCreated = "UnitCreated",
   UnitDestroyed = "UnitDestroyed",
@@ -110,18 +110,18 @@ local function Logs2Text(_tLogs)
   return tTextLog
 end
 
-local function GetHalfBuffs(tUnit)
-  local Buffs = tUnit:GetBuffs()
+local function GetAllBuffs(tUnit)
+  local tAllBuffs = tUnit:GetBuffs()
   local r = {}
-  -- Track only interresting buffs, and drop "normal" buff.
-  local eType = tUnit:IsACharacter() and "arHarmful" or "arBeneficial"
-  for _,obj in next, Buffs[eType] do
-    r[obj.idBuff] = {
-      eType = eType,
-      nCount = obj.nCount,
-      nIdBuff = obj.idBuff,
-      splEffect = obj.splEffect,
-    }
+  for sType, tBuffs in next, tAllBuffs do
+    r[sType] = {}
+    for _,obj in next, tBuffs do
+      r[sType][obj.idBuff] = {
+        nCount = obj.nCount,
+        nIdBuff = obj.idBuff,
+        splEffect = obj.splEffect,
+      }
+    end
   end
   return r
 end
@@ -130,9 +130,11 @@ local function TrackThisUnit(nId)
   local tUnit = GetUnitById(nId)
   if not _tTrackedUnits[nId] and tUnit then
     Add2Logs("TrackThisUnit", nId)
+    local tAllBuffs = GetAllBuffs(tUnit)
     _tTrackedUnits[nId] = {
       tUnit = tUnit,
-      tBuffs = GetHalfBuffs(tUnit),
+      tBuffs = tAllBuffs["arBeneficial"],
+      tDebuffs = {},
       tSpell = {
         bCasting = false,
         sCastName = "",
@@ -154,43 +156,91 @@ local function StopEncounter()
   Add2Logs("StopEncounter", nil)
   CombatInterface:Activate(false)
   _tTrackedUnits = {}
+  _tMembers = {}
   _tOldLogs = _tLogs
   _tLogs = {}
   _tCombatManager:StopEncounter()
 end
 
-local function ProcessBuffTracking(nId, data, sType)
-  local tOldBuffs = data.tBuffs
-  data.tBuffs = GetHalfBuffs(data.tUnit)
-  for i,tBuff in next, data.tBuffs do
-    if tOldBuffs[i] then
-      local old = tOldBuffs[i].nCount
-      local new = tBuff.nCount
-      if new ~= old then
-        Add2Logs("BuffUpdate", nId, tBuff.nIdBuff, old, new)
-        if sType == "Buffs" then
-          _tCombatManager:BuffUpdate(nId, tBuff.nIdBuff, old, new)
-        else
-          _tCombatManager:DebuffUpdate(nId, tBuff.nIdBuff, old, new)
+local function ProcessAllBuffs(tMyUnit)
+  local bProcessDebuffs = tMyUnit.tUnit:IsACharacter()
+  local bProcessBuffs = not bProcessDebuffs
+  local tAllBuffs = GetAllBuffs(tUnit)
+  local nId = tMyUnit.tUnit:GetId()
+
+  if bProcessDebuffs then
+    local tOldDebuffs = tMyUnit.tDebuffs
+    local tDebuffs = tAllBuffs["arHarmful"]
+    for nIdBuff,tDebuff in next, tDebuffs do
+      if tOldDebuffs[nIdBuff] then
+        tOldDebuffs[nIdBuff] = nil
+        local nNewStack = tDebuff.nCount
+        local nOldStack = tOldDebuffs[nIdBuff].nCount
+        if nNewStack ~= nOldStack then
+          tMyUnit.tDebuffs[nIdBuff].nCount = nNewStack
+          Add2Logs("DebuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
+          _tCombatManager:DebuffUpdate(nId, nIdBuff, nOldStack, nNewStack)
         end
-      end
-      tOldBuffs[i] = nil
-    else
-      Add2Logs("BuffAdd", nId, tBuff.nIdBuff, tBuff.nCount)
-      if sType == "Buffs" then
-        _tCombatManager:BuffAdd(nId, tBuff.nIdBuff, tBuff.nCount)
       else
-        _tCombatManager:DebuffAdd(nId, tBuff.nIdBuff, tBuff.nCount)
+        tMyUnit.tDebuffs[nIdBuff] = tDebuff
+        Add2Logs("DebuffAdd", nId, nIdBuff, tDebuff.nCount)
+        _tCombatManager:DebuffAdd(nId, nIdBuff, tDebuff.nCount)
+      end
+    end
+    for nIdBuff,tDebuff in next, tOldDebuffs do
+      if tMyUnit.tDebuffs[nIdBuff] then
+        tMyUnit.tDebuffs[nIdBuff] = nil
+        Add2Logs("DebuffRemove", nId, nIdBuff)
+        _tCombatManager:DebuffRemove(nId, nIdBuff)
       end
     end
   end
-  for _,tBuff in next, tOldBuffs do
-    tBuff.nCount = 0
-    Add2Logs("BuffRemove", nId, tBuff.nIdBuff)
-    if sType == "Buffs" then
-      _tCombatManager:BuffRemove(nId, tBuff.nIdBuff)
-    else
-      _tCombatManager:DebuffRemove(nId, tBuff.nIdBuff)
+  if bProcessBuffs then
+    local tOldBuffs = tMyUnit.tBuffs
+    local tBuffs = tAllBuffs["arBeneficial"]
+    for nIdBuff,tBuff in next, tBuffs do
+      if tOldBuffs[i] then
+        tOldBuffs[i] = nil
+        local nNewStack = tBuff.nCount
+        local nOldStack = tOldBuffs[i].nCount
+        if nNewStack ~= nOldStack then
+          tMyUnit.tBuffs[nIdBuff].nCount = nNewStack
+          Add2Logs("BuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
+          _tCombatManager:BuffUpdate(nId, nIdBuff, nOldStack, nNewStack)
+        end
+      else
+        tMyUnit.tBuffs[nIdBuff] = tBuff
+        Add2Logs("BuffAdd", nId, nIdBuff, tBuff.nCount)
+        _tCombatManager:BuffAdd(nId, nIdBuff, tBuff.nCount)
+      end
+    end
+    for nIdBuff,tBuff in next, tOldBuffs do
+      if tMyUnit.tBuffs[nIdBuff] then
+        tMyUnit.tBuffs[nIdBuff] = nil
+        Add2Logs("BuffRemove", nId, nIdBuff)
+        _tCombatManager:BuffRemove(nId, nIdBuff)
+      end
+    end
+  end
+end
+
+local function UpdateMemberList()
+  for i = 1, GroupLib.GetMemberCount() do
+    local tMemberData = GroupLib.GetGroupMember(i)
+    local tUnit = GroupLib.GetUnitForGroupMember(i)
+    -- A Friend out of range have a tUnit object equal to nil.
+    -- And if you have the tUnit object, the IsValid flag can change.
+    if tMemberData and tUnit then
+      local sName = tUnit:GetName()
+      if not _tMembers[sName] then
+        local tAllBuffs = GetAllBuffs(tUnit)
+        _tMembers[sName] = {
+          tData = tMemberData,
+          tUnit = tUnit,
+          tDebuffs = tAllBuffs["arHarmful"],
+          tBuffs = {},
+        }
+      end
     end
   end
 end
@@ -201,6 +251,7 @@ end
 function DruseraBossMods:CombatInterfaceInit(class, bTest)
   _tCombatManager = class
   _tTrackedUnits = {}
+  _tMembers = {}
   _bRunning = false
   _bCheckMembers = false
 
@@ -264,23 +315,19 @@ function CombatInterface:ActivateDetection(bState)
 end
 
 function CombatInterface:OnScanUpdate()
+  UpdateMemberList()
   local bEndOfCombat = true
-  for i = 1, GroupLib.GetMemberCount() do
-    local tMemberData = GroupLib.GetGroupMember(i)
-    if tMemberData then
-      local tUnitMember = GroupLib.GetUnitForGroupMember(i)
-      local bOutOfRange = tMemberData.nHealthMax == 0 or not tUnitMember
-      local bIsOnline = tMemberData.bIsOnline
-      local bIsInCombat = tUnitMember and tUnitMember:IsInCombat() or false
+  for _,tMember in next, _tMembers do
+    local bIsValid = tMember.tUnit:IsValid()
+    local bOutOfRange = tMember.tData.nHealthMax == 0 or not bIsValid
+    local bIsOnline = tMember.tData.bIsOnline
+    local bIsInCombat = bIsValid and tMember.tUnit:IsInCombat()
 
-      if not bOutOfRange and bIsOnline then
-        local nId = tUnitMember:GetId()
-        TrackThisUnit(nId)
-        ProcessBuffTracking(nId, _tTrackedUnits[nId], "Debuffs")
-      end
-      if bEndOfCombat and not bOutOfRange and bIsOnline and bIsInCombat then
-        bEndOfCombat = false
-      end
+    if bIsValid then
+      ProcessAllBuffs(tMember)
+    end
+    if bEndOfCombat and not bOutOfRange and bIsOnline and bIsInCombat then
+      bEndOfCombat = false
     end
   end
   if _bCheckMembers and bEndOfCombat then
@@ -289,7 +336,7 @@ function CombatInterface:OnScanUpdate()
   for nId, data in next, _tTrackedUnits do
     if data.tUnit:IsValid() then
       -- Process buff tracking.
-      ProcessBuffTracking(nId, data, "Buffs")
+      ProcessAllBuffs(data)
 
       -- Process cast tracking.
       if not data.tUnit:IsACharacter() then
