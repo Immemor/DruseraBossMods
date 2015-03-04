@@ -64,6 +64,7 @@ local _tOldLogs = {}
 local _tLogs = {}
 local nDeathTime = 0
 
+
 ------------------------------------------------------------------------------
 -- Fast and local functions.
 ------------------------------------------------------------------------------
@@ -158,7 +159,7 @@ local function StopEncounter()
   _tCombatManager:StopEncounter()
 end
 
-local function ProcessBuffTracking(nId, data)
+local function ProcessBuffTracking(nId, data, sType)
   local tOldBuffs = data.tBuffs
   data.tBuffs = GetHalfBuffs(data.tUnit)
   for i,tBuff in next, data.tBuffs do
@@ -167,18 +168,30 @@ local function ProcessBuffTracking(nId, data)
       local new = tBuff.nCount
       if new ~= old then
         Add2Logs("BuffUpdate", nId, tBuff.nIdBuff, old, new)
-        _tCombatManager:BuffUpdate(nId, tBuff)
+        if sType == "Buffs" then
+          _tCombatManager:BuffUpdate(nId, tBuff.nIdBuff, old, new)
+        else
+          _tCombatManager:DebuffUpdate(nId, tBuff.nIdBuff, old, new)
+        end
       end
       tOldBuffs[i] = nil
     else
-      Add2Logs("BuffNew", nId, tBuff.nIdBuff, tBuff.nCount)
-      _tCombatManager:BuffUpdate(nId, tBuff)
+      Add2Logs("BuffAdd", nId, tBuff.nIdBuff, tBuff.nCount)
+      if sType == "Buffs" then
+        _tCombatManager:BuffAdd(nId, tBuff.nIdBuff, tBuff.nCount)
+      else
+        _tCombatManager:DebuffAdd(nId, tBuff.nIdBuff, tBuff.nCount)
+      end
     end
   end
   for _,tBuff in next, tOldBuffs do
     tBuff.nCount = 0
-    Add2Logs("BuffLost", nId, tBuff.nIdBuff)
-    _tCombatManager:BuffUpdate(nId, tBuff)
+    Add2Logs("BuffRemove", nId, tBuff.nIdBuff)
+    if sType == "Buffs" then
+      _tCombatManager:BuffRemove(nId, tBuff.nIdBuff)
+    else
+      _tCombatManager:DebuffRemove(nId, tBuff.nIdBuff)
+    end
   end
 end
 
@@ -263,7 +276,7 @@ function CombatInterface:OnScanUpdate()
       if not bOutOfRange and bIsOnline then
         local nId = tUnitMember:GetId()
         TrackThisUnit(nId)
-        ProcessBuffTracking(nId, _tTrackedUnits[nId])
+        ProcessBuffTracking(nId, _tTrackedUnits[nId], "Debuffs")
       end
       if bEndOfCombat and not bOutOfRange and bIsOnline and bIsInCombat then
         bEndOfCombat = false
@@ -276,7 +289,7 @@ function CombatInterface:OnScanUpdate()
   for nId, data in next, _tTrackedUnits do
     if data.tUnit:IsValid() then
       -- Process buff tracking.
-      ProcessBuffTracking(nId, data)
+      ProcessBuffTracking(nId, data, "Buffs")
 
       -- Process cast tracking.
       if not data.tUnit:IsACharacter() then

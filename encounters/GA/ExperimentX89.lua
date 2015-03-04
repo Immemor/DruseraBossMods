@@ -11,29 +11,52 @@
 require "Apollo"
 local DBM = Apollo.GetAddon("DruseraBossMods")
 local ExperimentX89 = {}
+local GetPlayerUnit = GameLib.GetPlayerUnit
 
-------------------------------------------------------------------------------
--- Extra functions.
-------------------------------------------------------------------------------
+local SPELLID__SMALL_BOMB = 61460
+local SPELLID__BIG_BOMB = 47286
 
 ------------------------------------------------------------------------------
 -- OnStartCombat functions.
 ------------------------------------------------------------------------------
 function ExperimentX89:OnStartCombat()
-  DBM:SetCastStartAlert(self, "RESOUNDING_SHOUT", function(self)
-    DBM:SetTimerAlert(self, "RESOUNDING_SHOUT", 25, nil)
+  DBM:CreateHealthBar(self, "EXPERIMENT_X89")
+
+  -- Small bomb alert.
+  DBM:SetDebuffAddAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
+    local bItself = nTargetId == GetPlayerUnit():GetId()
+    DBM:SetMessage({
+      sLabel = "MSG_SMALL_BOMB",
+      nDuration = 5,
+      bHighlight = bItself,
+    })
+    if bItself then
+      DBM:PlaySound("Alarm")
+    else
+      DBM:SetMarkOnUnit("Crosshair", nTargetId)
+    end
+  end)
+  DBM:SetDebuffRemoveAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
+    DBM:SetMarkOnUnit(nil, nTargetId)
   end)
 
-  DBM:SetCastStartAlert(self, "REPUGNANT_SPEW", function(self)
-    DBM:SetTimerAlert(self, "REPUGNANT_SPEW", 38, nil)
+  -- Big bomb alert.
+  DBM:SetDebuffAddAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
+    local bItself = nTargetId == GetPlayerUnit():GetId()
+    DBM:SetMessage({
+      sLabel = "MSG_BIG_BOMB",
+      nDuration = 5,
+      bHighlight = bItself,
+    })
+    if bItself then
+      DBM:PlaySound("Alarm")
+    else
+      DBM:SetMarkOnUnit("Crosshair", nTargetId)
+    end
   end)
-
-  DBM:SetCastStartAlert(self, "SHATTERING_SHOCKWAVE", function(self)
-    DBM:SetTimerAlert(self, "SHATTERING_SHOCKWAVE", 19, nil)
+  DBM:SetDebuffRemoveAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
+    DBM:SetMarkOnUnit(nil, nTargetId)
   end)
-
-  -- Initialization.
-  DBM:SetTimerAlert(self, "RUN", 10, nil)
 end
 
 ------------------------------------------------------------------------------
@@ -41,17 +64,20 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "GENETIC_ARCHIVE",
-    EncounterName = "EXPERIMENT_X89",
-    ZoneName = "GENETIC_ARCHIVE_ACT_1",
-  },{
-    EXPERIMENT_X89 = ExperimentX89,
-  },{
-    EXPERIMENT_X89 = {
-      BarsCustom = {
-        SHATTERING_SHOCKWAVE = { color = "xkcdBrightOrange" },
-        REPUGNANT_SPEW = { color = "xkcdBrightOrange" },
-        RESOUNDING_SHOUT = { color = "xkcdBrightOrange" },
+    nZoneMapParentId = 147,
+    nZoneMapId = 148,
+    sEncounterName = "EXPERIMENT_X89",
+    tTriggerNames = { "EXPERIMENT_X89", },
+    tUnits = {
+      EXPERIMENT_X89 = ExperimentX89,
+    },
+    tCustom = {
+      EXPERIMENT_X89 = {
+        BarsCustom = {
+          SHATTERING_SHOCKWAVE = { color = "xkcdBrightOrange" },
+          REPUGNANT_SPEW = { color = "xkcdBrightOrange" },
+          RESOUNDING_SHOUT = { color = "xkcdBrightOrange" },
+        },
       },
     },
   })

@@ -20,6 +20,7 @@ local PhageMaw = {}
 -- OnStartCombat functions.
 ------------------------------------------------------------------------------
 function PhageMaw:OnStartCombat()
+  DBM:CreateHealthBar(self, "PHAGE_MAW")
   DBM:SetCastStartAlert(self, "DETONATION_BOMBS", function(self)
     DBM:SetTimerAlert(self, "DETONATION_BOMBS", 29, nil)
   end)
@@ -36,17 +37,20 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "GENETIC_ARCHIVE",
-    EncounterName = "PHAGE_MAW",
-    ZoneName = "GENETIC_ARCHIVE_ACT_2",
-  },{
-    PHAGE_MAW = PhageMaw,
-  },{
-    PHAGE_MAW = {
-      BarsCustom = {
-        DETONATION_BOMBS = { color = "xkcdBrightOrange" },
-        AIR_PHASE = { color = "xkcdBrightSkyBlue" },
-        BOMBS = { color = "xkcdBrightRed" },
+    nZoneMapParentId = 147,
+    nZoneMapId = 149,
+    sEncounterName = "PHAGE_MAW",
+    tTriggerNames = { "PHAGE_MAW" },
+    tUnits = {
+      PHAGE_MAW = PhageMaw,
+    },
+    tCustom = {
+      PHAGE_MAW = {
+        BarsCustom = {
+          DETONATION_BOMBS = { color = "xkcdBrightOrange" },
+          AIR_PHASE = { color = "xkcdBrightSkyBlue" },
+          BOMBS = { color = "xkcdBrightRed" },
+        },
       },
     },
   })

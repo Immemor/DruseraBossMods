@@ -23,6 +23,7 @@ local PhagetechFabricator = {}
 -- OnStartCombat functions.
 ------------------------------------------------------------------------------
 function PhagetechCommander:OnStartCombat()
+  DBM:CreateHealthBar(self, "PHAGETECH_COMMANDER")
   DBM:SetCastStartAlert(self, "FORCED_PRODUCTION", function(self)
     DBM:SetTimerAlert(self, "FORCED_PRODUCTION", 36, nil)
   end)
@@ -35,6 +36,7 @@ function PhagetechCommander:OnStartCombat()
 end
 
 function PhagetechAugmentor:OnStartCombat()
+  DBM:CreateHealthBar(self, "PHAGETECH_AUGMENTOR")
   DBM:SetCastStartAlert(self, "PHAGETECH_BORER", function(self)
     DBM:SetTimerAlert(self, "PHAGETECH_BORER", 17, nil)
   end)
@@ -44,12 +46,14 @@ function PhagetechAugmentor:OnStartCombat()
 end
 
 function PhagetechProtector:OnStartCombat()
+  DBM:CreateHealthBar(self, "PHAGETECH_PROTECTOR")
   DBM:SetCastStartAlert(self, "PULSE_A_TRON_WAVE", function(self)
     DBM:SetTimerAlert(self, "PULSE_A_TRON_WAVE", 15, nil)
   end)
 end
 
 function PhagetechFabricator:OnStartCombat()
+  DBM:CreateHealthBar(self, "PHAGETECH_FABRICATOR")
   DBM:SetCastStartAlert(self, "SUMMON_DESTRUCTOBOT", function(self)
     DBM:SetTimerAlert(self, "SUMMON_DESTRUCTOBOT", 16, nil)
   end)
@@ -60,36 +64,42 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "GENETIC_ARCHIVE",
-    EncounterName = "PHAGETECH_PROTOTYPES",
-    ZoneName = "GENETIC_ARCHIVE_ACT_2",
-  },{
-    PHAGETECH_COMMANDER = PhagetechCommander,
-    PHAGETECH_AUGMENTOR = PhagetechAugmentor,
-    PHAGETECH_PROTECTOR = PhagetechProtector,
-    PHAGETECH_FABRICATOR = PhagetechFabricator,
-  },{
-    PHAGETECH_COMMANDER = {
-      BarsCustom = {
-        FORCED_PRODUCTION = { color = "xkcdBrightOrange" },
-        DESTRUCTION_PROTOCOL = { color = "xkcdBrightOrange" },
-        MALICIOUS_UPLINK = { color = "xkcdBrightOrange" },
-      },
+    nZoneMapParentId = 147,
+    nZoneMapId = 149,
+    sEncounterName = "PHAGETECH_PROTOTYPES",
+    tTriggerNames = {
+      "PHAGETECH_COMMANDER", "PHAGETECH_AUGMENTOR",
+      "PHAGETECH_PROTECTOR", "PHAGETECH_FABRICATOR"
     },
-    PHAGETECH_AUGMENTOR = {
-      BarsCustom = {
-        PHAGETECH_BORER = { color = "xkcdBrightPurple" },
-        SUMMON_REPAIRBOT = { color = "xkcdBrightPurple" },
-      },
+    tUnits = {
+      PHAGETECH_COMMANDER = PhagetechCommander,
+      PHAGETECH_AUGMENTOR = PhagetechAugmentor,
+      PHAGETECH_PROTECTOR = PhagetechProtector,
+      PHAGETECH_FABRICATOR = PhagetechFabricator,
     },
-    PHAGETECH_PROTECTOR = {
-      BarsCustom = {
-        PULSE_A_TRON_WAVE = { color = "xkcdBrightGreen" },
+    tCustom = {
+      PHAGETECH_COMMANDER = {
+        BarsCustom = {
+          FORCED_PRODUCTION = { color = "xkcdBrightOrange" },
+          DESTRUCTION_PROTOCOL = { color = "xkcdBrightOrange" },
+          MALICIOUS_UPLINK = { color = "xkcdBrightOrange" },
+        },
       },
-    },
-    PHAGETECH_FABRICATOR = {
-      BarsCustom = {
-        SUMMON_DESTRUCTOBOT = { color = "xkcdBrightPink" },
+      PHAGETECH_AUGMENTOR = {
+        BarsCustom = {
+          PHAGETECH_BORER = { color = "xkcdBrightPurple" },
+          SUMMON_REPAIRBOT = { color = "xkcdBrightPurple" },
+        },
+      },
+      PHAGETECH_PROTECTOR = {
+        BarsCustom = {
+          PULSE_A_TRON_WAVE = { color = "xkcdBrightGreen" },
+        },
+      },
+      PHAGETECH_FABRICATOR = {
+        BarsCustom = {
+          SUMMON_DESTRUCTOBOT = { color = "xkcdBrightPink" },
+        },
       },
     },
   })

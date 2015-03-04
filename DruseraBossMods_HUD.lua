@@ -18,7 +18,7 @@ local GetGameTime = GameLib.GetGameTime
 -- Constants.
 ------------------------------------------------------------------------------
 local HUD_UPDATE_PERIOD = 0.1
-local THRESHOLD_HIGHLIGHT_TIMERS = 6.0
+local THRESHOLD_HIGHLIGHT_TIMERS = 10.0
 local DEFAULT_FADEOFF_MESSAGE = 6.0
 local AUTOFADE_TIMING = 0.5
 
@@ -112,9 +112,8 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_
         TimerBar.wndProgressBar:SetBarColor(tOptions.color)
       end
     end
-    wndParent:ArrangeChildrenVert(
-    Window.CodeEnumArrangeOrigin.LeftOrTop,
-    SortContentByTime)
+    wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop,
+                                  SortContentByTime)
     if not _bTimerRunning then
       _UpdateHUDTimer:Start()
       _bTimerRunning = true
@@ -184,9 +183,8 @@ function DruseraBossMods:HUDCreateHealthBar(tHealth, tOptions)
     HealthBar.wndFrame:SetData(GetGameTime())
     HealthBar.wndLabel:SetText(tHealth.sLabel)
     HUDUpdateHealthBar(nId)
-    wndParent:ArrangeChildrenVert(
-      Window.CodeEnumArrangeOrigin.LeftOrTop,
-      SortContentByTime)
+    wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop,
+                                  SortContentByTime)
     if not _bTimerRunning then
       _UpdateHUDTimer:Start()
       _bTimerRunning = true
@@ -214,6 +212,14 @@ function DruseraBossMods:_HUDMoveTimerBar(i)
                    TimerBar.fCallback, TimerBar.tCallback_data,
                    TimerBar.nId, TimerBar.tOptions)
   end
+end
+
+function DruseraBossMods:HUDRetrieveTimerBar(sLabel)
+  local TimerBar = _TimerBars[sLabel]
+  if TimerBar then
+    return TimerBar.wndProgressBar:GetProgress()
+  end
+  return nil
 end
 
 function DruseraBossMods:HUDCreateTimerBar(tTimer, tOptions)
@@ -328,7 +334,7 @@ function DruseraBossMods:OnHUDProcess()
       TimerBar.wndProgressBar:SetProgress(nRemaining)
       TimerBar.wndTimeLeft:SetText(string.format("%.1fs", nRemaining))
 
-      if nRemaining < THRESHOLD_HIGHLIGHT_TIMERS then
+      if TimerBar.wndParent == _wnds["Timers"] and nRemaining < THRESHOLD_HIGHLIGHT_TIMERS then
         -- Move from TimersContainer to HighligthTimersContainers.
         self:_HUDMoveTimerBar(i)
       end

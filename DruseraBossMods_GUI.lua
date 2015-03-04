@@ -41,6 +41,9 @@ function DruseraBossMods:GUIInit()
   wndFightHistory = Apollo.LoadForm(self.xmlDoc, "FightHistory", nil, self)
   wndFightHistory:Show(false)
 
+  local wndtag = wndMainGUI:FindChild("Main"):FindChild("Version"):FindChild("Tag")
+  wndtag:SetText(self.DRUSERABOSSMODS_VERSION)
+
   Apollo.RegisterSlashCommand("dbm", "OnToggleMainGUI", self)
   Apollo.RegisterSlashCommand("DruseraBossMods", "OnToggleMainGUI", self)
   Apollo.RegisterSlashCommand("dbmhistory", "OnToggleFightHistory", self)
@@ -165,7 +168,7 @@ function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)
   }, { color = "xkcdBrightYellow"})
   self:HUDCreateTimerBar({
     sLabel = Locale["THIS_SHOULD_BE_1"],
-    nDuration = 6,
+    nDuration = 4,
     fCallback = function(self)
       self:HUDCreateMessage({sLabel = Locale["WELCOME_IN_DBM"], bHighlight = true})
     end,

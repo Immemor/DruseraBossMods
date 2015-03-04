@@ -41,10 +41,10 @@ local _tFoes = {}
 local _tDatabase = {} -- Copy will be done on init.
 local _tNPCSayAlerts = {}
 local _tDatachronAlerts = {}
+local _tMarksOnUnit = {}
 
 local _tOldLogs = {}
 local _tLogs = {}
-_G["DBM_db"] = _tDatabase
 
 ------------------------------------------------------------------------------
 -- Fast and local functions.
@@ -109,6 +109,12 @@ local function AddFoeUnit(nId, sName, bInCombat)
       tCastStartAlerts = {},
       tCastFailedAlerts = {},
       tCastSuccessAlerts = {},
+      tBuffAddAlerts = {},
+      tBuffRemoveAlerts = {},
+      tBuffUpdateAlerts = {},
+      tDebuffAddAlerts = {},
+      tDebuffRemoveAlerts = {},
+      tDebuffUpdateAlerts = {},
       bInCombat = bInCombat,
     }, {__index = _tCurrentEncounter.tUnits[sName]})
     _tFoes[nId] = tFoe
@@ -154,6 +160,30 @@ local function CastProcess(CastType, nId, tSpell)
       local sCastName = tSpell.sCastName
       local cb = tFoe[CastType][sCastName]
       if cb then cb(tFoe) end
+    end
+  end
+end
+
+local function SetBuffAlert(BuffType, tFoe, nIdBuff, fCallback)
+  tFoe[BuffType][nIdBuff] = fCallback
+end
+
+local function BuffProcess(sBuffType, nId, nIdBuff, nStack)
+  local tFoe = _tFoes[nId]
+  if _bEncounterInProgress and tFoe then
+    local cb = tFoe[sBuffType][nIdBuff]
+    if cb then
+      cb(tFoe, nStack)
+    end
+  end
+end
+local function DebuffProcess(sBuffType, nId, nIdBuff, nStack)
+  if _bEncounterInProgress then
+    for _,tFoe in next, _tFoes do
+      local cb = tFoe[sBuffType][nIdBuff]
+      if cb then
+        cb(tFoe, nId, nStack)
+      end
     end
   end
 end
@@ -248,6 +278,10 @@ function CombatManager:StopEncounter()
   for nId,FoeUnit in next, _tFoes do
     RemoveFoeUnit(nId)
   end
+  for _,wPoint in next, _tMarksOnUnit do
+    wPoint:Destroy()
+  end
+  _tMarksOnUnit = {}
   _tCurrentEncounter = nil
   _tNPCSayAlerts = {}
   _tDatachronAlerts = {}
@@ -313,17 +347,30 @@ function CombatManager:CastSuccess(nId, tSpell)
   CastProcess("tCastSuccessAlerts", nId, tSpell)
 end
 
-function CombatManager:BuffUpdate(nId, tBuff)
-  if _bEncounterInProgress then
-    local nSpellId = tBuff.splEffect:GetId()
-    for _,tFoeUnit in next, _tFoes do
-      local cb = tFoeUnit.tBuffAlerts[nSpellId]
-      if cb then
-        cb(tFoeUnit)
-      end
-    end
-  end
+function CombatManager:BuffAdd(nId, nIdBuff, nStack)
+  BuffProcess("tBuffAddAlerts", nId, nIdBuff, nStack)
 end
+
+function CombatManager:BuffRemove(nId, nIdBuff)
+  BuffProcess("tBuffRemoveAlerts", nId, nIdBuff, 0)
+end
+
+function CombatManager:BuffUpdate(nId, nIdBuff, nStackOld, nStackNew)
+  BuffProcess("tBuffUpdateAlerts", nId, nIdBuff, nStackNew)
+end
+
+function CombatManager:DebuffAdd(nId, nIdBuff, nStack)
+  DebuffProcess("tDebuffAddAlerts", nId, nIdBuff, nStack)
+end
+
+function CombatManager:DebuffRemove(nId, nIdBuff)
+  DebuffProcess("tDebuffRemoveAlerts", nId, nIdBuff, 0)
+end
+
+function CombatManager:DebuffUpdate(nId, nIdBuff, nStackOld, nStackNew)
+  DebuffProcess("tDebuffUpdateAlerts", nId, nIdBuff, nStackNew)
+end
+
 
 function CombatManager:NPCSay(sMessage)
   if _bEncounterInProgress then
@@ -389,6 +436,11 @@ end
 function DruseraBossMods:SetMessage(tMessage)
   tMessage.sLabel = self.L[tMessage.sLabel]
   self:HUDCreateMessage(tMessage)
+end
+
+function DruseraBossMods:GetTimerRemaining(strKey)
+  local sLabel = self.L[strKey]
+  return self:HUDRetrieveTimerBar(sLabel)
 end
 
 function DruseraBossMods:SetTimerAlert(FoeUnit, strKey, duration, fCallback)
@@ -461,11 +513,28 @@ function DruseraBossMods:GetDistBetween2Unit(tUnitFrom, tUnitTo)
   return tonumber(dist)
 end
 
-function DruseraBossMods:SetBuffAlert(tFoeUnit, nSpellId, fCallback)
-  assert(nSpellId)
-  assert(tFoeUnit)
-  local bRegistered = tFoeUnit.tBuffAlerts[nSpellId] ~= nil
-  tFoeUnit.tBuffAlerts[nSpellId] = fCallback
+function DruseraBossMods:SetBuffAddAlert(tFoe, nIdBuff, fCallback)
+  SetBuffAlert("tBuffAddAlerts", tFoe, nIdBuff, fCallback)
+end
+
+function DruseraBossMods:SetBuffRemoveAlert(tFoe, nIdBuff, fCallback)
+  SetBuffAlert("tBuffRemoveAlerts", tFoe, nIdBuff, fCallback)
+end
+
+function DruseraBossMods:SetBuffUpdateAlert(tFoe, nIdBuff, fCallback)
+  SetBuffAlert("tBuffUpdateAlerts", tFoe, nIdBuff, fCallback)
+end
+
+function DruseraBossMods:SetDebuffAddAlert(tFoe, nIdBuff, fCallback)
+  SetBuffAlert("tDebuffAddAlerts", tFoe, nIdBuff, fCallback)
+end
+
+function DruseraBossMods:SetDebuffRemoveAlert(tFoe, nIdBuff, fCallback)
+  SetBuffAlert("tDebuffRemoveAlerts", tFoe, nIdBuff, fCallback)
+end
+
+function DruseraBossMods:SetDebuffUpdateAlert(tFoe, nIdBuff, fCallback)
+  SetBuffAlert("tDebuffUpdateAlerts", tFoe, nIdBuff, fCallback)
 end
 
 function DruseraBossMods:CreateHealthBar(tFoe, sName)
@@ -481,4 +550,18 @@ end
 function DruseraBossMods:PlaySound(sFileName)
   Add2Logs("Play Sound", nil, sFileName)
   Sound.PlayFile("sounds\\" .. sFileName .. ".wav")
+end
+
+function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId)
+  local wPoint = _tMarksOnUnit[nTargetId]
+  if wPoint then
+    wPoint:Destroy()
+    _tMarksOnUnit[nTargetId] = nil
+  end
+  local tUnit = GetUnitById(nTargetId)
+  if sMarkName and tUnit then
+    wPoint = Apollo.LoadForm(self.xmlDoc, "MarkOnUnit", "InWorldHudStratum", self)
+    wPoint:SetUnit(tUnit, 51)
+    _tMarksOnUnit[nTargetId] = wPoint
+  end
 end

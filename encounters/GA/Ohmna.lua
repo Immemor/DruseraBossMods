@@ -20,6 +20,7 @@ local Ohmna = {}
 -- OnStartCombat functions.
 ------------------------------------------------------------------------------
 function Ohmna:OnStartCombat()
+  DBM:CreateHealthBar(self, "DREADPHAGE_OHMNA")
   DBM:SetCastSuccessAlert(self, "DEVOUR", function(self)
     DBM:SetTimerAlert(self, "DEVOUR", 25.5, nil)
   end)
@@ -36,17 +37,20 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "GENETIC_ARCHIVE",
-    EncounterName = "DREADPHAGE_OHMNA",
-    ZoneName = "GENETIC_ARCHIVE_ACT_2",
-  },{
-    DREADPHAGE_OHMNA = Ohmna,
-  },{
-    DREADPHAGE_OHMNA = {
-      BarsCustom = {
-        BODY_SLAM = { color = "xkcdBrightOrange" },
-        DEVOUR = { color = "xkcdBrightOrange" },
-        GENETIC_TORRENT = { color = "xkcdBrightOrange" },
+    nZoneMapParentId = 147,
+    nZoneMapId = 149,
+    sEncounterName = "DREADPHAGE_OHMNA",
+    tTriggerNames = { "DREADPHAGE_OHMNA" },
+    tUnits = {
+      DREADPHAGE_OHMNA = Ohmna,
+    },
+    tCustom = {
+      DREADPHAGE_OHMNA = {
+        BarsCustom = {
+          BODY_SLAM = { color = "xkcdBrightOrange" },
+          DEVOUR = { color = "xkcdBrightOrange" },
+          GENETIC_TORRENT = { color = "xkcdBrightOrange" },
+        },
       },
     },
   })

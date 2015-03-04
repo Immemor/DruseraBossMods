@@ -11,6 +11,9 @@
 require "Apollo"
 local DBM = Apollo.GetAddon("DruseraBossMods")
 local Kuralak = {}
+local GetPlayerUnit = GameLib.GetPlayerUnit
+
+local SPELLID__CHROMOSOME_CORRUPTION = 56652
 
 ------------------------------------------------------------------------------
 -- Extra functions.
@@ -23,6 +26,7 @@ end
 -- OnStartCombat functions.
 ------------------------------------------------------------------------------
 function Kuralak:OnStartCombat()
+  DBM:CreateHealthBar(self, "KURALAK_THE_DEFILER")
   DBM:SetCastStartAlert(self, "CULTIVATE_CORRUPTION", self.CultivateCorruption)
   DBM:SetCastStartAlert(self, "CHROMOSOME_CORRUPTION", function(self)
     -- Remove trigger
@@ -32,18 +36,26 @@ function Kuralak:OnStartCombat()
   end)
 
   -- Outbreak
-  DBM:SetCastStartAlert(self, "OUTBREAK", function(self)
-    DBM:SetTimerAlert(self, "OUTBREAK", 30, nil)
+  DBM:SetCastSuccessAlert(self, "OUTBREAK", function(self)
+    DBM:SetTimerAlert(self, "OUTBREAK", 40, nil)
   end)
 
   -- Vanish into Darkness
   DBM:SetCastStartAlert(self, "VANISH_INTO_DARKNESS", function(self)
-    DBM:SetTimerAlert(self, "VANISH_INTO_DARKNESS", 60, nil)
+    DBM:SetTimerAlert(self, "VANISH_INTO_DARKNESS", 50, nil)
   end)
 
   -- DNA Siphon
-  DBM:SetCastStartAlert(self, "DNA_SIPHON", function(self)
-    DBM:SetTimerAlert(self, "DNA_SIPHON", 60, nil)
+  DBM:SetCastSuccessAlert(self, "DNA_SIPHON", function(self)
+    DBM:SetTimerAlert(self, "DNA_SIPHON", 90, nil)
+  end)
+
+  DBM:SetDebuffAddAlert(self, SPELLID__CHROMOSOME_CORRUPTION, function(self, nTargetId, nStack)
+    local bItself = nTargetId == GetPlayerUnit():GetId()
+    if bItself then
+      DBM:PlaySound("Info")
+    end
+    DBM:SetMarkOnUnit("Crosshair", nTargetId)
   end)
 end
 
@@ -52,16 +64,19 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "GENETIC_ARCHIVE",
-    EncounterName = "KURALAK_THE_DEFILER",
-    ZoneName = "GENETIC_ARCHIVE_ACT_1",
-  },{
-    KURALAK_THE_DEFILER = Kuralak,
-  },{
-    KURALAK_THE_DEFILER = {
-      BarsCustom = {
-        CULTIVATE_CORRUPTION = { color = "xkcdBrightOrange", },
-        VANISH_INTO_DARKNESS = { color = "xkcdBrightPurple", },
+    nZoneMapParentId = 147,
+    nZoneMapId = 148,
+    sEncounterName = "KURALAK_THE_DEFILER",
+    tTriggerNames = { "KURALAK_THE_DEFILER", },
+    tUnits = {
+      KURALAK_THE_DEFILER = Kuralak,
+    },
+    tCustom = {
+      KURALAK_THE_DEFILER = {
+        BarsCustom = {
+          CULTIVATE_CORRUPTION = { color = "xkcdBrightOrange", },
+          VANISH_INTO_DARKNESS = { color = "xkcdBrightPurple", },
+        },
       },
     },
   })

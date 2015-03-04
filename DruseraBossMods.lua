@@ -19,7 +19,7 @@ require "Apollo"
 ------------------------------------------------------------------------------
 -- Constantes
 ------------------------------------------------------------------------------
-local DRUSERABOSSMODS_VERSION =  "0.14-alpha" -- "@project-version@"
+local DRUSERABOSSMODS_VERSION =  "0.15-alpha" -- "@project-version@"
 
 ------------------------------------------------------------------------------
 -- Initialization
@@ -30,6 +30,7 @@ function DruseraBossMods:new(o)
   o = o or {}
   setmetatable(o, self)
   self.__index = self
+  self.DRUSERABOSSMODS_VERSION = DRUSERABOSSMODS_VERSION
   self.DataBase = {}
   return o
 end

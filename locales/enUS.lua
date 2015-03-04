@@ -36,7 +36,6 @@ L["REPUGNANT_SPEW"] = "Repugnant Spew"
 L["SHATTERING_SHOCKWAVE"] = "Shattering Shockwave"
 L["CORRUPTION_GLOBULE"] = "Corruption Globule"
 L["STRAIN_BOMB"] = "Strain Bomb"
-L["RUN"] = "Cours!"
 L["MSG_SMALL_BOMB"] = "Small bomb! Go to the edge!"
 L["MSG_BIG_BOMB"] = "BIG bomb! Jump down!"
 ------ Encounter: Kuralak the Defiler

@@ -40,7 +40,6 @@ L["REPUGNANT_SPEW"] = "Crachat répugnant"
 L["SHATTERING_SHOCKWAVE"] = "Onde de choc dévastatrice"
 L["CORRUPTION_GLOBULE"] = "Globule de corruption"
 L["STRAIN_BOMB"] = "Bombe de Souillure"
-L["RUN"] = "Run!"
 L["MSG_SMALL_BOMB"] = "Petite bombe! Allez au bord!"
 L["MSG_BIG_BOMB"] = "Grosse bombe! Sautez!"
 ------ Encounter: Kuralak the Defiler
