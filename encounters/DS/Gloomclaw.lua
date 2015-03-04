@@ -16,7 +16,7 @@ local GetPlayerUnit = GameLib.GetPlayerUnit
 local GetGameTime = GameLib.GetGameTime
 local Gloomclaw = {}
 local DangerousMobs = {}
-local InsignifiantMobs = {}
+local InsignificantMobs = {}
 
 local _FirstMove = true
 local _nSection = 2
@@ -90,7 +90,7 @@ function DangerousMobs:OnStartCombat()
   end)
 end
 
-function InsignifiantMobs:OnStartCombat()
+function InsignificantMobs:OnStartCombat()
   local nCurrentTime = GetGameTime()
   local delta = nCurrentTime - _nLastPopMobsTime
   -- The pop time is not regular between two fight, implement a patch like RaidCore.
@@ -130,15 +130,15 @@ do
       GLOOMCLAW = Gloomclaw,
       CORRUPTED_RAVAGER = DangerousMobs,
       EMPOWERED_RAVAGER = DangerousMobs,
-      STRAIN_PARASITE = InsignifiantMobs,
-      GLOOMCLAW_SKURGE = InsignifiantMobs,
-      CORRUPTED_FRAZ = InsignifiantMobs,
+      STRAIN_PARASITE = InsignificantMobs,
+      GLOOMCLAW_SKURGE = InsignificantMobs,
+      CORRUPTED_FRAZ = InsignificantMobs,
     },
     tCustom = {
       GLOOMCLAW = {
         BarsCustom = {
           RUPTURE = { color = "xkcdBrightOrange" },
-          NEXT_ADD_WAVE = { color = "xkcdBrightGreen" }
+          NEXT_ADD_WAVE = { color = "xkcdBrightGreen" },
         },
       },
     },
