@@ -18,7 +18,7 @@ local GetGameTime = GameLib.GetGameTime
 -- Constants.
 ------------------------------------------------------------------------------
 local HUD_UPDATE_PERIOD = 0.1
-local THRESHOLD_HIGHLIGHT_TIMERS = 10.0
+local THRESHOLD_HIGHLIGHT_TIMERS = 0.0
 local DEFAULT_FADEOFF_MESSAGE = 6.0
 local AUTOFADE_TIMING = 0.5
 
@@ -152,6 +152,7 @@ function DruseraBossMods:HUDWindowsManagementAdd()
     wnd:SetStyle("Sizable", false);
     wnd:SetStyle("IgnoreMouse", true);
     wnd:SetTextColor('00000000')
+    wnd:Show(true, true)
   end
 end
 

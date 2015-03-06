@@ -23,11 +23,9 @@ local GetGameTime = GameLib.GetGameTime
 ------------------------------------------------------------------------------
 -- Working variables.
 ------------------------------------------------------------------------------
-local wndMainGUI = nil
-local wndFightHistory = nil
-local tAllFightHistory = {}
-local wnds = {}
-local n = 1
+local wndForm
+local wndLeftMenuList
+local wndBodyContainer
 
 ------------------------------------------------------------------------------
 -- Local functions.
@@ -36,93 +34,38 @@ local n = 1
 -- Public functions.
 ------------------------------------------------------------------------------
 function DruseraBossMods:GUIInit()
-  wndMainGUI = Apollo.LoadForm(self.xmlDoc, "DruseraBossMods", nil, self)
-  wndMainGUI:Show(false)
-  wndFightHistory = Apollo.LoadForm(self.xmlDoc, "FightHistory", nil, self)
-  wndFightHistory:Show(false)
+  wndForm = Apollo.LoadForm(self.xmlDoc, "DBM_Form", nil, self)
+  local wndHeader = wndForm:FindChild("Main"):FindChild("Header")
+  local wndTag = wndHeader:FindChild("Version"):FindChild("Tag")
+  wndTag:SetText(self.DRUSERABOSSMODS_VERSION)
 
-  local wndtag = wndMainGUI:FindChild("Main"):FindChild("Version"):FindChild("Tag")
-  wndtag:SetText(self.DRUSERABOSSMODS_VERSION)
+  wndLeftMenuList = wndForm:FindChild("Main"):FindChild("Body"):FindChild("MenuLeft")
+  wndBodyContainer = wndForm:FindChild("Main"):FindChild("Body"):FindChild("Container")
+
+  local default = self:GUI_AddLeftMenuItem("Home", "DBM_Home")
+  self:GUI_AddLeftMenuItem("Bars", "DBM_BarCustom")
+  self:GUI_AddLeftMenuItem("Messages", "DBM_MessageCustom")
+  self:GUI_AddLeftMenuItem("Sounds", "DBM_SoundCustom")
+  self:GUI_AddLeftMenuItem("Markers", "DBM_MarkerCustom")
+  self:GUI_AddLeftMenuItem("Bosses", "DBM_Bosses")
+
+  self:GUI_SetActiveItem(default)
+  self.SoundMuteAll = false
 
   Apollo.RegisterSlashCommand("dbm", "OnToggleMainGUI", self)
-  Apollo.RegisterSlashCommand("DruseraBossMods", "OnToggleMainGUI", self)
-  Apollo.RegisterSlashCommand("dbmhistory", "OnToggleFightHistory", self)
 end
 
 function DruseraBossMods:GUIWindowsManagementAdd()
-  wnds["MainGui"] = wndMainGUI
-  wnds["FightHistory"] = wndFightHistory
-  for name,wnd in next, wnds do
-    Event_FireGenericEvent('WindowManagementAdd', {
-      wnd = wnd,
-      strName = "DruseraBossMods: " .. name,
-    })
-  end
+  Event_FireGenericEvent('WindowManagementAdd', {
+    wnd = wndForm, strName = "DruseraBossMods"})
 end
 
 function DruseraBossMods:OnToggleMainGUI()
   if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
-    if wndMainGUI:IsShown() then
-      wndMainGUI:Show(false)
+    if wndForm:IsShown() then
+      wndForm:Show(false, true)
     else
-      wndMainGUI:Show(true)
-    end
-  end
-end
-
-function DruseraBossMods:SaveFightHistory(object)
-  tAllFightHistory = object
-end
-
-function DruseraBossMods:OnToggleFightHistory()
-  if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
-    if wndFightHistory:IsShown() then
-      wndFightHistory:Show(false)
-    else
-      wndFightHistory:Show(true)
-
-      local wndgrid = wndFightHistory:FindChild("Grid")
-
-      local nFightStartTime = 0
-      for _, data in ipairs(tAllFightHistory) do
-        if data[1] == "Start encounter" then
-          nFightStartTime = data[5]
-          break
-        end
-      end
-      wndgrid:DeleteAll()
-      for _, data in ipairs(tAllFightHistory) do
-        local idx = wndgrid:AddRow("")
-        local time = data[2] - nFightStartTime
-        wndgrid:SetCellText(idx, 1, string.format("%003.2f", time))
-        wndgrid:SetCellSortText(idx, 1, data[2])
-        wndgrid:SetCellText(idx, 2, tostring(data[1]))
-        if data[3] ~= nil then
-          wndgrid:SetCellText(idx, 3, tostring(data[3]))
-        end
-        if data[4] ~= nil then
-          wndgrid:SetCellText(idx, 4, tostring(data[4]))
-        end
-        if data[1] == "Spell cast start" or
-          data[1] == "Spell cast failed" or
-          data[1] == "Spell cast success" then
-          local prefix = data[5][2] and "Process " or "Drop "
-          local suffix = data[5][4] .. " / " .. data[5][3] .. " (" .. data[5][5] .. "%)"
-          wndgrid:SetCellText(idx, 5, prefix .. "'" .. data[5][1] .. "'  " .. suffix)
-        elseif data[1] == "NPCSay processed" or
-          data[1] == "NPCSay, no callbacks" or
-          data[1] == "Datachron processed" or
-          data[1] == "Datachron, no callbacks" then
-          wndgrid:SetCellText(idx, 5, data[5])
-        elseif data[1] == "Buff update" then
-          local txt = ""
-          txt = txt .. "BuffType='" .. data[5][2].eType .. "', "
-          txt = txt .. "SpellId='" .. data[5][2].splEffect:GetId() .. "', "
-          txt = txt .. "Count=" .. data[5][2].nCount .. ", "
-          txt = txt .. "SpellName='" .. data[5][2].splEffect:GetName() .. "'"
-          wndgrid:SetCellText(idx, 5, txt)
-        end
-      end
+      wndForm:Show(true, true)
     end
   end
 end
@@ -177,4 +120,95 @@ end
 
 function DruseraBossMods:OnToggleAnchors(wndHandler, wndControl, eMouseButton)
   self:HUDToggleAnchorLock()
+end
+
+function DruseraBossMods:OnToggleFightHistory()
+  if true then return true end
+  if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
+    if wndFightHistory:IsShown() then
+      wndFightHistory:Show(false)
+    else
+      wndFightHistory:Show(true)
+
+      local wndgrid = wndFightHistory:FindChild("Grid")
+
+      local nFightStartTime = 0
+      for _, data in ipairs(tAllFightHistory) do
+        if data[1] == "Start encounter" then
+          nFightStartTime = data[5]
+          break
+        end
+      end
+      wndgrid:DeleteAll()
+      for _, data in ipairs(tAllFightHistory) do
+        local idx = wndgrid:AddRow("")
+        local time = data[2] - nFightStartTime
+        wndgrid:SetCellText(idx, 1, string.format("%003.2f", time))
+        wndgrid:SetCellSortText(idx, 1, data[2])
+        wndgrid:SetCellText(idx, 2, tostring(data[1]))
+        if data[3] ~= nil then
+          wndgrid:SetCellText(idx, 3, tostring(data[3]))
+        end
+        if data[4] ~= nil then
+          wndgrid:SetCellText(idx, 4, tostring(data[4]))
+        end
+        if data[1] == "Spell cast start" or
+          data[1] == "Spell cast failed" or
+          data[1] == "Spell cast success" then
+          local prefix = data[5][2] and "Process " or "Drop "
+          local suffix = data[5][4] .. " / " .. data[5][3] .. " (" .. data[5][5] .. "%)"
+          wndgrid:SetCellText(idx, 5, prefix .. "'" .. data[5][1] .. "'  " .. suffix)
+        elseif data[1] == "NPCSay processed" or
+          data[1] == "NPCSay, no callbacks" or
+          data[1] == "Datachron processed" or
+          data[1] == "Datachron, no callbacks" then
+          wndgrid:SetCellText(idx, 5, data[5])
+        elseif data[1] == "Buff update" then
+          local txt = ""
+          txt = txt .. "BuffType='" .. data[5][2].eType .. "', "
+          txt = txt .. "SpellId='" .. data[5][2].splEffect:GetId() .. "', "
+          txt = txt .. "Count=" .. data[5][2].nCount .. ", "
+          txt = txt .. "SpellName='" .. data[5][2].splEffect:GetName() .. "'"
+          wndgrid:SetCellText(idx, 5, txt)
+        end
+      end
+    end
+  end
+end
+
+function DruseraBossMods:GUI_AddLeftMenuItem(sLabel, sBody)
+  local wndItem = Apollo.LoadForm(self.xmlDoc, "DBM_MenuItem", wndLeftMenuList, self)
+  local wndButton = wndItem:FindChild("Button")
+  local wndBody = nil
+  local tData = {}
+
+  if sBody then
+    wndBody = Apollo.LoadForm(self.xmlDoc, sBody, wndBodyContainer, self)
+    wndBody:Show(false, true)
+    tData.wndBodyContainer = wndBody
+  end
+
+  wndButton:SetText(sLabel)
+  wndButton:SetData(tData)
+  wndLeftMenuList:ArrangeChildrenVert()
+  return wndButton
+end
+
+function DruseraBossMods:GUI_SetActiveItem(wndControl)
+  local data = wndControl:GetData()
+
+  for _,wnd in next, wndBodyContainer:GetChildren() do
+    wnd:Show(false, true)
+  end
+  if data.wndBodyContainer then
+    data.wndBodyContainer:Show(true, true)
+  end
+end
+
+function DruseraBossMods:OnLeftMenuItem(wndHandler, wndControl, eMouseButton)
+  self:GUI_SetActiveItem(wndControl)
+end
+
+function DruseraBossMods:OnSoundCustom_GlobalMute(wndHandler, wndControl, eMouseButton)
+  self.SoundMuteAll = wndControl:IsChecked()
 end

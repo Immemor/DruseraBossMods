@@ -51,7 +51,7 @@ local CombatInterface = {}
 local _tCombatManager = nil
 local _bRunning = false
 local _bCheckMembers = false
-local _tScanTimer = nil
+local _tScanTimer
 local _tTrackedUnits = {}
 local _tMembers = {}
 local _tHandlers = {
@@ -120,17 +120,30 @@ local function Logs2Text(_tLogs)
 end
 
 local function GetAllBuffs(tUnit)
-  local tAllBuffs = tUnit:GetBuffs()
-  local r = {}
-  for sType, tBuffs in next, tAllBuffs do
-    r[sType] = {}
-    for _,obj in next, tBuffs do
-      r[sType][obj.idBuff] = {
-        nCount = obj.nCount,
-        nIdBuff = obj.idBuff,
-        splEffect = obj.splEffect,
-      }
+  local r = {
+    arBeneficial = {},
+    arHarmful = {},
+  }
+  if tUnit:IsValid() then
+    local tAllBuffs = tUnit:GetBuffs()
+    if tAllBuffs then
+      for sType, tBuffs in next, tAllBuffs do
+        r[sType] = {}
+        for _,obj in next, tBuffs do
+          r[sType][obj.idBuff] = {
+            nCount = obj.nCount,
+            nIdBuff = obj.idBuff,
+            tSpell = obj.splEffect,
+          }
+        end
+      end
     end
+  else
+    local d3 = debug.getinfo(3, 'n')
+    local d2 = debug.getinfo(2, 'n')
+    local sd2 = d2 and d2.name or ""
+    local sd3 = d2 and d2.name or ""
+    Print (GetGameTime() .. " Invaid " .. sd2 .."  " .. sd3)
   end
   return r
 end
@@ -144,7 +157,7 @@ local function TrackThisUnit(nId)
       tUnit = tUnit,
       tBuffs = tAllBuffs["arBeneficial"],
       tDebuffs = {},
-      tSpell = {
+      tCast = {
         bCasting = false,
         sCastName = "",
         nCastEndTime = 0,
@@ -240,7 +253,7 @@ local function UpdateMemberList()
     -- A Friend out of range have a tUnit object equal to nil.
     -- And if you have the tUnit object, the IsValid flag can change.
     if tMemberData and tUnit then
-      local sName = tUnit:GetName()
+      local sName = tMemberData.strCharacterName
       if not _tMembers[sName] then
         local tAllBuffs = GetAllBuffs(tUnit)
         _tMembers[sName] = {
@@ -326,26 +339,33 @@ end
 function CombatInterface:OnScanUpdate()
   UpdateMemberList()
   local bEndOfCombat = true
-  for _,tMember in next, _tMembers do
+  for sName,tMember in next, _tMembers do
     local bIsValid = tMember.tUnit:IsValid()
     local bOutOfRange = tMember.tData.nHealthMax == 0 or not bIsValid
     local bIsOnline = tMember.tData.bIsOnline
     local bIsInCombat = bIsValid and tMember.tUnit:IsInCombat()
 
-    if bIsValid then
-      ProcessAllBuffs(tMember)
-    end
-    if bEndOfCombat and not bOutOfRange and bIsOnline and bIsInCombat then
+    if bIsValid and bIsInCombat then
       bEndOfCombat = false
     end
+    if bIsValid then
+      local f, err = pcall(ProcessAllBuffs, tMember)
+      if not f then
+        Print (err)
+      end
+    end
   end
+
   if _bCheckMembers and bEndOfCombat then
     StopEncounter()
   end
   for nId, data in next, _tTrackedUnits do
     if data.tUnit:IsValid() then
       -- Process buff tracking.
-      ProcessAllBuffs(data)
+      local f, err = pcall(ProcessAllBuffs, data)
+      if not f then
+        Print (err)
+      end
 
       -- Process cast tracking.
       if not data.tUnit:IsACharacter() then
@@ -357,34 +377,34 @@ function CombatInterface:OnScanUpdate()
           local nCastEndTime = GetGameTime() + (nCastDuration - nCastElapsed) / 1000
 
           sCastName = string.gsub(sCastName, NO_BREAK_SPACE, " ")
-          if not data.tSpell.bCasting then
+          if not data.tCast.bCasting then
             -- New cast
-            data.tSpell = {
+            data.tCast = {
               bCasting = true,
               sCastName = sCastName,
               nCastEndTime = nCastEndTime,
               bSuccess = false,
             }
             Add2Logs("Cast Start", nId, sCastName)
-            ManagerCall("CastStart", nId, data.tSpell)
-          elseif data.tSpell.bCasting then
-            if sCastName ~= data.tSpell.sCastName then
+            ManagerCall("CastStart", nId, data.tCast)
+          elseif data.tCast.bCasting then
+            if sCastName ~= data.tCast.sCastName then
               -- New cast just after a previous one.
-              Add2Logs("Cast Success", nId, data.tSpell.sCastName)
-              ManagerCall("CastSuccess", nId, data.tSpell)
-              data.tSpell = {
+              Add2Logs("Cast Success", nId, data.tCast.sCastName)
+              ManagerCall("CastSuccess", nId, data.tCast)
+              data.tCast = {
                 bCasting = true,
                 sCastName = sCastName,
                 nCastEndTime = nCastEndTime,
                 bSuccess = false,
               }
               Add2Logs("Cast Start", nId, sCastName)
-              ManagerCall("CastStart", nId, data.tSpell)
-            elseif not data.tSpell.bSuccess and nCastElapsed >= nCastDuration then
+              ManagerCall("CastStart", nId, data.tCast)
+            elseif not data.tCast.bSuccess and nCastElapsed >= nCastDuration then
               -- The have reached the end.
-              Add2Logs("Cast Success", nId, data.tSpell.sCastName)
-              ManagerCall("CastSuccess", nId, data.tSpell)
-              data.tSpell = {
+              Add2Logs("Cast Success", nId, data.tCast.sCastName)
+              ManagerCall("CastSuccess", nId, data.tCast)
+              data.tCast = {
                 bCasting = true,
                 sCastName = sCastName,
                 nCastEndTime = 0,
@@ -392,18 +412,18 @@ function CombatInterface:OnScanUpdate()
               }
             end
           end
-        elseif data.tSpell.bCasting then
-          if not data.tSpell.bSuccess then
+        elseif data.tCast.bCasting then
+          if not data.tCast.bSuccess then
             -- Let's compare with the nCastEndTime
-            if GetGameTime() < data.tSpell.nCastEndTime then
-              Add2Logs("Cast Failed", nId, data.tSpell.sCastName)
-              ManagerCall("CastFailed", nId, data.tSpell)
+            if GetGameTime() < data.tCast.nCastEndTime then
+              Add2Logs("Cast Failed", nId, data.tCast.sCastName)
+              ManagerCall("CastFailed", nId, data.tCast)
             else
-              Add2Logs("Cast Success", nId, data.tSpell.sCastName)
-              ManagerCall("CastSuccess", nId, data.tSpell)
+              Add2Logs("Cast Success", nId, data.tCast.sCastName)
+              ManagerCall("CastSuccess", nId, data.tCast)
             end
           end
-          data.tSpell = {
+          data.tCast = {
             bCasting = false,
             sCastName = "",
             nCastEndTime = 0,

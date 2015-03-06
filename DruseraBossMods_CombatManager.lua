@@ -322,8 +322,6 @@ function CombatManager:UnknownUnitInCombat(tUnit, nId, sName)
   if bExist then
     _CombatInterface:TrackThisUnit(nId)
     FoesStartCombat(nId)
-  else
-    Add2Logs("Foe ignored", nId)
   end
 end
 
@@ -552,8 +550,11 @@ function DruseraBossMods:CreateHealthBar(tFoe, sName)
 end
 
 function DruseraBossMods:PlaySound(sFileName)
-  Add2Logs("Play Sound", nil, sFileName)
-  Sound.PlayFile("sounds\\" .. sFileName .. ".wav")
+  if not self.SoundMuteAll then
+    Add2Logs("Play Sound", nil, sFileName)
+    -- Can be call from Gemini Console.
+    Sound.PlayFile("..\\DruseraBossMods\\sounds\\" .. sFileName .. ".wav")
+  end
 end
 
 function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId)
