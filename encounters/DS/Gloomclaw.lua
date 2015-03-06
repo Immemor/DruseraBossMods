@@ -38,7 +38,9 @@ local _tWavePopTiming = {
 local function NewSection(self)
   _nWaveIndex = 0
   local nFirstRupture = _nSection == 1 and 31 or 25
-  DBM:SetTimerAlert(self, "RUPTURE", nFirstRupture, nil)
+  if _nSection ~= 4 then
+    DBM:SetTimerAlert(self, "RUPTURE", nFirstRupture, nil)
+  end
 end
 
 ------------------------------------------------------------------------------
