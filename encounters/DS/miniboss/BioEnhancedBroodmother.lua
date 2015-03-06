@@ -17,15 +17,15 @@ local BioEnhancedBroodmother = {}
 ------------------------------------------------------------------------------
 function BioEnhancedBroodmother:OnStartCombat()
   DBM:CreateHealthBar(self, "BIO_ENHANCED_BROODMOTHER")
-  DBM:SetCastStartAlert(self, "AUGMENTED_VENOM", function(self)
+  DBM:SetCastStartAlert(self, "AUGMENTED_BIO_WEB", function(self)
     DBM:PlaySound("Alarm")
   end)
-  DBM:SetCastSuccessAlert(self, "AUGMENTED_VENOM", function(self)
-    DBM:SetTimerAlert(self, "AUGMENTED_VENOM", 40, nil)
+  DBM:SetCastSuccessAlert(self, "AUGMENTED_BIO_WEB", function(self)
+    DBM:SetTimerAlert(self, "AUGMENTED_BIO_WEB", 40, nil)
   end)
 
    -- Initialization
-   DBM:SetTimerAlert(self, "AUGMENTED_VENOM", 46, nil)
+   DBM:SetTimerAlert(self, "AUGMENTED_BIO_WEB", 46, nil)
 end
 
 ------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ do
     tCustom = {
       BIO_ENHANCED_BROODMOTHER = {
         BarsCustom = {
-          AUGMENTED_VENOM = { color = "xkcdBrightRed" },
+          AUGMENTED_BIO_WEB = { color = "xkcdBrightRed" },
         },
       },
     },

@@ -115,7 +115,7 @@ L["PROBE_2"] = "Probe 2"
 L["PROBE_3"] = "Probe 3"
 ------ Encounter: (MiniBoss) Bio-Enhanced Broodmother
 L["BIO_ENHANCED_BROODMOTHER"] = "Bio-Enhanced Broodmother"
-L["AUGMENTED_VENOM"] = "Augmented Venom"
+L["AUGMENTED_BIO_WEB"] = "Augmented Bio-Web"
 ------ Encounter: (MiniBoss) Fully-Optimized Canimid
 L["FULLY_OPTIMIZED_CANIMID"] = "Fully-Optimized Canimid"
 L["UNDERMINE"] = "Undermine"
