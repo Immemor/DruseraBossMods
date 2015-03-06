@@ -129,17 +129,19 @@ local function Logs2Text(_tLogs)
 end
 
 local function GetAllBuffs(tUnit)
-  local tAllBuffs = tUnit:GetBuffs()
   local r = {}
-  if tAllBuffs then
-    for sType, tBuffs in next, tAllBuffs do
-      r[sType] = {}
-      for _,obj in next, tBuffs do
-        r[sType][obj.idBuff] = {
-          nCount = obj.nCount,
-          nIdBuff = obj.idBuff,
-          tSpell = obj.splEffect,
-        }
+  if tUnit:IsValid() then
+    local tAllBuffs = tUnit:GetBuffs()
+    if tAllBuffs then
+      for sType, tBuffs in next, tAllBuffs do
+        r[sType] = {}
+        for _,obj in next, tBuffs do
+          r[sType][obj.idBuff] = {
+            nCount = obj.nCount,
+            nIdBuff = obj.idBuff,
+            tSpell = obj.splEffect,
+          }
+        end
       end
     end
   end
