@@ -22,7 +22,7 @@ local GetCurrentZoneMap = GameLib.GetCurrentZoneMap
 local GetGameTime = GameLib.GetGameTime
 local GetPlayerUnit = GameLib.GetPlayerUnit
 local GetUnitById = GameLib.GetUnitById
-local next = next
+local next, pcall, unpack = next, pcall, unpack
 
 ------------------------------------------------------------------------------
 -- Constants.
@@ -53,19 +53,37 @@ local function Add2Logs(sText, nId, ...)
   if not _bEncounterInProgress then return end
   --@alpha@
   local d = debug.getinfo(2, 'n')
-  local tUnitInfo = {
-    nId = nId,
-    sName = "",
-  }
-  if nId then
+  local nId = nil
+  if select("#", ...) > 0 then
+    nId = select(1, ...)
+  end
+  local tUnitInfo = {}
+  if type(nId) == "number" then
     tUnit = GetUnitById(nId)
+    tUnitInfo.nId = nId
     if tUnit then
       tUnitInfo.sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
       tUnitInfo.bIsValid = tUnit:IsValid()
     end
+  else
+    tUnitInfo.nId = nil
+    tUnitInfo.sName = ""
   end
   local sFuncName = d and d.name or ""
   table.insert(_tLogs, {GetGameTime(), sFuncName, sText, tUnitInfo, ...})
+  --@end-alpha@
+end
+
+local function EncounterCall(sInfo, fCallback, tFoe, ...)
+  -- Trace all call to upper layer for debugging purpose.
+  Add2Logs(sInfo, tFoe.nId, arg)
+  -- Protected call.
+  local s, sErrMsg = pcall(fCallback, tFoe, unpack(arg))
+  --@alpha@
+  if not s then
+    Print(sInfo .. ": " .. sErrMsg)
+    Add2Logs("ERROR", nId, sErrMsg)
+  end
   --@end-alpha@
 end
 
@@ -95,8 +113,7 @@ end
 local function FoesStartCombat(nId)
   local tFoe = _tFoes[nId]
   if _bEncounterInProgress and tFoe and tFoe.OnStartCombat then
-    Add2Logs("Foe start combat", nId)
-    tFoe:OnStartCombat()
+    EncounterCall("OnStartCombat", tFoe.OnStartCombat, tFoe)
   end
 end
 local function AddFoeUnit(nId, sName, bInCombat)
@@ -153,13 +170,14 @@ local function SetCastAlert(CastType, tFoeUnit, strKey, fCallback)
   tFoeUnit[CastType][sCastName] = fCallback
 end
 
-local function CastProcess(CastType, nId, tSpell)
+local function CastProcess(sCastType, nId, sCastName, nCastEndTime)
   if _bEncounterInProgress then
     local tFoe = _tFoes[nId]
     if tFoe then
-      local sCastName = tSpell.sCastName
-      local cb = tFoe[CastType][sCastName]
-      if cb then cb(tFoe) end
+      local cb = tFoe[sCastType][sCastName]
+      if cb then
+        EncounterCall(sCastType, cb, tFoe)
+      end
     end
   end
 end
@@ -173,16 +191,16 @@ local function BuffProcess(sBuffType, nId, nIdBuff, nStack)
   if _bEncounterInProgress and tFoe then
     local cb = tFoe[sBuffType][nIdBuff]
     if cb then
-      cb(tFoe, nStack)
+      EncounterCall(sBuffType, cb, tFoe, nStack)
     end
   end
 end
-local function DebuffProcess(sBuffType, nId, nIdBuff, nStack)
+local function DebuffProcess(sDebuffType, nId, nIdBuff, nStack)
   if _bEncounterInProgress then
     for _,tFoe in next, _tFoes do
-      local cb = tFoe[sBuffType][nIdBuff]
+      local cb = tFoe[sDebuffType][nIdBuff]
       if cb then
-        cb(tFoe, nId, nStack)
+        EncounterCall(sDebuffType, cb, tFoe, nId, nStack)
       end
     end
   end
@@ -290,33 +308,33 @@ function CombatManager:StopEncounter()
   _bEncounterInProgress = false
 end
 
-function CombatManager:UnitDetected(tUnit, nId, sName)
+function CombatManager:UnitDetected(nId, tUnit, sName)
   SearchAndAdd(nId, sName, false)
   if _tFoes[nId] ~= nil then
     _CombatInterface:TrackThisUnit(nId)
   end
 end
 
-function CombatManager:UnitDestroyed(tUnit, nId, sName)
+function CombatManager:UnitDestroyed(nId, tUnit, sName)
   Add2Logs("Foe destroyed", nId)
   RemoveFoeUnit(nId)
 end
 
-function CombatManager:UnitEnteringCombat(tUnit, nId, sName)
+function CombatManager:UnitEnteringCombat(nId, tUnit, sName)
   local bExist = true
   if _tFoes[nId] then
     Add2Logs("Foe entering in combat", nId)
     _tFoes[nId].bInCombat = true
     FoesStartCombat(nId)
   else
-    bExist = self:UnknownUnitInCombat(tUnit, nId, sName)
+    bExist = self:UnknownUnitInCombat(nId, tUnit, sName)
   end
   if not bExist then
     _CombatInterface:UnTrackThisUnit(nId)
   end
 end
 
-function CombatManager:UnknownUnitInCombat(tUnit, nId, sName)
+function CombatManager:UnknownUnitInCombat(nId, tUnit, sName)
   SearchAndAdd(nId, sName, true)
   local bExist = _tFoes[nId] ~= nil
   if bExist then
@@ -325,28 +343,28 @@ function CombatManager:UnknownUnitInCombat(tUnit, nId, sName)
   end
 end
 
-function CombatManager:UnitDead(tUnit, nId, sName)
+function CombatManager:UnitDead(nId, tUnit, sName)
   Add2Logs("Foe dead", nId)
   RemoveFoeUnit(nId)
 end
 
-function CombatManager:UnitLeftCombat(tUnit, nId, sName)
+function CombatManager:UnitLeftCombat(nId, tUnit, sName)
   if _tFoes[nId] then
     Add2Logs("Foe out of combat", nId)
     _tFoes[nId].bInCombat = false
   end
 end
 
-function CombatManager:CastStart(nId, tSpell)
-  CastProcess("tCastStartAlerts", nId, tSpell)
+function CombatManager:CastStart(nId, sCastName, nCastEndTime)
+  CastProcess("tCastStartAlerts", nId, sCastName, nCastEndTime)
 end
 
-function CombatManager:CastFailed(nId, tSpell)
-  CastProcess("tCastFailedAlerts", nId, tSpell)
+function CombatManager:CastFailed(nId, sCastName, nCastEndTime)
+  CastProcess("tCastFailedAlerts", nId, sCastName, nCastEndTime)
 end
 
-function CombatManager:CastSuccess(nId, tSpell)
-  CastProcess("tCastSuccessAlerts", nId, tSpell)
+function CombatManager:CastSuccess(nId, sCastName, nCastEndTime)
+  CastProcess("tCastSuccessAlerts", nId, sCastName, nCastEndTime)
 end
 
 function CombatManager:BuffAdd(nId, nIdBuff, nStack)
@@ -374,16 +392,17 @@ function CombatManager:DebuffUpdate(nId, nIdBuff, nStackOld, nStackNew)
 end
 
 
-function CombatManager:NPCSay(sMessage)
+function CombatManager:NPCSay(nId, sMessage)
+  -- nId is currently nil.
   if _bEncounterInProgress then
     local callbacks = _tNPCSayAlerts[sMessage]
     if callbacks then
-      for nId, cb in next, callbacks do
-        if _tFoes[nId] then
-          cb(_tFoes[nId])
+      for nFoeId, cb in next, callbacks do
+        if _tFoes[nFoeId] then
+          EncounterCall("NPCSay", cb, _tFoes[nFoeId])
         else
           -- Auto clean.
-          _tNPCSayAlerts[sMessage][nId] = nil
+          _tNPCSayAlerts[sMessage][nFoeId] = nil
           if next(_tNPCSayAlerts[sMessage]) == nil then
             _tNPCSayAlerts[sMessage] = nil
           end
@@ -393,16 +412,17 @@ function CombatManager:NPCSay(sMessage)
   end
 end
 
-function CombatManager:Datachron(sMessage)
+function CombatManager:Datachron(nId, sMessage)
+  -- nId is always nil for datachron.
   if _bEncounterInProgress then
     local callbacks = _tDatachronAlerts[sMessage]
     if callbacks then
-      for nId, cb in next, callbacks do
-        if _tFoes[nId] then
-          cb(_tFoes[nId])
+      for nFoeId, cb in next, callbacks do
+        if _tFoes[nFoeId] then
+          EncounterCall("Datachron", cb, _tFoes[nFoeId])
         else
           -- Auto clean.
-          _tDatachronAlerts[sMessage][nId] = nil
+          _tDatachronAlerts[sMessage][nFoeId] = nil
           if next(_tDatachronAlerts[sMessage]) == nil then
             _tDatachronAlerts[sMessage] = nil
           end

@@ -36,7 +36,7 @@ local debug, next, string, pcall, unpack = debug, next, string, pcall, unpack
 -- Constants.
 ------------------------------------------------------------------------------
 -- Sometimes Carbine have inserted some no-break-space, for fun.
--- Behavior seen with french language.
+-- Behavior seen with French language.
 local NO_BREAK_SPACE = string.char(194, 160)
 local SCAN_PERIOD = 0.1 -- in seconds.
 local CHANNEL_NPCSAY = ChatSystemLib.ChatChannel_NPCSay
@@ -62,25 +62,28 @@ local _tHandlers = {
 }
 local _tOldLogs = {}
 local _tLogs = {}
-local nDeathTime = 0
-
 
 ------------------------------------------------------------------------------
 -- Fast and local functions.
 ------------------------------------------------------------------------------
-local function Add2Logs(sText, nId, ...)
+local function Add2Logs(sText, ...)
   --@alpha@
   local d = debug.getinfo(2, 'n')
-  local tUnitInfo = {
-    nId = nId,
-    sName = "",
-  }
-  if nId then
+  local nId = nil
+  if select("#", ...) > 0 then
+    nId = select(1, ...)
+  end
+  local tUnitInfo = {}
+  if type(nId) == "number" then
     tUnit = GetUnitById(nId)
+    tUnitInfo.nId = nId
     if tUnit then
       tUnitInfo.sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
       tUnitInfo.bIsValid = tUnit:IsValid()
     end
+  else
+    tUnitInfo.nId = nil
+    tUnitInfo.sName = ""
   end
   local sFuncName = d and d.name or ""
   table.insert(_tLogs, {GetGameTime(), sFuncName, sText, tUnitInfo, ...})
@@ -88,12 +91,18 @@ local function Add2Logs(sText, nId, ...)
 end
 
 local function ManagerCall(sMethod, ...)
+  -- Trace all call to upper layer for debugging purpose.
+  Add2Logs(sMethod, ...)
+  -- Retrieve callback function.
   fMethod = _tCombatManager[sMethod]
-  local s, sErrMsg = pcall(fMethod, _tCombatManager, unpack(arg))
+  -- Protected call.
+  local s, sErrMsg = pcall(fMethod, _tCombatManager, ...)
+  --@alpha@
   if not s then
-    Print(sErrMsg)
+    Print(sMethod .. ": " .. sErrMsg)
     Add2Logs("ERROR", nil, sErrMsg)
   end
+  --@end-alpha@
 end
 
 local function Logs2Text(_tLogs)
@@ -120,30 +129,19 @@ local function Logs2Text(_tLogs)
 end
 
 local function GetAllBuffs(tUnit)
-  local r = {
-    arBeneficial = {},
-    arHarmful = {},
-  }
-  if tUnit:IsValid() then
-    local tAllBuffs = tUnit:GetBuffs()
-    if tAllBuffs then
-      for sType, tBuffs in next, tAllBuffs do
-        r[sType] = {}
-        for _,obj in next, tBuffs do
-          r[sType][obj.idBuff] = {
-            nCount = obj.nCount,
-            nIdBuff = obj.idBuff,
-            tSpell = obj.splEffect,
-          }
-        end
+  local tAllBuffs = tUnit:GetBuffs()
+  local r = {}
+  if tAllBuffs then
+    for sType, tBuffs in next, tAllBuffs do
+      r[sType] = {}
+      for _,obj in next, tBuffs do
+        r[sType][obj.idBuff] = {
+          nCount = obj.nCount,
+          nIdBuff = obj.idBuff,
+          tSpell = obj.splEffect,
+        }
       end
     end
-  else
-    local d3 = debug.getinfo(3, 'n')
-    local d2 = debug.getinfo(2, 'n')
-    local sd2 = d2 and d2.name or ""
-    local sd3 = d2 and d2.name or ""
-    Print (GetGameTime() .. " Invaid " .. sd2 .."  " .. sd3)
   end
   return r
 end
@@ -155,8 +153,10 @@ local function TrackThisUnit(nId)
     local tAllBuffs = GetAllBuffs(tUnit)
     _tTrackedUnits[nId] = {
       tUnit = tUnit,
-      tBuffs = tAllBuffs["arBeneficial"],
+      tBuffs = tAllBuffs["arBeneficial"] or {},
       tDebuffs = {},
+      nId = nId,
+      bIsACharacter = false,
       tCast = {
         bCasting = false,
         sCastName = "",
@@ -175,8 +175,7 @@ local function UnTrackThisUnit(nId)
 end
 
 local function StopEncounter()
-  Add2Logs("StopEncounter", nil)
-  CombatInterface:Activate(false)
+  Activate(false)
   _tTrackedUnits = {}
   _tMembers = {}
   _tOldLogs = _tLogs
@@ -185,14 +184,14 @@ local function StopEncounter()
 end
 
 local function ProcessAllBuffs(tMyUnit)
-  local bProcessDebuffs = tMyUnit.tUnit:IsACharacter()
-  local bProcessBuffs = not bProcessDebuffs
   local tAllBuffs = GetAllBuffs(tUnit)
-  local nId = tMyUnit.tUnit:GetId()
+  local bProcessDebuffs = tMyUnit.bIsACharacter
+  local bProcessBuffs = not bProcessDebuffs
+  local nId = tMyUnit.nId
 
-  if bProcessDebuffs then
+  local tDebuffs = tAllBuffs["arHarmful"]
+  if bProcessDebuffs and tDebuffs then
     local tOldDebuffs = tMyUnit.tDebuffs
-    local tDebuffs = tAllBuffs["arHarmful"]
     for nIdBuff,tDebuff in next, tDebuffs do
       if tOldDebuffs[nIdBuff] then
         tOldDebuffs[nIdBuff] = nil
@@ -200,26 +199,24 @@ local function ProcessAllBuffs(tMyUnit)
         local nOldStack = tOldDebuffs[nIdBuff].nCount
         if nNewStack ~= nOldStack then
           tMyUnit.tDebuffs[nIdBuff].nCount = nNewStack
-          Add2Logs("DebuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
           ManagerCall("DebuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
         end
       else
         tMyUnit.tDebuffs[nIdBuff] = tDebuff
-        Add2Logs("DebuffAdd", nId, nIdBuff, tDebuff.nCount)
         ManagerCall("DebuffAdd", nId, nIdBuff, tDebuff.nCount)
       end
     end
     for nIdBuff,tDebuff in next, tOldDebuffs do
       if tMyUnit.tDebuffs[nIdBuff] then
         tMyUnit.tDebuffs[nIdBuff] = nil
-        Add2Logs("DebuffRemove", nId, nIdBuff)
         ManagerCall("DebuffRemove", nId, nIdBuff)
       end
     end
   end
-  if bProcessBuffs then
+
+  local tBuffs = tAllBuffs["arBeneficial"]
+  if bProcessBuffs and tBuffs then
     local tOldBuffs = tMyUnit.tBuffs
-    local tBuffs = tAllBuffs["arBeneficial"]
     for nIdBuff,tBuff in next, tBuffs do
       if tOldBuffs[i] then
         tOldBuffs[i] = nil
@@ -227,19 +224,16 @@ local function ProcessAllBuffs(tMyUnit)
         local nOldStack = tOldBuffs[i].nCount
         if nNewStack ~= nOldStack then
           tMyUnit.tBuffs[nIdBuff].nCount = nNewStack
-          Add2Logs("BuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
           ManagerCall("BuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
         end
       else
         tMyUnit.tBuffs[nIdBuff] = tBuff
-        Add2Logs("BuffAdd", nId, nIdBuff, tBuff.nCount)
         ManagerCall("BuffAdd", nId, nIdBuff, tBuff.nCount)
       end
     end
     for nIdBuff,tBuff in next, tOldBuffs do
       if tMyUnit.tBuffs[nIdBuff] then
         tMyUnit.tBuffs[nIdBuff] = nil
-        Add2Logs("BuffRemove", nId, nIdBuff)
         ManagerCall("BuffRemove", nId, nIdBuff)
       end
     end
@@ -259,11 +253,28 @@ local function UpdateMemberList()
         _tMembers[sName] = {
           tData = tMemberData,
           tUnit = tUnit,
-          tDebuffs = tAllBuffs["arHarmful"],
+          nId = tUnit:GetId(),
+          tDebuffs = tAllBuffs["arHarmful"] or {},
           tBuffs = {},
+          bIsACharacter = true,
         }
       end
     end
+  end
+end
+
+function Activate(bState)
+  if not _bRunning and bState then
+    _bRunning = true
+    RegisterEventHandler(_tHandlers.ChatMessage, "OnChatMessage",
+                         CombatInterface)
+    _tScanTimer:Start()
+  elseif _bRunning and not bState then
+    _tScanTimer:Stop()
+    RemoveEventHandler(_tHandlers.ChatMessage, CombatInterface)
+    RemoveEventHandler(_tHandlers.UnitCreated, CombatInterface)
+    RemoveEventHandler(_tHandlers.UnitDestroyed, CombatInterface)
+    _bRunning = false
   end
 end
 
@@ -292,7 +303,7 @@ function DruseraBossMods:CombatInterfaceInit(class, bTest)
 end
 
 function DruseraBossMods:CombatInterfaceUnInit()
-  CombatInterface:Activate(false)
+  Activate(false)
   _tScanTimer = nil
   RemoveEventHandler(_tHandlers.UnitEnteredCombat, CombatInterface)
 end
@@ -310,22 +321,6 @@ end
 ------------------------------------------------------------------------------
 -- Combat Interface layer.
 ------------------------------------------------------------------------------
-function CombatInterface:Activate(bState)
-  if not _bRunning and bState then
-    _bRunning = true
-    RegisterEventHandler(_tHandlers.ChatMessage, "OnChatMessage", self)
-    _tScanTimer:Start()
-    Add2Logs("True", nil)
-  elseif _bRunning and not bState then
-    _tScanTimer:Stop()
-    RemoveEventHandler(_tHandlers.ChatMessage, self)
-    RemoveEventHandler(_tHandlers.UnitCreated, self)
-    RemoveEventHandler(_tHandlers.UnitDestroyed, self)
-    _bRunning = false
-    Add2Logs("False", nil)
-  end
-end
-
 function CombatInterface:ActivateDetection(bState)
   if _bRunning and bState then
     RegisterEventHandler(_tHandlers.UnitCreated, "OnUnitCreated", self)
@@ -368,68 +363,69 @@ function CombatInterface:OnScanUpdate()
       end
 
       -- Process cast tracking.
-      if not data.tUnit:IsACharacter() then
-        local bCasting = data.tUnit:IsCasting()
-        if bCasting then
-          local sCastName = data.tUnit:GetCastName()
-          local nCastDuration = data.tUnit:GetCastDuration()
-          local nCastElapsed = data.tUnit:GetCastElapsed()
-          local nCastEndTime = GetGameTime() + (nCastDuration - nCastElapsed) / 1000
+      local bCasting = data.tUnit:IsCasting()
+      if bCasting then
+        local nCurrentTime = GetGameTime()
+        local sCastName = data.tUnit:GetCastName()
+        local nCastDuration = data.tUnit:GetCastDuration()
+        local nCastElapsed = data.tUnit:GetCastElapsed()
+        local nCastEndTime = nCurrentTime + (nCastDuration - nCastElapsed) / 1000
 
-          sCastName = string.gsub(sCastName, NO_BREAK_SPACE, " ")
-          if not data.tCast.bCasting then
-            -- New cast
+        sCastName = string.gsub(sCastName, NO_BREAK_SPACE, " ")
+        if not data.tCast.bCasting then
+          -- New cast
+          data.tCast = {
+            bCasting = true,
+            sCastName = sCastName,
+            nCastEndTime = nCastEndTime,
+            bSuccess = false,
+          }
+          ManagerCall("CastStart", nId, sCastName, nCastEndTime)
+        elseif data.tCast.bCasting then
+          if sCastName ~= data.tCast.sCastName then
+            -- New cast just after a previous one.
+            ManagerCall("CastSuccess", nId,
+                        data.tCast.sCastName,
+                        data.tCast.nCastEndTime)
             data.tCast = {
               bCasting = true,
               sCastName = sCastName,
               nCastEndTime = nCastEndTime,
               bSuccess = false,
             }
-            Add2Logs("Cast Start", nId, sCastName)
-            ManagerCall("CastStart", nId, data.tCast)
-          elseif data.tCast.bCasting then
-            if sCastName ~= data.tCast.sCastName then
-              -- New cast just after a previous one.
-              Add2Logs("Cast Success", nId, data.tCast.sCastName)
-              ManagerCall("CastSuccess", nId, data.tCast)
-              data.tCast = {
-                bCasting = true,
-                sCastName = sCastName,
-                nCastEndTime = nCastEndTime,
-                bSuccess = false,
-              }
-              Add2Logs("Cast Start", nId, sCastName)
-              ManagerCall("CastStart", nId, data.tCast)
-            elseif not data.tCast.bSuccess and nCastElapsed >= nCastDuration then
-              -- The have reached the end.
-              Add2Logs("Cast Success", nId, data.tCast.sCastName)
-              ManagerCall("CastSuccess", nId, data.tCast)
-              data.tCast = {
-                bCasting = true,
-                sCastName = sCastName,
-                nCastEndTime = 0,
-                bSuccess = true,
-              }
-            end
+            ManagerCall("CastStart", nId, sCastName, nCastEndTime)
+          elseif not data.tCast.bSuccess and nCastElapsed >= nCastDuration then
+            -- The have reached the end.
+            ManagerCall("CastSuccess", nId,
+                        data.tCast.sCastName,
+                        data.tCast.nCastEndTime)
+            data.tCast = {
+              bCasting = true,
+              sCastName = sCastName,
+              nCastEndTime = 0,
+              bSuccess = true,
+            }
           end
-        elseif data.tCast.bCasting then
-          if not data.tCast.bSuccess then
-            -- Let's compare with the nCastEndTime
-            if GetGameTime() < data.tCast.nCastEndTime then
-              Add2Logs("Cast Failed", nId, data.tCast.sCastName)
-              ManagerCall("CastFailed", nId, data.tCast)
-            else
-              Add2Logs("Cast Success", nId, data.tCast.sCastName)
-              ManagerCall("CastSuccess", nId, data.tCast)
-            end
-          end
-          data.tCast = {
-            bCasting = false,
-            sCastName = "",
-            nCastEndTime = 0,
-            bSuccess = false,
-          }
         end
+      elseif data.tCast.bCasting then
+        if not data.tCast.bSuccess then
+          -- Let's compare with the nCastEndTime
+          if GetGameTime() < data.tCast.nCastEndTime then
+            ManagerCall("CastFailed", nId,
+                        data.tCast.sCastName,
+                        data.tCast.nCastEndTime)
+          else
+            ManagerCall("CastSuccess", nId,
+                        data.tCast.sCastName,
+                        data.tCast.nCastEndTime)
+          end
+        end
+        data.tCast = {
+          bCasting = false,
+          sCastName = "",
+          nCastEndTime = 0,
+          bSuccess = false,
+        }
       end
     end
   end
@@ -442,13 +438,12 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
   if nId == GetPlayerUnit():GetId() then
     if bInCombat and not __bRunning then
       _bCheckMembers = false
-      Add2Logs("StartEncounter", nil)
-      self:Activate(true)
+      Activate(true)
       ManagerCall("StartEncounter")
     elseif _bRunning and not bInCombat then
       if tUnit:GetHealth() == 0 then
         _bCheckMembers = true
-        nDeathTime = GetGameTime()
+        Add2Logs("Player is dead", nId)
       else
         StopEncounter()
       end
@@ -457,20 +452,16 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
     -- Members of the raid are not managed here.
   elseif _tTrackedUnits[nId] then
     if bInCombat then
-      Add2Logs("TrackedUnitInCombat", nId)
-      ManagerCall("UnitEnteringCombat", tUnit, nId, sName)
+      ManagerCall("UnitEnteringCombat", nId, tUnit ,sName)
     elseif tUnit:GetHealth() == 0 then
-      Add2Logs("TrackedUnitIsDead", nId)
       UnTrackThisUnit(nId)
-      ManagerCall("UnitDead", tUnit, nId, sName)
+      ManagerCall("UnitDead", nId, tUnit, sName)
     else
-      Add2Logs("TrackedUnitLeftCombat", nId)
-      ManagerCall("UnitLeftCombat", tUnit, nId, sName)
+      ManagerCall("UnitLeftCombat", nId, tUnit, sName)
     end
   else
     if bInCombat then
-      Add2Logs("UnknownUnitInCombat", nId)
-      ManagerCall("UnknownUnitInCombat", tUnit, nId, sName)
+      ManagerCall("UnknownUnitInCombat", nId, tUnit, sName)
     end
   end
 end
@@ -481,11 +472,9 @@ function CombatInterface:OnChatMessage(tChannelCurrent, tMessage)
   sMessage = string.gsub(sMessage, NO_BREAK_SPACE, " ")
 
   if CHANNEL_NPCSAY == ChannelType then
-    Add2Logs("NPCSay", nil)
-    ManagerCall("NPCSay", sMessage)
+    ManagerCall("NPCSay", nil, sMessage)
   elseif CHANNEL_DATACHRON == ChannelType then
-    Add2Logs("Datachron", nil)
-    ManagerCall("Datachron", sMessage)
+    ManagerCall("Datachron", nil, sMessage)
   end
 end
 
@@ -494,17 +483,15 @@ function CombatInterface:OnUnitCreated(tUnit)
   local sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
 
   if not tUnit:IsInYourGroup() and nId ~= GetPlayerUnit():GetId() then
-    Add2Logs("UnitDetected", nId)
-    ManagerCall("UnitDetected", tUnit, nId, sName)
+    ManagerCall("UnitDetected", nId, tUnit, sName)
   end
 end
 
 function CombatInterface:OnUnitDestroyed(tUnit)
   local nId = tUnit:GetId()
   if _tTrackedUnits[nId] then
-    Add2Logs("UnitDestroyed", nId)
     UnTrackThisUnit(nId)
-    ManagerCall("UnitDestroyed", tUnit, sName)
+    ManagerCall("UnitDestroyed", nId, tUnit, sName)
   end
 end
 
