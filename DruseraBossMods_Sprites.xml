@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Sprites>
-    <Sprite Name="bars_default" Cycle="1">
+    <Sprite Name="bar_default" Cycle="1">
         <Frame Texture="DruseraBossMods\sprites\bars\default.tga" x0="0" x1="100" x2="100" x3="152" x4="256" x5="256" y0="0" y1="2" y2="2" y3="2" y4="30" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="gui_hr" Cycle="1">
