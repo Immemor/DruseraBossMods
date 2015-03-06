@@ -11,24 +11,26 @@
 require "Apollo"
 local DBM = Apollo.GetAddon("DruseraBossMods")
 local FullyOptimizedCanimid = {}
+local _nUndermine_count = 0
+local _bTerraform = true
 
 ------------------------------------------------------------------------------
 -- OnStartCombat function.
 ------------------------------------------------------------------------------
 function FullyOptimizedCanimid:OnStartCombat()
-  self.undermine_count = 0
-  self.terraform = true
+  _nUndermine_count = 0
+  _bTerraform = true
 
-  DBM:SetCastStartAlert(self, "UNDERMINE", 30, function(self)
-    self.undermine_count = self.undermine_count + 1
+  DBM:SetCastStartAlert(self, "UNDERMINE", function(self)
+    _nUndermine_count = _nUndermine_count + 1
   end)
-  DBM:SetCastSuccessAlert(self, "UNDERMINE", 30, function(self)
-    if self.undermine_count == 5 then
-      self.undermine_count = 0
-      if not self.terraform then
+  DBM:SetCastSuccessAlert(self, "UNDERMINE", function(self)
+    if _nUndermine_count == 5 then
+      _nUndermine_count = 0
+      if not _bTerraform then
         DBM:SetTimerAlert(self, "UNDERMINE", 9, nil)
       end
-      self.terraform = not self.terraform
+      _bTerraform = not _bTerraform
     end
   end)
 
@@ -47,16 +49,19 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "DATASCAPE",
-    EncounterName = "FULLY_OPTIMIZED_CANIMID",
-    ZoneName = "HALLS_OF_THE_INFINITE_MIND",
-  },{
-    FULLY_OPTIMIZED_CANIMID = FullyOptimizedCanimid,
-  }, {
-    FULLY_OPTIMIZED_CANIMID = {
-      BarsCustom = {
-        UNDERMINE = { color = "xkcdBrightYellow" },
-        TERRAFORMATION = { color = "xkcdBrightRed" },
+    nZoneMapParentId = 98,
+    nZoneMapId = 108,
+    sEncounterName = "FULLY_OPTIMIZED_CANIMID",
+    tTriggerNames = { "FULLY_OPTIMIZED_CANIMID" },
+    tUnits = {
+      FULLY_OPTIMIZED_CANIMID = FullyOptimizedCanimid,
+    },
+    tCustom = {
+      FULLY_OPTIMIZED_CANIMID = {
+        BarsCustom = {
+          UNDERMINE = { color = "xkcdBrightYellow" },
+          TERRAFORMATION = { color = "xkcdBrightRed" },
+        },
       },
     },
   })

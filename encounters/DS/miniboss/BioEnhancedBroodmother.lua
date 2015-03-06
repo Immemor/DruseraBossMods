@@ -16,6 +16,10 @@ local BioEnhancedBroodmother = {}
 -- OnStartCombat function.
 ------------------------------------------------------------------------------
 function BioEnhancedBroodmother:OnStartCombat()
+  DBM:CreateHealthBar(self, "BIO_ENHANCED_BROODMOTHER")
+  DBM:SetCastStartAlert(self, "AUGMENTED_VENOM", function(self)
+    DBM:PlaySound("Alarm")
+  end)
   DBM:SetCastSuccessAlert(self, "AUGMENTED_VENOM", function(self)
     DBM:SetTimerAlert(self, "AUGMENTED_VENOM", 40, nil)
   end)
@@ -29,15 +33,18 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "DATASCAPE",
-    EncounterName = "BIO_ENHANCED_BROODMOTHER",
-    ZoneName = "HALLS_OF_THE_INFINITE_MIND",
-  },{
-    BIO_ENHANCED_BROODMOTHER = BioEnhancedBroodmother,
-  }, {
-    BIO_ENHANCED_BROODMOTHER = {
-      BarsCustom = {
-        AUGMENTED_VENOM = { color = "xkcdBrightRed" },
+    nZoneMapParentId = 98,
+    nZoneMapId = 108,
+    sEncounterName = "BIO_ENHANCED_BROODMOTHER",
+    tTriggerNames = { "BIO_ENHANCED_BROODMOTHER" },
+    tUnits = {
+      BIO_ENHANCED_BROODMOTHER = BioEnhancedBroodmother,
+    },
+    tCustom = {
+      BIO_ENHANCED_BROODMOTHER = {
+        BarsCustom = {
+          AUGMENTED_VENOM = { color = "xkcdBrightRed" },
+        },
       },
     },
   })

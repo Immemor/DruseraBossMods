@@ -23,14 +23,17 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "DATASCAPE",
-    EncounterName = "LOGIC_GUIDED_ROCKSLIDE",
-    ZoneName = "HALLS_OF_THE_INFINITE_MIND",
-  },{
-    LOGIC_GUIDED_ROCKSLIDE = LogicGuidedRockslide,
-  }, {
-    LOGIC_GUIDED_ROCKSLIDE = {
-      BarsCustom = {
+    nZoneMapParentId = 98,
+    nZoneMapId = 108,
+    sEncounterName = "LOGIC_GUIDED_ROCKSLIDE",
+    tTriggerNames = { "LOGIC_GUIDED_ROCKSLIDE" },
+    tUnits = {
+      LOGIC_GUIDED_ROCKSLIDE = LogicGuidedRockslide,
+    },
+    tCustom = {
+      LOGIC_GUIDED_ROCKSLIDE = {
+        BarsCustom = {
+        },
       },
     },
   })
