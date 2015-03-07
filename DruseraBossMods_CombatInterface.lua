@@ -130,7 +130,7 @@ end
 
 local function GetAllBuffs(tUnit)
   local r = {}
-  if tUnit:IsValid() then
+  if tUnit then
     local tAllBuffs = tUnit:GetBuffs()
     if tAllBuffs then
       for sType, tBuffs in next, tAllBuffs do
@@ -186,58 +186,56 @@ local function StopEncounter()
 end
 
 local function ProcessAllBuffs(tMyUnit)
-  local tAllBuffs = GetAllBuffs(tUnit)
+  local tAllBuffs = GetAllBuffs(tMyUnit.tUnit)
   local bProcessDebuffs = tMyUnit.bIsACharacter
   local bProcessBuffs = not bProcessDebuffs
   local nId = tMyUnit.nId
 
-  local tDebuffs = tAllBuffs["arHarmful"]
-  if bProcessDebuffs and tDebuffs then
-    local tOldDebuffs = tMyUnit.tDebuffs
-    for nIdBuff,tDebuff in next, tDebuffs do
-      if tOldDebuffs[nIdBuff] then
-        tOldDebuffs[nIdBuff] = nil
-        local nNewStack = tDebuff.nCount
-        local nOldStack = tOldDebuffs[nIdBuff].nCount
+  local tNewDebuffs = tAllBuffs["arHarmful"]
+  local tDebuffs = tMyUnit.tDebuffs
+  if bProcessDebuffs and tNewDebuffs then
+    for nIdBuff,current in next, tDebuffs do
+      if tNewDebuffs[nIdBuff] then
+        local nOldStack = current.nCount
+        local nNewStack = tNewDebuffs[nIdBuff].nCount
         if nNewStack ~= nOldStack then
-          tMyUnit.tDebuffs[nIdBuff].nCount = nNewStack
+          tDebuffs[nIdBuff].nCount = nNewStack
           ManagerCall("DebuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
         end
+        -- Remove this entry for second loop.
+        tNewDebuffs[nIdBuff] = nil
       else
-        tMyUnit.tDebuffs[nIdBuff] = tDebuff
-        ManagerCall("DebuffAdd", nId, nIdBuff, tDebuff.nCount)
-      end
-    end
-    for nIdBuff,tDebuff in next, tOldDebuffs do
-      if tMyUnit.tDebuffs[nIdBuff] then
-        tMyUnit.tDebuffs[nIdBuff] = nil
+        tDebuffs[nIdBuff] = nil
         ManagerCall("DebuffRemove", nId, nIdBuff)
       end
     end
+    for nIdBuff,tNew in next, tNewDebuffs do
+      tDebuffs[nIdBuff] = tNew
+      ManagerCall("DebuffAdd", nId, nIdBuff, tNew.nCount)
+    end
   end
 
-  local tBuffs = tAllBuffs["arBeneficial"]
-  if bProcessBuffs and tBuffs then
-    local tOldBuffs = tMyUnit.tBuffs
-    for nIdBuff,tBuff in next, tBuffs do
-      if tOldBuffs[i] then
-        tOldBuffs[i] = nil
-        local nNewStack = tBuff.nCount
-        local nOldStack = tOldBuffs[i].nCount
+  local tNewBuffs = tAllBuffs["arBeneficial"]
+  local tBuffs = tMyUnit.tBuffs
+  if bProcessBuffs and tNewBuffs then
+    for nIdBuff,current in next, tBuffs do
+      if tNewBuffs[nIdBuff] then
+        local nOldStack = current.nCount
+        local nNewStack = tNewBuffs[nIdBuff].nCount
         if nNewStack ~= nOldStack then
-          tMyUnit.tBuffs[nIdBuff].nCount = nNewStack
+          tBuffs[nIdBuff].nCount = nNewStack
           ManagerCall("BuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
         end
+        -- Remove this entry for second loop.
+        tNewBuffs[nIdBuff] = nil
       else
-        tMyUnit.tBuffs[nIdBuff] = tBuff
-        ManagerCall("BuffAdd", nId, nIdBuff, tBuff.nCount)
-      end
-    end
-    for nIdBuff,tBuff in next, tOldBuffs do
-      if tMyUnit.tBuffs[nIdBuff] then
-        tMyUnit.tBuffs[nIdBuff] = nil
+        tBuffs[nIdBuff] = nil
         ManagerCall("BuffRemove", nId, nIdBuff)
       end
+    end
+    for nIdBuff, tNew in next, tNewBuffs do
+      tBuffs[nIdBuff] = tNew
+      ManagerCall("BuffAdd", nId, nIdBuff, tNew.nCount)
     end
   end
 end
