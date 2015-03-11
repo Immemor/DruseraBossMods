@@ -17,6 +17,7 @@
     <Script Name="DruseraBossMods_CombatManager.lua"/>
     <Script Name="DruseraBossMods_HUD.lua"/>
     <Script Name="DruseraBossMods_GUI.lua"/>
+    <Script Name="Logger.lua"/>
     <!-- Encounters -->
     <Script Name="encounters\TEST\test.lua"/>
     <Script Name="encounters\GA\ExperimentX89.lua"/>

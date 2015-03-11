@@ -43,40 +43,14 @@ local _tDatabase = {} -- Copy will be done on init.
 local _tNPCSayAlerts = {}
 local _tDatachronAlerts = {}
 local _tMarksOnUnit = {}
--- For EncounterLog windows.
-local nFightStartTime = nil
-local _tOldLogs = {}
-local _tLogs = {}
 
 ------------------------------------------------------------------------------
 -- Fast and local functions.
 ------------------------------------------------------------------------------
 local function Add2Logs(sText, ...)
-  if not _bEncounterInProgress then return end
-  --@alpha@
-  local nId = nil
-  local argv = {}
-  local args = select("#", ...)
-  if args > 0 then
-    nId = select(1, ...)
-    if args > 1 then
-      argv = { select(2, ...) }
-    end
+  if CombatManager.tLogger then
+    CombatManager.tLogger:Add(sText, ...)
   end
-  local tUnitInfo = {}
-  if type(nId) == "number" then
-    tUnit = GetUnitById(nId)
-    tUnitInfo.nId = nId
-    if tUnit then
-      tUnitInfo.sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
-      tUnitInfo.bIsValid = tUnit:IsValid()
-    end
-  else
-    tUnitInfo.nId = nil
-    tUnitInfo.sName = ""
-  end
-  table.insert(_tLogs, {GetGameTime(), sText, tUnitInfo, argv})
-  --@end-alpha@
 end
 
 local function EncounterCall(sInfo, fCallback, tFoe, ...)
@@ -196,14 +170,8 @@ function DruseraBossMods:CombatManagerInit()
   -- Copy the database to improve performance.
   _bEncounterInProgress = false
   _CombatInterface = self:CombatInterfaceInit(CombatManager, false)
+  CombatManager.tLogger = self:NewLoggerNamespace(CombatManager, "CombatManager")
   return CombatManager
-end
-
-function DruseraBossMods:CombatManagerDumpOldLog()
-  if nFightStartTime and next(_tOldLogs) then
-    return {nFightStartTime, _tOldLogs}
-  end
-  return nil
 end
 
 function DruseraBossMods:RegisterEncounterSecond(tData)
@@ -263,9 +231,8 @@ end
 -- Combat Manager layer.
 ------------------------------------------------------------------------------
 function CombatManager:StartEncounter()
-  nFightStartTime = GetGameTime()
   _bEncounterInProgress = true
-  Add2Logs("Start Encounter")
+  Add2Logs("StartEncounter")
   for nId, Foe in next, _tFoes do
     if Foe.tUnit:IsValid() then
       if Foe.bInCombat then
@@ -276,7 +243,7 @@ function CombatManager:StartEncounter()
 end
 
 function CombatManager:StopEncounter()
-  Add2Logs("Stop Encounter")
+  Add2Logs("StopEncounter")
   for nId,FoeUnit in next, _tFoes do
     RemoveFoeUnit(nId)
   end
@@ -287,8 +254,6 @@ function CombatManager:StopEncounter()
   _tCurrentEncounter = nil
   _tNPCSayAlerts = {}
   _tDatachronAlerts = {}
-  _tOldLogs = _tLogs
-  _tLogs = {}
   _bEncounterInProgress = false
 end
 
@@ -418,6 +383,18 @@ function CombatManager:Datachron(nId, sMessage)
       end
     end
   end
+end
+
+function CombatManager:ExtraLog2Text(sText, tExtraData, nRefTime)
+  local sResult = ""
+  if sText == "ERROR" then
+    sResult = tExtraData[1]
+  elseif sText == "Play Sound" then
+    local sFileName = tExtraData[1]
+    local sFormat = "FileName='%s'"
+    sResult = string.format(sFormat, sFileName)
+  end
+  return sResult
 end
 
 ------------------------------------------------------------------------------

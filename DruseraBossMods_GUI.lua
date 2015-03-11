@@ -48,6 +48,49 @@ local function GUI_SetActiveItem(wndControl)
   end
 end
 
+local function GUI_BuildEncounterLog(wndControl, sNamespace)
+  -- retrieve grid windows and reset it.
+  local wndParent = wndControl:GetParent()
+  local wndGrid = nil
+  local tLastBuffer = {}
+  for _, wnd in next, wndParent:GetChildren() do
+    if wnd:GetName() == "Grid" then
+      wndGrid = wnd
+      wndGrid:DeleteAll()
+      break
+    end
+  end
+  -- Retrieve last combat.
+  local tLogger = DruseraBossMods:GetLoggerByNamespace(sNamespace)
+  if tLogger then
+    local nIndex = DruseraBossMods:GetLastBufferIndex()
+    tLastBuffer = tLogger._tBuffers[nIndex]
+  end
+  -- Interpret last combat, and set info in the grid.
+  if wndGrid and next(tLastBuffer) then
+    local nStartTime = nil
+    for _, tEntry in next, tLastBuffer do
+      local sText = tEntry[2]
+      if sText == "StartEncounter" then
+        nStartTime = tEntry[1]
+        break
+      elseif nStartTime == nil then
+        nStartTime = tEntry[1]
+      end
+    end
+
+    -- Interpret last combat, and set info in the grid.
+    local tLines = DruseraBossMods:GetLog2Grid(nStartTime, tLogger.tModule, tLastBuffer)
+    for _, tColumns in next, tLines do
+      local idx = wndGrid:AddRow("")
+      for i = 1, 5 do
+        wndGrid:SetCellText(idx, i, tColumns[i])
+      end
+      wndGrid:SetCellSortText(idx, 1, tLastBuffer[idx][1])
+    end
+  end
+end
+
 ------------------------------------------------------------------------------
 -- Public functions.
 ------------------------------------------------------------------------------
@@ -215,131 +258,9 @@ function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)
 end
 
 function DruseraBossMods:OnCombatInterfaceLog(wndHandler, wndControl, eMouseButton)
-  local tData = self:CombatInterfaceDumpOldLog()
-  if tData then
-    local nStartTime = tData[1]
-    local tLogs = tData[2]
-
-    local wndParent = wndControl:GetParent()
-    local wndGrid = nil
-    for _, wnd in next, wndParent:GetChildren() do
-      if wnd:GetName() == "Grid" then
-        wndGrid = wnd
-        break
-      end
-    end
-    if wndGrid then
-      wndGrid:DeleteAll()
-      for _,tLog in next, tLogs do
-        local idx = wndGrid:AddRow("")
-
-        -- First column
-        local nDiffTime = string.format("%.2f", tLog[1] - nStartTime)
-        wndGrid:SetCellText(idx, 1, nDiffTime)
-        wndGrid:SetCellSortText(idx, 1, tLog[1])
-        -- Second column
-        local sText = tLog[2]
-        wndGrid:SetCellText(idx, 2, sText)
-        -- Third column
-        local tUnitInfo = tLog[3]
-        if tUnitInfo then
-          if tUnitInfo.sName then
-            wndGrid:SetCellText(idx, 3, tUnitInfo.sName)
-          elseif tUnitInfo.nId and not tUnitInfo.bIsValid then
-            wndGrid:SetCellText(idx, 3, "(invalid)")
-          end
-        end
-        -- column #4
-        if tUnitInfo and tUnitInfo.nId then
-          local sId = tostring(tUnitInfo.nId)
-          wndGrid:SetCellText(idx, 4, sId)
-        end
-        -- column #5
-        local tExtraInfo = tLog[4]
-        if sText == "ERROR" then
-          wndGrid:SetCellText(idx, 5, tExtraInfo[1])
-        elseif sText == "DebuffAdd" or sText == "BuffAdd" then
-          local nSpellId = tExtraInfo[1]
-          local sSpellName = tExtraInfo[2]
-          local nStackCount = tExtraInfo[3]
-          local sFormat = "SpellName='%s' SpellId=%d StackCount=%d"
-          wndGrid:SetCellText(idx, 5, string.format(sFormat, sSpellName, nSpellId, nStackCount))
-        elseif sText == "DebuffRemove" or sText == "BuffRemove" then
-          local nSpellId = tExtraInfo[1]
-          local sSpellName = tExtraInfo[2]
-          local sFormat = "SpellName='%s' SpellId=%d"
-          wndGrid:SetCellText(idx, 5, string.format(sFormat, sSpellName, nSpellId))
-        elseif sText == "DebuffUpdate" or sText == "BuffUpdate" then
-          local nSpellId = tExtraInfo[1]
-          local sSpellName = tExtraInfo[2]
-          local nOldStackCount = tExtraInfo[3]
-          local nNewStackCount = tExtraInfo[4]
-          local sFormat = "SpellName='%s' SpellId=%d OldStack=%d NewStack=%d"
-          wndGrid:SetCellText(idx, 5, string.format(sFormat, sSpellName, nSpellId, nOldStackCount, nNewStackCount))
-        elseif sText == "CastStart" or sText == "CastSuccess" or sText == "CastFailed" then
-          local sCastName = tExtraInfo[1]
-          local nCastEndTime = tExtraInfo[2] - nStartTime
-          local sFormat = "CastName='%s' CastEndTime=%.2f"
-          wndGrid:SetCellText(idx, 5, string.format(sFormat, sCastName, nCastEndTime))
-        elseif sText == "NPCSay" or sText == "Datachron" then
-          local sMessage = tExtraInfo[1]
-          wndGrid:SetCellText(idx, 5, sMessage)
-        end
-      end
-    end
-  end
+  GUI_BuildEncounterLog(wndControl, "CombatInterface")
 end
 
 function DruseraBossMods:OnCombatManagerLog(wndHandler, wndControl, eMouseButton)
-  local tData = self:CombatManagerDumpOldLog()
-  if tData then
-    local nStartTime = tData[1]
-    local tLogs = tData[2]
-
-    local wndParent = wndControl:GetParent()
-    local wndGrid = nil
-    for _, wnd in next, wndParent:GetChildren() do
-      if wnd:GetName() == "Grid" then
-        wndGrid = wnd
-        break
-      end
-    end
-    if wndGrid then
-      wndGrid:DeleteAll()
-      for _,tLog in next, tLogs do
-        local idx = wndGrid:AddRow("")
-
-        -- First column
-        local nDiffTime = string.format("%.2f", tLog[1] - nStartTime)
-        wndGrid:SetCellText(idx, 1, nDiffTime)
-        wndGrid:SetCellSortText(idx, 1, tLog[1])
-        -- Second column
-        local sText = tLog[2]
-        wndGrid:SetCellText(idx, 2, sText)
-        -- Third column
-        local tUnitInfo = tLog[3]
-        if tUnitInfo then
-          if tUnitInfo.sName then
-            wndGrid:SetCellText(idx, 3, tUnitInfo.sName)
-          elseif tUnitInfo.nId and not tUnitInfo.bIsValid then
-            wndGrid:SetCellText(idx, 3, "(invalid)")
-          end
-        end
-        -- column #4
-        if tUnitInfo and tUnitInfo.nId then
-          local sId = tostring(tUnitInfo.nId)
-          wndGrid:SetCellText(idx, 4, sId)
-        end
-        -- column #5
-        local tExtraInfo = tLog[4]
-        if sText == "ERROR" then
-          wndGrid:SetCellText(idx, 5, tExtraInfo[1])
-        elseif sText == "Play Sound" then
-          local sFileName = tExtraInfo[1]
-          local sFormat = "FileName='%s'"
-          wndGrid:SetCellText(idx, 5, string.format(sFormat, sFileName))
-        end
-      end
-    end
-  end
+  GUI_BuildEncounterLog(wndControl, "CombatManager")
 end

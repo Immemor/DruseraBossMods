@@ -61,39 +61,14 @@ local _tHandlers = {
   UnitEnteredCombat = "UnitEnteredCombat",
   ChatMessage = "ChatMessage",
 }
--- For EncounterLog windows.
-local nStartEncounterTime = nil
-local _tOldLogs = {}
-local _tLogs = {}
 
 ------------------------------------------------------------------------------
 -- Fast and local functions.
 ------------------------------------------------------------------------------
 local function Add2Logs(sText, ...)
-  --@alpha@
-  local nId = nil
-  local argv = {}
-  local args = select("#", ...)
-  if args > 0 then
-    nId = select(1, ...)
-    if args > 1 then
-      argv = {select(2, ...)}
-    end
+  if CombatInterface.tLogger then
+    CombatInterface.tLogger:Add(sText, ...)
   end
-  local tUnitInfo = {}
-  if type(nId) == "number" then
-    tUnit = GetUnitById(nId)
-    tUnitInfo.nId = nId
-    if tUnit then
-      tUnitInfo.sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
-      tUnitInfo.bIsValid = tUnit:IsValid()
-    end
-  else
-    tUnitInfo.nId = nil
-    tUnitInfo.sName = ""
-  end
-  table.insert(_tLogs, {GetGameTime(), sText, tUnitInfo, argv})
-  --@end-alpha@
 end
 
 local function ManagerCall(sMethod, ...)
@@ -166,8 +141,7 @@ local function StopEncounter()
   ManagerCall("StopEncounter")
   _tTrackedUnits = {}
   _tMembers = {}
-  _tOldLogs = _tLogs
-  _tLogs = {}
+  DruseraBossMods:NextLogBuffer()
 end
 
 local function ProcessAllBuffs(tMyUnit)
@@ -284,6 +258,7 @@ function DruseraBossMods:CombatInterfaceInit(class, bTest)
   RegisterEventHandler(_tHandlers.UnitEnteredCombat, "OnEnteredCombat", CombatInterface)
   _tScanTimer = ApolloTimer.Create(SCAN_PERIOD, true, "OnScanUpdate", CombatInterface)
   _tScanTimer:Stop()
+  CombatInterface.tLogger = self:NewLoggerNamespace(CombatInterface, "CombatInterface")
   return CombatInterface
 end
 
@@ -291,13 +266,6 @@ function DruseraBossMods:CombatInterfaceUnInit()
   Activate(false)
   _tScanTimer = nil
   RemoveEventHandler(_tHandlers.UnitEnteredCombat, CombatInterface)
-end
-
-function DruseraBossMods:CombatInterfaceDumpOldLog()
-  if nStartEncounterTime and next(_tOldLogs) then
-    return {nStartEncounterTime, _tOldLogs}
-  end
-  return nil
 end
 
 ------------------------------------------------------------------------------
@@ -421,7 +389,6 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
   if nId == GetPlayerUnit():GetId() then
     if bInCombat and not __bRunning then
       _bCheckMembers = false
-      nStartEncounterTime = GetGameTime()
       Activate(true)
       ManagerCall("StartEncounter")
     elseif _bRunning and not bInCombat then
@@ -485,4 +452,37 @@ end
 
 function CombatInterface:TrackThisUnit(nId)
   TrackThisUnit(nId)
+end
+
+function CombatInterface:ExtraLog2Text(sText, tExtraData, nRefTime)
+  local sResult = ""
+  if sText == "ERROR" then
+    sResult = tExtraData[1]
+  elseif sText == "DebuffAdd" or sText == "BuffAdd" then
+    local nSpellId = tExtraData[1]
+    local sSpellName = tExtraData[2]
+    local nStackCount = tExtraData[3]
+    local sFormat = "Name='%s' Id=%d StackCount=%d"
+    sResult = string.format(sFormat, sSpellName, nSpellId, nStackCount)
+  elseif sText == "DebuffRemove" or sText == "BuffRemove" then
+    local nSpellId = tExtraData[1]
+    local sSpellName = tExtraData[2]
+    local sFormat = "Name='%s' Id=%d"
+    sResult = string.format(sFormat, sSpellName, nSpellId)
+  elseif sText == "DebuffUpdate" or sText == "BuffUpdate" then
+    local nSpellId = tExtraData[1]
+    local sSpellName = tExtraData[2]
+    local nOldStackCount = tExtraData[3]
+    local nNewStackCount = tExtraData[4]
+    local sFormat = "Name='%s' Id=%d OldStack=%d NewStack=%d"
+    sResult = string.format(sFormat, sSpellName, nSpellId, nOldStackCount, nNewStackCount)
+  elseif sText == "CastStart" or sText == "CastSuccess" or sText == "CastFailed" then
+    local sCastName = tExtraData[1]
+    local nCastEndTime = tExtraData[2] - nRefTime
+    local sFormat = "CastName='%s' CastEndTime=%.3f"
+    sResult = string.format(sFormat, sCastName, nCastEndTime)
+  elseif sText == "NPCSay" or sText == "Datachron" then
+    sResult = tExtraData[1]
+  end
+  return sResult
 end
