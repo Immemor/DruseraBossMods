@@ -9,7 +9,7 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
-local DBM = Apollo.GetAddon("DruseraBossMods")
+local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local ExperimentX89 = {}
 local GetPlayerUnit = GameLib.GetPlayerUnit
 
@@ -23,7 +23,7 @@ function ExperimentX89:OnStartCombat()
   DBM:CreateHealthBar(self, "EXPERIMENT_X89")
 
   -- Small bomb alert.
-  DBM:SetDebuffAddAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
+  DBM:SetDebuffAddAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, sName, nStack)
     local bItself = nTargetId == GetPlayerUnit():GetId()
     DBM:SetMessage({
       sLabel = "MSG_SMALL_BOMB",
@@ -33,15 +33,15 @@ function ExperimentX89:OnStartCombat()
     if bItself then
       DBM:PlaySound("Alarm")
     else
-      DBM:SetMarkOnUnit("Crosshair", nTargetId)
+      DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
     end
   end)
-  DBM:SetDebuffRemoveAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
-    DBM:SetMarkOnUnit(nil, nTargetId)
+  DBM:SetDebuffRemoveAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, sName, nStack)
+    DBM:SetMarkOnUnit(nil, nTargetId, 51)
   end)
 
   -- Big bomb alert.
-  DBM:SetDebuffAddAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
+  DBM:SetDebuffAddAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, sName, nStack)
     local bItself = nTargetId == GetPlayerUnit():GetId()
     DBM:SetMessage({
       sLabel = "MSG_BIG_BOMB",
@@ -51,11 +51,11 @@ function ExperimentX89:OnStartCombat()
     if bItself then
       DBM:PlaySound("Alarm")
     else
-      DBM:SetMarkOnUnit("Crosshair", nTargetId)
+      DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
     end
   end)
-  DBM:SetDebuffRemoveAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
-    DBM:SetMarkOnUnit(nil, nTargetId)
+  DBM:SetDebuffRemoveAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, sName, nStack)
+    DBM:SetMarkOnUnit(nil, nTargetId, 51)
   end)
 end
 

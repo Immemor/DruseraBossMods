@@ -20,6 +20,33 @@ if not L then return end
 -- French / Francais.
 ------------------------------------------------------------------------------
 
+-- Graphic User Interface:
+---- Top Menu
+L["START_TEST"] = "Début du Test"
+L["TOGGLE_ANCHORS"] = "Inverser les Ancres"
+L["RESET_ANCHORS"] = "Réinitialiser les Ancres"
+---- Left Menu
+L["HOME"] = "Accueil"
+L["BARS"] = "Barres"
+L["SOUNDS"] = "Sons"
+L["MARKERS"] = "Marqueurs"
+L["BOSSES"] = "Bosses"
+---- Bar Customization
+L["HIGHLIGHT"] = "Evidence"
+L["BAR_CUSTOMIZATION"] = "Personnalisation des Barres"
+L["SOUND_CUSTOMIZATION"] = "Personnalisation des sons"
+L["INVERSE_SORT"] = "Inverser l'ordre de tri"
+L["ALIGN_TO_THE_BOTTOM_FRAME"] = "Aligner sur le bas du cadre"
+L["FILL_WITH_COLOR"] = "Remplir avec de la couleur"
+L["DISPLAY_TIME"] = "Afficher le temps"
+L["BAR_HEIGHT"] = "Hauteur d'une barre"
+L["TEXTURE"] = "Texture"
+L["THRESHOLD_TO_MOVE_FROM_NORMAL_TO_HIGHLIGHT"] = "Seuil pour basculer de normal à évidence"
+L["FONT"] = "Police"
+L["MUTE_ALL_SOUND"] = "Couper tous les sons"
+L["ENCOUNTER_LOG"] = "Log de la rencontre"
+
+
 -- For testing.
 L["PHASER_COMBO"] = "Combo de phaser"
 L["GALERAS"] = "Khamsin"
@@ -150,6 +177,12 @@ L["NEXT_PLATFORM_SHAKES"] = "Prochain tremblement de plateforme"
 L["VOLATILITY_LATTICE"] = "Volatility Lattice"
 ------ Encounter: Limbo Infomatrix
 L["LIMBO_INFOMATRIX"] = "Limbo Infomatrix"
+L["KEEPER_OF_SANDS"] = "Gardien des sables"
+L["INFOMATRIX_ANTLION"] = "Fourmilion de l'Infomatrice"
+L["CAST_EXHAUST"] = "Épuiser"
+L["CAST_DESICCATE"] = "Arracher"
+L["HOSTILE_INVISIBLE_UNIT"] = "Unité haineuse invisible"
+L["MSG_WARNING_KNOCKBACK"] = "Attention: Knock-Back"
 ------ Encounter: Avatus
 L["AVATUS"] = "Avatus"
 

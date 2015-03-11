@@ -9,7 +9,7 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
-local DBM = Apollo.GetAddon("DruseraBossMods")
+local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local VolatilityLattice = {}
 
 ------------------------------------------------------------------------------
@@ -23,10 +23,12 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "DATASCAPE",
-    EncounterName = "VOLATILITY_LATTICE",
-    ZoneName = "QUANTUM_VORTEX",
-  },{
-    VOLATILITY_LATTICE = VolatilityLattice,
-  }, nil)
+    nZoneMapParentId = 98,
+    nZoneMapId = nil,
+    sEncounterName = "VOLATILITY_LATTICE",
+    tTriggerNames = { "VOLATILITY_LATTICE", },
+    tUnits = {
+      VOLATILITY_LATTICE = VolatilityLattice,
+    },
+  })
 end

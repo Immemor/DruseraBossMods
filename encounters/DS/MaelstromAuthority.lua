@@ -9,7 +9,7 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
-local DBM = Apollo.GetAddon("DruseraBossMods")
+local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local MaelstromAuthority = {}
 
 ------------------------------------------------------------------------------
@@ -28,10 +28,11 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "DATASCAPE",
-    EncounterName = "MAELSTROM_AUTHORITY",
-    ZoneName = "QUANTUM_VORTEX",
-  },{
-    MAELSTROM_AUTHORITY = MaelstromAuthority,
-  }, nil)
+    nZoneMapParentId = 98,
+    nZoneMapId = nil,
+    sEncounterName = "MAELSTROM_AUTHORITY",
+    tUnits = {
+      MAELSTROM_AUTHORITY = MaelstromAuthority,
+    },
+  })
 end

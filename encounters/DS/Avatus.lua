@@ -9,7 +9,7 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
-local DBM = Apollo.GetAddon("DruseraBossMods")
+local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local Avatus = {}
 
 ------------------------------------------------------------------------------
@@ -23,10 +23,12 @@ end
 ------------------------------------------------------------------------------
 do
   DBM:RegisterEncounter({
-    RaidName = "DATASCAPE",
-    EncounterName = "AVATUS",
-    ZoneName = "QUANTUM_VORTEX",
-  },{
-    MAELSTROM_AUTHORITY = Avatus,
-  }, nil)
+    nZoneMapParentId = 98,
+    nZoneMapId = nil,
+    sEncounterName = "AVATUS",
+    tTriggerNames = { "AVATUS", },
+    tUnits = {
+      AVATUS = Avatus,
+    },
+  })
 end

@@ -45,7 +45,8 @@ local CHANNEL_DATACHRON = ChatSystemLib.ChatChannel_Datachron
 ------------------------------------------------------------------------------
 -- Working variables.
 ------------------------------------------------------------------------------
-local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
+--local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
+local DruseraBossMods = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local CombatInterface = {}
 
 local _tCombatManager = nil
@@ -60,6 +61,8 @@ local _tHandlers = {
   UnitEnteredCombat = "UnitEnteredCombat",
   ChatMessage = "ChatMessage",
 }
+-- For EncounterLog windows.
+local nStartEncounterTime = nil
 local _tOldLogs = {}
 local _tLogs = {}
 
@@ -68,10 +71,14 @@ local _tLogs = {}
 ------------------------------------------------------------------------------
 local function Add2Logs(sText, ...)
   --@alpha@
-  local d = debug.getinfo(2, 'n')
   local nId = nil
-  if select("#", ...) > 0 then
+  local argv = {}
+  local args = select("#", ...)
+  if args > 0 then
     nId = select(1, ...)
+    if args > 1 then
+      argv = {select(2, ...)}
+    end
   end
   local tUnitInfo = {}
   if type(nId) == "number" then
@@ -85,8 +92,7 @@ local function Add2Logs(sText, ...)
     tUnitInfo.nId = nil
     tUnitInfo.sName = ""
   end
-  local sFuncName = d and d.name or ""
-  table.insert(_tLogs, {GetGameTime(), sFuncName, sText, tUnitInfo, ...})
+  table.insert(_tLogs, {GetGameTime(), sText, tUnitInfo, argv})
   --@end-alpha@
 end
 
@@ -105,29 +111,6 @@ local function ManagerCall(sMethod, ...)
   --@end-alpha@
 end
 
-local function Logs2Text(_tLogs)
-  local tTextLog = {}
-  for _, Log in next, _tLogs do
-    local time = Log[1]
-    local sEventType = Log[2] .. " - " .. Log[3]
-    local tUnitInfo = Log[4]
-    local sUnitInfo = ""
-    if tUnitInfo.sName and tUnitInfo.nId then
-      sUnitInfo = string.format("%s:%u", tUnitInfo.sName, tUnitInfo.nId)
-    elseif tUnitInfo.nId then
-      sUnitInfo = string.format("....:%u", tUnitInfo.nId)
-    elseif tUnitInfo.sName then
-      sUnitInfo = string.format("%s:....", tUnitInfo.sName)
-    end
-    if Log[4].bIsValid == false then
-      sUnitInfo = sUnitInfo .. "(Invalid)"
-    end
-
-    table.insert(tTextLog, {time, sEventType, sUnitInfo})
-  end
-  return tTextLog
-end
-
 local function GetAllBuffs(tUnit)
   local r = {}
   if tUnit then
@@ -136,10 +119,12 @@ local function GetAllBuffs(tUnit)
       for sType, tBuffs in next, tAllBuffs do
         r[sType] = {}
         for _,obj in next, tBuffs do
+          local sName = obj.splEffect:GetName() or ""
           r[sType][obj.idBuff] = {
             nCount = obj.nCount,
             nIdBuff = obj.idBuff,
-            tSpell = obj.splEffect,
+            --nTimeRemaining = obj.fTimeRemaining,
+            sName = string.gsub(sName, NO_BREAK_SPACE, " "),
           }
         end
       end
@@ -178,11 +163,11 @@ end
 
 local function StopEncounter()
   Activate(false)
+  ManagerCall("StopEncounter")
   _tTrackedUnits = {}
   _tMembers = {}
   _tOldLogs = _tLogs
   _tLogs = {}
-  ManagerCall("StopEncounter")
 end
 
 local function ProcessAllBuffs(tMyUnit)
@@ -196,22 +181,22 @@ local function ProcessAllBuffs(tMyUnit)
   if bProcessDebuffs and tNewDebuffs then
     for nIdBuff,current in next, tDebuffs do
       if tNewDebuffs[nIdBuff] then
-        local nOldStack = current.nCount
-        local nNewStack = tNewDebuffs[nIdBuff].nCount
-        if nNewStack ~= nOldStack then
-          tDebuffs[nIdBuff].nCount = nNewStack
-          ManagerCall("DebuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
+        local tNew = tNewDebuffs[nIdBuff]
+        if tNew.nCount ~= current.nCount then
+          tDebuffs[nIdBuff].nCount = tNew.nCount
+          --tDebuffs[nIdBuff].nTimeRemaining = tNew.nTimeRemaining
+          ManagerCall("DebuffUpdate", nId, nIdBuff, current.sName, current.nCount, tNew.nCount)
         end
         -- Remove this entry for second loop.
         tNewDebuffs[nIdBuff] = nil
       else
         tDebuffs[nIdBuff] = nil
-        ManagerCall("DebuffRemove", nId, nIdBuff)
+        ManagerCall("DebuffRemove", nId, nIdBuff, current.sName)
       end
     end
     for nIdBuff,tNew in next, tNewDebuffs do
       tDebuffs[nIdBuff] = tNew
-      ManagerCall("DebuffAdd", nId, nIdBuff, tNew.nCount)
+      ManagerCall("DebuffAdd", nId, nIdBuff, tNew.sName, tNew.nCount)
     end
   end
 
@@ -220,22 +205,22 @@ local function ProcessAllBuffs(tMyUnit)
   if bProcessBuffs and tNewBuffs then
     for nIdBuff,current in next, tBuffs do
       if tNewBuffs[nIdBuff] then
-        local nOldStack = current.nCount
-        local nNewStack = tNewBuffs[nIdBuff].nCount
-        if nNewStack ~= nOldStack then
-          tBuffs[nIdBuff].nCount = nNewStack
-          ManagerCall("BuffUpdate", nId, nIdBuff, nOldStack, nNewStack)
+        local tNew = tNewBuffs[nIdBuff]
+        if tNew.nCount ~= current.nCount then
+          tBuffs[nIdBuff].nCount = tNew.nCount
+          --tBuffs[nIdBuff].nTimeRemaining = tNew.nTimeRemaining
+          ManagerCall("BuffUpdate", nId, nIdBuff, current.sName, current.nCount, New.nCount)
         end
         -- Remove this entry for second loop.
         tNewBuffs[nIdBuff] = nil
       else
         tBuffs[nIdBuff] = nil
-        ManagerCall("BuffRemove", nId, nIdBuff)
+        ManagerCall("BuffRemove", nId, nIdBuff, current.sName)
       end
     end
     for nIdBuff, tNew in next, tNewBuffs do
       tBuffs[nIdBuff] = tNew
-      ManagerCall("BuffAdd", nId, nIdBuff, tNew.nCount)
+      ManagerCall("BuffAdd", nId, nIdBuff, tNew.sName, tNew.nCount)
     end
   end
 end
@@ -308,14 +293,11 @@ function DruseraBossMods:CombatInterfaceUnInit()
   RemoveEventHandler(_tHandlers.UnitEnteredCombat, CombatInterface)
 end
 
--- This function can be call through GeminiConsole.
-function DruseraBossMods:CombatInterfaceDumpCurrentLog()
-  return Logs2Text(_tLogs)
-end
-
--- This function can be call through GeminiConsole.
 function DruseraBossMods:CombatInterfaceDumpOldLog()
-  return Logs2Text(_tOldLogs)
+  if nStartEncounterTime and next(_tOldLogs) then
+    return {nStartEncounterTime, _tOldLogs}
+  end
+  return nil
 end
 
 ------------------------------------------------------------------------------
@@ -410,7 +392,8 @@ function CombatInterface:OnScanUpdate()
       elseif data.tCast.bCasting then
         if not data.tCast.bSuccess then
           -- Let's compare with the nCastEndTime
-          if GetGameTime() < data.tCast.nCastEndTime then
+          local nThreshold = GetGameTime() + SCAN_PERIOD
+          if nThreshold < data.tCast.nCastEndTime then
             ManagerCall("CastFailed", nId,
                         data.tCast.sCastName,
                         data.tCast.nCastEndTime)
@@ -438,6 +421,7 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
   if nId == GetPlayerUnit():GetId() then
     if bInCombat and not __bRunning then
       _bCheckMembers = false
+      nStartEncounterTime = GetGameTime()
       Activate(true)
       ManagerCall("StartEncounter")
     elseif _bRunning and not bInCombat then

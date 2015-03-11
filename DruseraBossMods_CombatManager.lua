@@ -32,7 +32,8 @@ local NO_BREAK_SPACE = string.char(194, 160)
 ------------------------------------------------------------------------------
 -- Working variables.
 ------------------------------------------------------------------------------
-local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
+--local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
+local DruseraBossMods = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local CombatManager = {}
 
 local _CombatInterface = nil
@@ -42,20 +43,25 @@ local _tDatabase = {} -- Copy will be done on init.
 local _tNPCSayAlerts = {}
 local _tDatachronAlerts = {}
 local _tMarksOnUnit = {}
-
+-- For EncounterLog windows.
+local nFightStartTime = nil
 local _tOldLogs = {}
 local _tLogs = {}
 
 ------------------------------------------------------------------------------
 -- Fast and local functions.
 ------------------------------------------------------------------------------
-local function Add2Logs(sText, nId, ...)
+local function Add2Logs(sText, ...)
   if not _bEncounterInProgress then return end
   --@alpha@
-  local d = debug.getinfo(2, 'n')
   local nId = nil
-  if select("#", ...) > 0 then
+  local argv = {}
+  local args = select("#", ...)
+  if args > 0 then
     nId = select(1, ...)
+    if args > 1 then
+      argv = { select(2, ...) }
+    end
   end
   local tUnitInfo = {}
   if type(nId) == "number" then
@@ -69,16 +75,15 @@ local function Add2Logs(sText, nId, ...)
     tUnitInfo.nId = nil
     tUnitInfo.sName = ""
   end
-  local sFuncName = d and d.name or ""
-  table.insert(_tLogs, {GetGameTime(), sFuncName, sText, tUnitInfo, ...})
+  table.insert(_tLogs, {GetGameTime(), sText, tUnitInfo, argv})
   --@end-alpha@
 end
 
 local function EncounterCall(sInfo, fCallback, tFoe, ...)
   -- Trace all call to upper layer for debugging purpose.
-  Add2Logs(sInfo, tFoe.nId, arg)
+  Add2Logs(sInfo, tFoe.nId, ...)
   -- Protected call.
-  local s, sErrMsg = pcall(fCallback, tFoe, unpack(arg))
+  local s, sErrMsg = pcall(fCallback, tFoe, ...)
   --@alpha@
   if not s then
     Print(sInfo .. ": " .. sErrMsg)
@@ -87,35 +92,13 @@ local function EncounterCall(sInfo, fCallback, tFoe, ...)
   --@end-alpha@
 end
 
-local function Logs2Text(_tLogs)
-  local tTextLog = {}
-  for _, Log in next, _tLogs do
-    local time = Log[1]
-    local sEventType = Log[2] .. " - " .. Log[3]
-    local tUnitInfo = Log[4]
-    local sUnitInfo = ""
-    if tUnitInfo.sName and tUnitInfo.nId then
-      sUnitInfo = string.format("%s:%u", tUnitInfo.sName, tUnitInfo.nId)
-    elseif tUnitInfo.nId then
-      sUnitInfo = string.format("....:%u", tUnitInfo.nId)
-    elseif tUnitInfo.sName then
-      sUnitInfo = string.format("%s:....", tUnitInfo.sName)
-    end
-    if Log[4].bIsValid == false then
-      sUnitInfo = sUnitInfo .. "(Invalid)"
-    end
-
-    table.insert(tTextLog, {time, sEventType, sUnitInfo})
-  end
-  return tTextLog
-end
-
 local function FoesStartCombat(nId)
   local tFoe = _tFoes[nId]
   if _bEncounterInProgress and tFoe and tFoe.OnStartCombat then
-    EncounterCall("OnStartCombat", tFoe.OnStartCombat, tFoe)
+    EncounterCall("StartCombat", tFoe.OnStartCombat, tFoe)
   end
 end
+
 local function AddFoeUnit(nId, sName, bInCombat)
   if _tCurrentEncounter.tUnits[sName] then
     Add2Logs("Foe added", nId)
@@ -186,21 +169,21 @@ local function SetBuffAlert(BuffType, tFoe, nIdBuff, fCallback)
   tFoe[BuffType][nIdBuff] = fCallback
 end
 
-local function BuffProcess(sBuffType, nId, nIdBuff, nStack)
+local function BuffProcess(sBuffType, nId, nIdBuff, sName, nStack)
   local tFoe = _tFoes[nId]
   if _bEncounterInProgress and tFoe then
     local cb = tFoe[sBuffType][nIdBuff]
     if cb then
-      EncounterCall(sBuffType, cb, tFoe, nStack)
+      EncounterCall(sBuffType, cb, tFoe, sName, nStack)
     end
   end
 end
-local function DebuffProcess(sDebuffType, nId, nIdBuff, nStack)
+local function DebuffProcess(sDebuffType, nId, sName, nIdBuff, nStack)
   if _bEncounterInProgress then
     for _,tFoe in next, _tFoes do
       local cb = tFoe[sDebuffType][nIdBuff]
       if cb then
-        EncounterCall(sDebuffType, cb, tFoe, nId, nStack)
+        EncounterCall(sDebuffType, cb, tFoe, nId, sName, nStack)
       end
     end
   end
@@ -216,20 +199,23 @@ function DruseraBossMods:CombatManagerInit()
   return CombatManager
 end
 
-function DruseraBossMods:CombatManagerDumpCurrentLog()
-  return Logs2Text(_tLogs)
-end
-
 function DruseraBossMods:CombatManagerDumpOldLog()
-  return Logs2Text(_tOldLogs)
+  if nFightStartTime and next(_tOldLogs) then
+    return {nFightStartTime, _tOldLogs}
+  end
+  return nil
 end
 
-function DruseraBossMods:RegisterEncounter(tData)
+function DruseraBossMods:RegisterEncounterSecond(tData)
   local nMapParentId = tData.nZoneMapParentId
   local nMapId = tData.nZoneMapId
 
   if not nMapParentId or not nMapId or not tData.tTriggerNames then
-    Print("Invalid encounter ZoneMap definition!")
+    if tData.sEncounterName then
+      Print("Invalid encounter: " .. tData.sEncounterName)
+    else
+      Print("Invalid encounter ZoneMap definition!")
+    end
     return
   end
 
@@ -279,7 +265,7 @@ end
 function CombatManager:StartEncounter()
   nFightStartTime = GetGameTime()
   _bEncounterInProgress = true
-  Add2Logs("Start Encounter", nil, nFightStartTime)
+  Add2Logs("Start Encounter")
   for nId, Foe in next, _tFoes do
     if Foe.tUnit:IsValid() then
       if Foe.bInCombat then
@@ -290,9 +276,7 @@ function CombatManager:StartEncounter()
 end
 
 function CombatManager:StopEncounter()
-  local nStopStartTime = GetGameTime()
-  Add2Logs("Stop Encounter", nil, nStopStartTime)
-
+  Add2Logs("Stop Encounter")
   for nId,FoeUnit in next, _tFoes do
     RemoveFoeUnit(nId)
   end
@@ -310,8 +294,12 @@ end
 
 function CombatManager:UnitDetected(nId, tUnit, sName)
   SearchAndAdd(nId, sName, false)
-  if _tFoes[nId] ~= nil then
+  local tFoe = _tFoes[nId]
+  if tFoe ~= nil then
     _CombatInterface:TrackThisUnit(nId)
+    if _bEncounterInProgress and tFoe and tFoe.OnDetection then
+      EncounterCall("Detection", tFoe.OnDetection, tFoe)
+    end
   end
 end
 
@@ -367,28 +355,28 @@ function CombatManager:CastSuccess(nId, sCastName, nCastEndTime)
   CastProcess("tCastSuccessAlerts", nId, sCastName, nCastEndTime)
 end
 
-function CombatManager:BuffAdd(nId, nIdBuff, nStack)
-  BuffProcess("tBuffAddAlerts", nId, nIdBuff, nStack)
+function CombatManager:BuffAdd(nId, nIdBuff, sName, nStack)
+  BuffProcess("tBuffAddAlerts", nId, nIdBuff, sName, nStack)
 end
 
-function CombatManager:BuffRemove(nId, nIdBuff)
-  BuffProcess("tBuffRemoveAlerts", nId, nIdBuff, 0)
+function CombatManager:BuffRemove(nId, nIdBuff, sName)
+  BuffProcess("tBuffRemoveAlerts", nId, nIdBuff, sName, 0)
 end
 
-function CombatManager:BuffUpdate(nId, nIdBuff, nStackOld, nStackNew)
-  BuffProcess("tBuffUpdateAlerts", nId, nIdBuff, nStackNew)
+function CombatManager:BuffUpdate(nId, nIdBuff, sName, nStackOld, nStackNew)
+  BuffProcess("tBuffUpdateAlerts", nId, nIdBuff, sName, nStackNew)
 end
 
-function CombatManager:DebuffAdd(nId, nIdBuff, nStack)
-  DebuffProcess("tDebuffAddAlerts", nId, nIdBuff, nStack)
+function CombatManager:DebuffAdd(nId, nIdBuff, sName, nStack)
+  DebuffProcess("tDebuffAddAlerts", nId, nIdBuff, sName, nStack)
 end
 
-function CombatManager:DebuffRemove(nId, nIdBuff)
-  DebuffProcess("tDebuffRemoveAlerts", nId, nIdBuff, 0)
+function CombatManager:DebuffRemove(nId, nIdBuff, sName)
+  DebuffProcess("tDebuffRemoveAlerts", nId, nIdBuff, sName, 0)
 end
 
-function CombatManager:DebuffUpdate(nId, nIdBuff, nStackOld, nStackNew)
-  DebuffProcess("tDebuffUpdateAlerts", nId, nIdBuff, nStackNew)
+function CombatManager:DebuffUpdate(nId, nIdBuff, sName, nStackOld, nStackNew)
+  DebuffProcess("tDebuffUpdateAlerts", nId, nIdBuff, sName, nStackNew)
 end
 
 
@@ -570,14 +558,14 @@ function DruseraBossMods:CreateHealthBar(tFoe, sName)
 end
 
 function DruseraBossMods:PlaySound(sFileName)
-  if not self.SoundMuteAll then
+  if not self.db.profile.custom.sound_enable then
     Add2Logs("Play Sound", nil, sFileName)
     -- Can be call from Gemini Console.
     Sound.PlayFile("..\\DruseraBossMods\\sounds\\" .. sFileName .. ".wav")
   end
 end
 
-function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId)
+function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId, nLocation)
   local wPoint = _tMarksOnUnit[nTargetId]
   if wPoint then
     wPoint:Destroy()
@@ -586,7 +574,11 @@ function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId)
   local tUnit = GetUnitById(nTargetId)
   if sMarkName and tUnit then
     wPoint = Apollo.LoadForm(self.xmlDoc, "MarkOnUnit", "InWorldHudStratum", self)
-    wPoint:SetUnit(tUnit, 51)
+    wPoint:SetUnit(tUnit, nLocation)
     _tMarksOnUnit[nTargetId] = wPoint
   end
+end
+
+function DruseraBossMods:ActivateDetection(flag)
+  _CombatInterface:ActivateDetection(flag)
 end

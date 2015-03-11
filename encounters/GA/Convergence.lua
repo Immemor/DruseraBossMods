@@ -9,7 +9,7 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
-local DBM = Apollo.GetAddon("DruseraBossMods")
+local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local GetGameTime = GameLib.GetGameTime
 local GetPlayerUnit = GameLib.GetPlayerUnit
 local Terax = {}

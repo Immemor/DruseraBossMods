@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Sprites>
-    <Sprite Name="bar_default" Cycle="1">
-        <Frame Texture="DruseraBossMods\sprites\bars\default.tga" x0="0" x1="100" x2="100" x3="152" x4="256" x5="256" y0="0" y1="2" y2="2" y3="2" y4="30" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    <Sprite Name="Drusera_bg" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\gui\drusera_bg.tga" x0="0" x1="0" x2="0" x3="38" x4="695" x5="809" y0="0" y1="0" y2="0" y3="9" y4="376" y5="376" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="gui_hr" Cycle="1">
         <Frame Texture="DruseraBossMods\sprites\gui\sep.tga" x0="0" x1="0" x2="0" x3="1" x4="4" x5="5" y0="0" y1="0" y2="0" y3="1" y4="4" y5="5" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="gui_button1" Cycle="1">
-        <Frame Texture="DruseraBossMods\sprites\gui\button1.tga" x0="0" x1="2" x2="2" x3="2" x4="5" x5="7" y0="0" y1="2" y2="2" y3="2" y4="5" y5="7" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="DruseraBossMods\sprites\gui\button1.tga" x0="0" x1="0" x2="0" x3="2" x4="13" x5="15" y0="0" y1="0" y2="0" y3="2" y4="13" y5="15" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="gui_inside" Cycle="1">
         <Frame Texture="DruseraBossMods\sprites\gui\inside.tga" x0="0" x1="2" x2="2" x3="2" x4="5" x5="7" y0="0" y1="2" y2="2" y3="2" y4="5" y5="7" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
@@ -15,13 +15,35 @@
     <Sprite Name="gui_mainframe" Cycle="1">
         <Frame Texture="DruseraBossMods\sprites\gui\MainFrame.tga" x0="0" x1="0" x2="0" x3="9" x4="17" x5="26" y0="0" y1="0" y2="0" y3="9" y4="17" y5="26" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
-    <Sprite Name="mark_crosshair" Cycle="1">
-        <Frame Texture="DruseraBossMods\sprites\marks\crosshair.tga" x0="0" x1="0" x2="0" x3="0" x4="80" x5="80" y0="0" y1="0" y2="0" y3="0" y4="80" y5="80" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
-    </Sprite>
-    <Sprite Name="Drusera_bg" Cycle="1">
-        <Frame Texture="DruseraBossMods\sprites\gui\drusera_bg.tga" x0="0" x1="0" x2="0" x3="38" x4="695" x5="809" y0="0" y1="0" y2="0" y3="9" y4="376" y5="376" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    <Sprite Name="bar_default" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\bars\default.tga" x0="0" x1="100" x2="100" x3="152" x4="256" x5="256" y0="0" y1="2" y2="2" y3="2" y4="30" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="bar_restrat1" Cycle="1">
         <Frame Texture="DruseraBossMods\sprites\bars\restrat1.tga" x0="0" x1="1" x2="1" x3="73" x4="79" x5="80" y0="0" y1="1" y2="1" y3="1" y4="39" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="mark_crosshair" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\marks\crosshair.tga" x0="0" x1="0" x2="0" x3="0" x4="80" x5="80" y0="0" y1="0" y2="0" y3="0" y4="80" y5="80" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="mark_crosshair2" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\marks\crosshair2.tga" x0="0" x1="0" x2="0" x3="0" x4="250" x5="250" y0="0" y1="0" y2="0" y3="0" y4="250" y5="250" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="darkgray"/>
+        <Frame Texture="DruseraBossMods\sprites\marks\crosshair2.tga" x0="0" x1="0" x2="0" x3="0" x4="250" x5="250" y0="0" y1="0" y2="0" y3="0" y4="250" y5="250" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="darkgray" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="mark_WhiteSkull" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\marks\WhiteSkull.tga" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="mark_BloodySkull" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\marks\BloodySkull.tga" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="mark_GraySkull" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\marks\GraySkull.tga" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="mark_RedSkull" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\marks\RedSkull.tga" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="mark_PinkUnicorn" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\marks\PinkUnicorn.tga" x0="0" x1="0" x2="0" x3="0" x4="291" x5="291" y0="0" y1="17" y2="17" y3="17" y4="268" y5="268" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="gui_containers" Cycle="1">
+        <Frame Texture="DruseraBossMods\sprites\gui\containers.tga" x0="0" x1="0" x2="0" x3="2" x4="13" x5="15" y0="0" y1="0" y2="0" y3="2" y4="13" y5="15" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
 </Sprites>

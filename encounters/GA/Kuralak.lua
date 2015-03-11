@@ -9,7 +9,7 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
-local DBM = Apollo.GetAddon("DruseraBossMods")
+local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local Kuralak = {}
 local GetPlayerUnit = GameLib.GetPlayerUnit
 
@@ -50,12 +50,12 @@ function Kuralak:OnStartCombat()
     DBM:SetTimerAlert(self, "DNA_SIPHON", 90, nil)
   end)
 
-  DBM:SetDebuffAddAlert(self, SPELLID__CHROMOSOME_CORRUPTION, function(self, nTargetId, nStack)
+  DBM:SetDebuffAddAlert(self, SPELLID__CHROMOSOME_CORRUPTION, function(self, nTargetId, sName, nStack)
     local bItself = nTargetId == GetPlayerUnit():GetId()
     if bItself then
       DBM:PlaySound("Info")
     end
-    DBM:SetMarkOnUnit("Crosshair", nTargetId)
+    DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
   end)
 end
 

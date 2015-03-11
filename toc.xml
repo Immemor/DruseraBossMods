@@ -3,8 +3,9 @@
     <!-- Forms -->
     <Form Name="DruseraBossMods.xml"/>
     <!-- Libraries -->
-    <Script Name="libs\GeminiLocale\GeminiLocale.lua"/>
-    <Script Name="libs\GeminiDB\GeminiDB-1.0.lua"/>
+    <Script Name="libs\GeminiLocale.lua"/>
+    <Script Name="libs\GeminiDB-1.0.lua"/>
+    <Script Name="libs\GeminiAddon.lua"/>
     <!-- Locales -->
     <Script Name="locales\enUS.lua"/>
     <Script Name="locales\frFR.lua"/>

@@ -14,9 +14,7 @@ require "GameLib"
 ------------------------------------------------------------------------------
 -- Constants.
 ------------------------------------------------------------------------------
-local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
-local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
-local Locale = GeminiLocale:GetLocale("DruseraBossMods")
+local DruseraBossMods = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local next = next
 local GetGameTime = GameLib.GetGameTime
 
@@ -30,26 +28,55 @@ local wndBodyContainer
 ------------------------------------------------------------------------------
 -- Local functions.
 ------------------------------------------------------------------------------
+local function TranslateWindows(windows)
+  local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
+  local L = GeminiLocale:GetLocale("DruseraBossMods")
+  for _,wnd in next, windows:GetChildren() do
+    GeminiLocale:TranslateWindow(L, windows)
+    TranslateWindows(wnd)
+  end
+end
+
+local function GUI_SetActiveItem(wndControl)
+  local data = wndControl:GetData()
+
+  for _,wnd in next, wndBodyContainer:GetChildren() do
+    wnd:Show(false, true)
+  end
+  if data.wndBodyContainer then
+    data.wndBodyContainer:Show(true, true)
+  end
+end
+
 ------------------------------------------------------------------------------
 -- Public functions.
 ------------------------------------------------------------------------------
 function DruseraBossMods:GUIInit()
+  -- Create list menu.
   wndForm = Apollo.LoadForm(self.xmlDoc, "DBM_Form", nil, self)
-  local wndHeader = wndForm:FindChild("Main"):FindChild("Header")
-  local wndTag = wndHeader:FindChild("Version"):FindChild("Tag")
+  local wndMain = wndForm:FindChild("Main")
+  local wndHeader = wndMain:FindChild("Header")
+  local wndBody = wndMain:FindChild("Body")
+  local wndFooter = wndMain:FindChild("Footer")
+
+  local wndTag = wndFooter:FindChild("Version"):FindChild("Tag")
   wndTag:SetText(self.DRUSERABOSSMODS_VERSION)
 
-  wndLeftMenuList = wndForm:FindChild("Main"):FindChild("Body"):FindChild("MenuLeft")
-  wndBodyContainer = wndForm:FindChild("Main"):FindChild("Body"):FindChild("Container")
+  local wndTopMenuList = wndBody:FindChild("MenuTop")
+  wndLeftMenuList = wndBody:FindChild("MenuLeft")
+  wndBodyContainer = wndBody:FindChild("Frame"):FindChild("Container")
 
-  local default = self:GUI_AddLeftMenuItem("Home", "DBM_Home")
-  self:GUI_AddLeftMenuItem("Bars", "DBM_BarCustom")
-  self:GUI_AddLeftMenuItem("Messages", "DBM_MessageCustom")
-  self:GUI_AddLeftMenuItem("Sounds", "DBM_SoundCustom")
-  self:GUI_AddLeftMenuItem("Markers", "DBM_MarkerCustom")
-  self:GUI_AddLeftMenuItem("Bosses", "DBM_Bosses")
+  local default = self:GUI_AddLeftMenuItem("HOME", "DBM_Home")
+  self:GUI_AddLeftMenuItem("BARS", "DBM_BarCustom")
+  self:GUI_AddLeftMenuItem("MESSAGES", "DBM_MessageCustom")
+  self:GUI_AddLeftMenuItem("SOUNDS", "DBM_SoundCustom")
+  self:GUI_AddLeftMenuItem("MARKERS", "DBM_MarkerCustom")
+  self:GUI_AddLeftMenuItem("BOSSES", "DBM_Bosses")
+  self:GUI_AddLeftMenuItem("ENCOUNTER_LOG", "DBM_EncounterLog")
 
-  self:GUI_SetActiveItem(default)
+  GUI_SetActiveItem(default)
+  TranslateWindows(wndTopMenuList)
+  TranslateWindows(wndBodyContainer)
   self.SoundMuteAll = false
 
   Apollo.RegisterSlashCommand("dbm", "OnToggleMainGUI", self)
@@ -70,110 +97,47 @@ function DruseraBossMods:OnToggleMainGUI()
   end
 end
 
-function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)
-  local tPlayerUnit = GameLib.GetPlayerUnit()
-  self:HUDCreateHealthBar({
-    tUnit = tPlayerUnit,
-    nId = tPlayerUnit:GetId(),
-    sLabel = tPlayerUnit:GetName(),
-  })
-  self:HUDCreateTimerBar({
-    sLabel = Locale["END_OF_TEST"],
-    nDuration = 33,
-    fCallback = function(self)
-      self:HUDRemoveHealthBar(GameLib.GetPlayerUnit():GetId())
-    end,
-  }, nil)
-  self:HUDCreateTimerBar({
-    sLabel = Locale["THIS_SHOULD_BE_4"],
-    nDuration = 28,
-    fCallback = function(self)
-      self:HUDCreateMessage({sLabel = Locale["YOU_ARE_DEATH_AGAIN"]})
+function DruseraBossMods:OnWindowLoadProfile(wndHandler, wndControl)
+  local sKeyName = wndControl:GetName()
+  local val = self.db.profile.custom[sKeyName]
+  if val ~= nil then
+    if type(val) == "boolean" then
+      wndControl:SetCheck(val)
+    elseif type(val) == "number" then
+      wndControl:SetText(val)
+    elseif type(val) == "string" then
+      wndControl:SetText(val)
     end
-  }, nil)
-  self:HUDCreateTimerBar({
-    sLabel = Locale["THIS_SHOULD_BE_2"],
-    nDuration = 10,
-    fCallback = function(self)
-      self:HUDCreateMessage({sLabel = Locale["ARE_YOU_READY"]})
+  end
+end
+
+function DruseraBossMods:OnButtonCheckUncheck(wndHandler, wndControl, eMouseButton)
+  local sKeyName = wndControl:GetName()
+  local val = self.db.profile.custom[sKeyName]
+  if val ~= nil then
+    self.db.profile.custom[sKeyName] = wndControl:IsChecked()
+    self:HUDLoadProfile()
+  end
+end
+
+function DruseraBossMods:OnNumberBoxChanged(wndHandler, wndControl, eMouseButton)
+  local sKeyName = wndControl:GetName()
+  local val = self.db.profile.custom[sKeyName]
+  if val ~= nil then
+    local new = tonumber(wndControl:GetText())
+    if new ~= nil then
+      self.db.profile.custom[sKeyName] = new
+      self:HUDLoadProfile()
     end
-  }, { color = "xkcdBrightOrange"})
-  self:HUDCreateTimerBar({
-    sLabel = Locale["THIS_SHOULD_BE_3"],
-    nDuration = 20,
-    fCallback = function(self)
-      self:HUDCreateMessage({
-        sLabel = Locale["INTERRUPT_THIS_CAST"],
-        bHighlight = true,
-        nDuration=3
-      })
-    end
-  }, { color = "xkcdBrightYellow"})
-  self:HUDCreateTimerBar({
-    sLabel = Locale["THIS_SHOULD_BE_1"],
-    nDuration = 4,
-    fCallback = function(self)
-      self:HUDCreateMessage({sLabel = Locale["WELCOME_IN_DBM"], bHighlight = true})
-    end,
-  }, nil)
+  end
+end
+
+function DruseraBossMods:OnTextureDropdownToggle(wndHandler, wndControl, eMouseButton)
+  local show = wndControl:IsChecked()
 end
 
 function DruseraBossMods:OnToggleAnchors(wndHandler, wndControl, eMouseButton)
   self:HUDToggleAnchorLock()
-end
-
-function DruseraBossMods:OnToggleFightHistory()
-  if true then return true end
-  if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
-    if wndFightHistory:IsShown() then
-      wndFightHistory:Show(false)
-    else
-      wndFightHistory:Show(true)
-
-      local wndgrid = wndFightHistory:FindChild("Grid")
-
-      local nFightStartTime = 0
-      for _, data in ipairs(tAllFightHistory) do
-        if data[1] == "Start encounter" then
-          nFightStartTime = data[5]
-          break
-        end
-      end
-      wndgrid:DeleteAll()
-      for _, data in ipairs(tAllFightHistory) do
-        local idx = wndgrid:AddRow("")
-        local time = data[2] - nFightStartTime
-        wndgrid:SetCellText(idx, 1, string.format("%003.2f", time))
-        wndgrid:SetCellSortText(idx, 1, data[2])
-        wndgrid:SetCellText(idx, 2, tostring(data[1]))
-        if data[3] ~= nil then
-          wndgrid:SetCellText(idx, 3, tostring(data[3]))
-        end
-        if data[4] ~= nil then
-          wndgrid:SetCellText(idx, 4, tostring(data[4]))
-        end
-        if data[1] == "Spell cast start" or
-          data[1] == "Spell cast failed" or
-          data[1] == "Spell cast success" then
-          local prefix = data[5][2] and "Process " or "Drop "
-          local suffix = data[5][4] .. " / " .. data[5][3] .. " (" .. data[5][5] .. "%)"
-          wndgrid:SetCellText(idx, 5, prefix .. "'" .. data[5][1] .. "'  " .. suffix)
-        elseif data[1] == "NPCSay processed" or
-          data[1] == "NPCSay, no callbacks" or
-          data[1] == "Datachron processed" or
-          data[1] == "Datachron, no callbacks" then
-          wndgrid:SetCellText(idx, 5, data[5])
-        elseif data[1] == "Buff update" then
-          local txt = ""
-          txt = txt .. "BuffType='" .. data[5][2].eType .. "', "
-          txt = txt .. "SpellId='" .. data[5][2].splEffect:GetId() .. "', "
-          txt = txt .. "Count=" .. data[5][2].nCount .. ", "
-          txt = txt .. "SpellName='" .. data[5][2].splEffect:GetName() .. "'"
-          wndgrid:SetCellText(idx, 5, txt)
-        end
-      end
-    end
-  end
 end
 
 function DruseraBossMods:GUI_AddLeftMenuItem(sLabel, sBody)
@@ -188,27 +152,194 @@ function DruseraBossMods:GUI_AddLeftMenuItem(sLabel, sBody)
     tData.wndBodyContainer = wndBody
   end
 
-  wndButton:SetText(sLabel)
+  wndButton:SetText(self.L[sLabel])
   wndButton:SetData(tData)
   wndLeftMenuList:ArrangeChildrenVert()
   return wndButton
 end
 
-function DruseraBossMods:GUI_SetActiveItem(wndControl)
-  local data = wndControl:GetData()
-
-  for _,wnd in next, wndBodyContainer:GetChildren() do
-    wnd:Show(false, true)
-  end
-  if data.wndBodyContainer then
-    data.wndBodyContainer:Show(true, true)
-  end
-end
-
 function DruseraBossMods:OnLeftMenuItem(wndHandler, wndControl, eMouseButton)
-  self:GUI_SetActiveItem(wndControl)
+  GUI_SetActiveItem(wndControl)
 end
 
-function DruseraBossMods:OnSoundCustom_GlobalMute(wndHandler, wndControl, eMouseButton)
-  self.SoundMuteAll = wndControl:IsChecked()
+function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)
+  local tPlayerUnit = GameLib.GetPlayerUnit()
+  self:HUDCreateHealthBar({
+    tUnit = tPlayerUnit,
+    nId = tPlayerUnit:GetId(),
+    sLabel = tPlayerUnit:GetName(),
+  })
+  self:HUDCreateTimerBar({
+    sLabel = self.L["END_OF_TEST"],
+    nDuration = 33,
+    fCallback = function(self)
+      self:HUDRemoveHealthBar(GameLib.GetPlayerUnit():GetId())
+    end,
+  }, nil)
+  self:HUDCreateTimerBar({
+    sLabel = self.L["THIS_SHOULD_BE_4"],
+    nDuration = 28,
+    fCallback = function(self)
+      self:HUDCreateMessage({sLabel = self.L["YOU_ARE_DEATH_AGAIN"]})
+      self:PlaySound("4")
+    end
+  }, nil)
+  self:HUDCreateTimerBar({
+    sLabel = self.L["THIS_SHOULD_BE_2"],
+    nDuration = 10,
+    fCallback = function(self)
+      self:HUDCreateMessage({sLabel = self.L["ARE_YOU_READY"]})
+      self:PlaySound("2")
+    end
+  }, { color = "xkcdBrightOrange"})
+  self:HUDCreateTimerBar({
+    sLabel = self.L["THIS_SHOULD_BE_3"],
+    nDuration = 20,
+    fCallback = function(self)
+      self:HUDCreateMessage({
+        sLabel = self.L["INTERRUPT_THIS_CAST"],
+        bHighlight = true,
+        nDuration=3
+      })
+      self:PlaySound("3")
+    end
+  }, { color = "xkcdBrightYellow"})
+  self:HUDCreateTimerBar({
+    sLabel = self.L["THIS_SHOULD_BE_1"],
+    nDuration = 4,
+    fCallback = function(self)
+      self:HUDCreateMessage({sLabel = self.L["WELCOME_IN_DBM"], bHighlight = true})
+      self:PlaySound("1")
+    end,
+  }, nil)
+end
+
+function DruseraBossMods:OnCombatInterfaceLog(wndHandler, wndControl, eMouseButton)
+  local tData = self:CombatInterfaceDumpOldLog()
+  if tData then
+    local nStartTime = tData[1]
+    local tLogs = tData[2]
+
+    local wndParent = wndControl:GetParent()
+    local wndGrid = nil
+    for _, wnd in next, wndParent:GetChildren() do
+      if wnd:GetName() == "Grid" then
+        wndGrid = wnd
+        break
+      end
+    end
+    if wndGrid then
+      wndGrid:DeleteAll()
+      for _,tLog in next, tLogs do
+        local idx = wndGrid:AddRow("")
+
+        -- First column
+        local nDiffTime = string.format("%.2f", tLog[1] - nStartTime)
+        wndGrid:SetCellText(idx, 1, nDiffTime)
+        wndGrid:SetCellSortText(idx, 1, tLog[1])
+        -- Second column
+        local sText = tLog[2]
+        wndGrid:SetCellText(idx, 2, sText)
+        -- Third column
+        local tUnitInfo = tLog[3]
+        if tUnitInfo then
+          if tUnitInfo.sName then
+            wndGrid:SetCellText(idx, 3, tUnitInfo.sName)
+          elseif tUnitInfo.nId and not tUnitInfo.bIsValid then
+            wndGrid:SetCellText(idx, 3, "(invalid)")
+          end
+        end
+        -- column #4
+        if tUnitInfo and tUnitInfo.nId then
+          local sId = tostring(tUnitInfo.nId)
+          wndGrid:SetCellText(idx, 4, sId)
+        end
+        -- column #5
+        local tExtraInfo = tLog[4]
+        if sText == "ERROR" then
+          wndGrid:SetCellText(idx, 5, tExtraInfo[1])
+        elseif sText == "DebuffAdd" or sText == "BuffAdd" then
+          local nSpellId = tExtraInfo[1]
+          local sSpellName = tExtraInfo[2]
+          local nStackCount = tExtraInfo[3]
+          local sFormat = "SpellName='%s' SpellId=%d StackCount=%d"
+          wndGrid:SetCellText(idx, 5, string.format(sFormat, sSpellName, nSpellId, nStackCount))
+        elseif sText == "DebuffRemove" or sText == "BuffRemove" then
+          local nSpellId = tExtraInfo[1]
+          local sSpellName = tExtraInfo[2]
+          local sFormat = "SpellName='%s' SpellId=%d"
+          wndGrid:SetCellText(idx, 5, string.format(sFormat, sSpellName, nSpellId))
+        elseif sText == "DebuffUpdate" or sText == "BuffUpdate" then
+          local nSpellId = tExtraInfo[1]
+          local sSpellName = tExtraInfo[2]
+          local nOldStackCount = tExtraInfo[3]
+          local nNewStackCount = tExtraInfo[4]
+          local sFormat = "SpellName='%s' SpellId=%d OldStack=%d NewStack=%d"
+          wndGrid:SetCellText(idx, 5, string.format(sFormat, sSpellName, nSpellId, nOldStackCount, nNewStackCount))
+        elseif sText == "CastStart" or sText == "CastSuccess" or sText == "CastFailed" then
+          local sCastName = tExtraInfo[1]
+          local nCastEndTime = tExtraInfo[2] - nStartTime
+          local sFormat = "CastName='%s' CastEndTime=%.2f"
+          wndGrid:SetCellText(idx, 5, string.format(sFormat, sCastName, nCastEndTime))
+        elseif sText == "NPCSay" or sText == "Datachron" then
+          local sMessage = tExtraInfo[1]
+          wndGrid:SetCellText(idx, 5, sMessage)
+        end
+      end
+    end
+  end
+end
+
+function DruseraBossMods:OnCombatManagerLog(wndHandler, wndControl, eMouseButton)
+  local tData = self:CombatManagerDumpOldLog()
+  if tData then
+    local nStartTime = tData[1]
+    local tLogs = tData[2]
+
+    local wndParent = wndControl:GetParent()
+    local wndGrid = nil
+    for _, wnd in next, wndParent:GetChildren() do
+      if wnd:GetName() == "Grid" then
+        wndGrid = wnd
+        break
+      end
+    end
+    if wndGrid then
+      wndGrid:DeleteAll()
+      for _,tLog in next, tLogs do
+        local idx = wndGrid:AddRow("")
+
+        -- First column
+        local nDiffTime = string.format("%.2f", tLog[1] - nStartTime)
+        wndGrid:SetCellText(idx, 1, nDiffTime)
+        wndGrid:SetCellSortText(idx, 1, tLog[1])
+        -- Second column
+        local sText = tLog[2]
+        wndGrid:SetCellText(idx, 2, sText)
+        -- Third column
+        local tUnitInfo = tLog[3]
+        if tUnitInfo then
+          if tUnitInfo.sName then
+            wndGrid:SetCellText(idx, 3, tUnitInfo.sName)
+          elseif tUnitInfo.nId and not tUnitInfo.bIsValid then
+            wndGrid:SetCellText(idx, 3, "(invalid)")
+          end
+        end
+        -- column #4
+        if tUnitInfo and tUnitInfo.nId then
+          local sId = tostring(tUnitInfo.nId)
+          wndGrid:SetCellText(idx, 4, sId)
+        end
+        -- column #5
+        local tExtraInfo = tLog[4]
+        if sText == "ERROR" then
+          wndGrid:SetCellText(idx, 5, tExtraInfo[1])
+        elseif sText == "Play Sound" then
+          local sFileName = tExtraInfo[1]
+          local sFormat = "FileName='%s'"
+          wndGrid:SetCellText(idx, 5, string.format(sFormat, sFileName))
+        end
+      end
+    end
+  end
 end

@@ -16,6 +16,33 @@ if not L then return end
 -- English.
 ------------------------------------------------------------------------------
 
+-- Graphic User Interface:
+---- Top Menu
+L["START_TEST"] = "Start Test"
+L["TOGGLE_ANCHORS"] = "Toggle Anchors"
+L["RESET_ANCHORS"] = "Reset Anchors"
+---- Left Menu
+L["HOME"] = "Home"
+L["BARS"] = "Bars"
+L["SOUNDS"] = "Sounds"
+L["MARKERS"] = "Markers"
+L["BOSSES"] = "Bosses"
+---- Bar Customization
+L["HIGHLIGHT"] = "Highlight"
+L["BAR_CUSTOMIZATION"] = "Bar Customization"
+L["SOUND_CUSTOMIZATION"] = "Sound Customization"
+L["INVERSE_SORT"] = "Invert sort"
+L["ALIGN_TO_THE_BOTTOM_FRAME"] = "Align to the bottom's frame"
+L["FILL_WITH_COLOR"] = "Fill with color"
+L["DISPLAY_TIME"] = "Display time"
+L["BAR_HEIGHT"] = "Bar's height"
+L["TEXTURE"] = "Texture"
+L["THRESHOLD_TO_MOVE_FROM_NORMAL_TO_HIGHLIGHT"] = "Threshold to move from normal to highlight"
+L["FONT"] = "Font"
+L["MUTE_ALL_SOUND"] = "Mute all sounds"
+L["ENCOUNTER_LOG"] = "Encounter's log"
+
+
 -- For testing.
 L["PHASER_COMBO"] = "Phaser Combo"
 L["GALERAS"] = "Galeras"
@@ -146,6 +173,10 @@ L["NEXT_PLATFORM_SHAKES"] = "Next platform shakes"
 L["VOLATILITY_LATTICE"] = "Volatility Lattice"
 ------ Encounter: Limbo Infomatrix
 L["LIMBO_INFOMATRIX"] = "Limbo Infomatrix"
+L["KEEPER_OF_SANDS"] = "Keeper Of Sands"
+L["INFOMATRIX_ANTLION"] = "Infomatrix Antlion"
+L["CAST_EXHAUST"] = "Exhaust"
+L["MSG_WARNING_KNOCKBACK"] = "Warning: Knock-Back"
 ------ Encounter: Avatus
 L["AVATUS"] = "Avatus"
 
