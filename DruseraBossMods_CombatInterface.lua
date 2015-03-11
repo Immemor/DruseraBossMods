@@ -95,9 +95,10 @@ local function GetAllBuffs(tUnit)
         r[sType] = {}
         for _,obj in next, tBuffs do
           local sName = obj.splEffect:GetName() or ""
+          local nSpellId = obj.splEffect:GetId()
           r[sType][obj.idBuff] = {
             nCount = obj.nCount,
-            nIdBuff = obj.idBuff,
+            nSpellId = nSpellId,
             --nTimeRemaining = obj.fTimeRemaining,
             sName = string.gsub(sName, NO_BREAK_SPACE, " "),
           }
@@ -159,18 +160,18 @@ local function ProcessAllBuffs(tMyUnit)
         if tNew.nCount ~= current.nCount then
           tDebuffs[nIdBuff].nCount = tNew.nCount
           --tDebuffs[nIdBuff].nTimeRemaining = tNew.nTimeRemaining
-          ManagerCall("DebuffUpdate", nId, nIdBuff, current.sName, current.nCount, tNew.nCount)
+          ManagerCall("DebuffUpdate", nId, current.nSpellId, current.sName, current.nCount, tNew.nCount)
         end
         -- Remove this entry for second loop.
         tNewDebuffs[nIdBuff] = nil
       else
         tDebuffs[nIdBuff] = nil
-        ManagerCall("DebuffRemove", nId, nIdBuff, current.sName)
+        ManagerCall("DebuffRemove", nId, current.nSpellId, current.sName)
       end
     end
     for nIdBuff,tNew in next, tNewDebuffs do
       tDebuffs[nIdBuff] = tNew
-      ManagerCall("DebuffAdd", nId, nIdBuff, tNew.sName, tNew.nCount)
+      ManagerCall("DebuffAdd", nId, tNew.nSpellId, tNew.sName, tNew.nCount)
     end
   end
 
@@ -183,18 +184,18 @@ local function ProcessAllBuffs(tMyUnit)
         if tNew.nCount ~= current.nCount then
           tBuffs[nIdBuff].nCount = tNew.nCount
           --tBuffs[nIdBuff].nTimeRemaining = tNew.nTimeRemaining
-          ManagerCall("BuffUpdate", nId, nIdBuff, current.sName, current.nCount, New.nCount)
+          ManagerCall("BuffUpdate", nId, current.nSpellId, current.sName, current.nCount, New.nCount)
         end
         -- Remove this entry for second loop.
         tNewBuffs[nIdBuff] = nil
       else
         tBuffs[nIdBuff] = nil
-        ManagerCall("BuffRemove", nId, nIdBuff, current.sName)
+        ManagerCall("BuffRemove", nId, current.nSpellId, current.sName)
       end
     end
     for nIdBuff, tNew in next, tNewBuffs do
       tBuffs[nIdBuff] = tNew
-      ManagerCall("BuffAdd", nId, nIdBuff, tNew.sName, tNew.nCount)
+      ManagerCall("BuffAdd", nId, tNew.nSpellId, tNew.sName, tNew.nCount)
     end
   end
 end

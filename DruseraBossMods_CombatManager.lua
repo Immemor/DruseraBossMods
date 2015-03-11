@@ -139,23 +139,23 @@ local function CastProcess(sCastType, nId, sCastName, nCastEndTime)
   end
 end
 
-local function SetBuffAlert(BuffType, tFoe, nIdBuff, fCallback)
-  tFoe[BuffType][nIdBuff] = fCallback
+local function SetBuffAlert(BuffType, tFoe, nSpellId, fCallback)
+  tFoe[BuffType][nSpellId] = fCallback
 end
 
-local function BuffProcess(sBuffType, nId, nIdBuff, sName, nStack)
+local function BuffProcess(sBuffType, nId, nSpellId, sName, nStack)
   local tFoe = _tFoes[nId]
-  if _bEncounterInProgress and tFoe then
-    local cb = tFoe[sBuffType][nIdBuff]
+  if _bEncounterInProgress and tFoe and nSpellId then
+    local cb = tFoe[sBuffType][nSpellId]
     if cb then
       EncounterCall(sBuffType, cb, tFoe, sName, nStack)
     end
   end
 end
-local function DebuffProcess(sDebuffType, nId, sName, nIdBuff, nStack)
-  if _bEncounterInProgress then
+local function DebuffProcess(sDebuffType, nId, sName, nSpellId, nStack)
+  if _bEncounterInProgress and nSpellId then
     for _,tFoe in next, _tFoes do
-      local cb = tFoe[sDebuffType][nIdBuff]
+      local cb = tFoe[sDebuffType][nSpellId]
       if cb then
         EncounterCall(sDebuffType, cb, tFoe, nId, sName, nStack)
       end
@@ -320,28 +320,28 @@ function CombatManager:CastSuccess(nId, sCastName, nCastEndTime)
   CastProcess("tCastSuccessAlerts", nId, sCastName, nCastEndTime)
 end
 
-function CombatManager:BuffAdd(nId, nIdBuff, sName, nStack)
-  BuffProcess("tBuffAddAlerts", nId, nIdBuff, sName, nStack)
+function CombatManager:BuffAdd(nId, nSpellId, sName, nStack)
+  BuffProcess("tBuffAddAlerts", nId, nSpellId, sName, nStack)
 end
 
-function CombatManager:BuffRemove(nId, nIdBuff, sName)
-  BuffProcess("tBuffRemoveAlerts", nId, nIdBuff, sName, 0)
+function CombatManager:BuffRemove(nId, nSpellId, sName)
+  BuffProcess("tBuffRemoveAlerts", nId, nSpellId, sName, 0)
 end
 
-function CombatManager:BuffUpdate(nId, nIdBuff, sName, nStackOld, nStackNew)
-  BuffProcess("tBuffUpdateAlerts", nId, nIdBuff, sName, nStackNew)
+function CombatManager:BuffUpdate(nId, nSpellId, sName, nStackOld, nStackNew)
+  BuffProcess("tBuffUpdateAlerts", nId, nSpellId, sName, nStackNew)
 end
 
-function CombatManager:DebuffAdd(nId, nIdBuff, sName, nStack)
-  DebuffProcess("tDebuffAddAlerts", nId, nIdBuff, sName, nStack)
+function CombatManager:DebuffAdd(nId, nSpellId, sName, nStack)
+  DebuffProcess("tDebuffAddAlerts", nId, nSpellId, sName, nStack)
 end
 
-function CombatManager:DebuffRemove(nId, nIdBuff, sName)
-  DebuffProcess("tDebuffRemoveAlerts", nId, nIdBuff, sName, 0)
+function CombatManager:DebuffRemove(nId, nSpellId, sName)
+  DebuffProcess("tDebuffRemoveAlerts", nId, nSpellId, sName, 0)
 end
 
-function CombatManager:DebuffUpdate(nId, nIdBuff, sName, nStackOld, nStackNew)
-  DebuffProcess("tDebuffUpdateAlerts", nId, nIdBuff, sName, nStackNew)
+function CombatManager:DebuffUpdate(nId, nSpellId, sName, nStackOld, nStackNew)
+  DebuffProcess("tDebuffUpdateAlerts", nId, nSpellId, sName, nStackNew)
 end
 
 
@@ -500,28 +500,28 @@ function DruseraBossMods:GetDistBetween2Unit(tUnitFrom, tUnitTo)
   return tonumber(dist)
 end
 
-function DruseraBossMods:SetBuffAddAlert(tFoe, nIdBuff, fCallback)
-  SetBuffAlert("tBuffAddAlerts", tFoe, nIdBuff, fCallback)
+function DruseraBossMods:SetBuffAddAlert(tFoe, nSpellId, fCallback)
+  SetBuffAlert("tBuffAddAlerts", tFoe, nSpellId, fCallback)
 end
 
-function DruseraBossMods:SetBuffRemoveAlert(tFoe, nIdBuff, fCallback)
-  SetBuffAlert("tBuffRemoveAlerts", tFoe, nIdBuff, fCallback)
+function DruseraBossMods:SetBuffRemoveAlert(tFoe, nSpellId, fCallback)
+  SetBuffAlert("tBuffRemoveAlerts", tFoe, nSpellId, fCallback)
 end
 
-function DruseraBossMods:SetBuffUpdateAlert(tFoe, nIdBuff, fCallback)
-  SetBuffAlert("tBuffUpdateAlerts", tFoe, nIdBuff, fCallback)
+function DruseraBossMods:SetBuffUpdateAlert(tFoe, nSpellId, fCallback)
+  SetBuffAlert("tBuffUpdateAlerts", tFoe, nSpellId, fCallback)
 end
 
-function DruseraBossMods:SetDebuffAddAlert(tFoe, nIdBuff, fCallback)
-  SetBuffAlert("tDebuffAddAlerts", tFoe, nIdBuff, fCallback)
+function DruseraBossMods:SetDebuffAddAlert(tFoe, nSpellId, fCallback)
+  SetBuffAlert("tDebuffAddAlerts", tFoe, nSpellId, fCallback)
 end
 
-function DruseraBossMods:SetDebuffRemoveAlert(tFoe, nIdBuff, fCallback)
-  SetBuffAlert("tDebuffRemoveAlerts", tFoe, nIdBuff, fCallback)
+function DruseraBossMods:SetDebuffRemoveAlert(tFoe, nSpellId, fCallback)
+  SetBuffAlert("tDebuffRemoveAlerts", tFoe, nSpellId, fCallback)
 end
 
-function DruseraBossMods:SetDebuffUpdateAlert(tFoe, nIdBuff, fCallback)
-  SetBuffAlert("tDebuffUpdateAlerts", tFoe, nIdBuff, fCallback)
+function DruseraBossMods:SetDebuffUpdateAlert(tFoe, nSpellId, fCallback)
+  SetBuffAlert("tDebuffUpdateAlerts", tFoe, nSpellId, fCallback)
 end
 
 function DruseraBossMods:CreateHealthBar(tFoe, sName)
