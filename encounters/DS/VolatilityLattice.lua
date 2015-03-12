@@ -9,13 +9,43 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
+require "GameLib"
+
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local VolatilityLattice = {}
+local GetGameTime = GameLib.GetGameTime
+local Avatus = {}
+local ObstinateLogicWall = {}
+local DataDevourer = {}
+local _DataDevourerCount = 0
+local _nLastDataDevourerPopTime = 0
 
 ------------------------------------------------------------------------------
 -- OnStartCombat function.
 ------------------------------------------------------------------------------
-function VolatilityLattice:OnStartCombat()
+function ObstinateLogicWall:OnStartCombat()
+end
+
+function Avatus:OnStartCombat()
+  _DataDevourerCount = 0
+  _nLastDataDevourerPopTime = 0
+  DBM:ActivateDetection(true)
+  DBM:SetTimerAlert(self, "DATA_DEVOURER", 10, nil)
+end
+
+function DataDevourer:OnDetection()
+  local nCurrentTime = GetGameTime()
+  local nDelta = nCurrentTime - _nLastDataDevourerPopTime
+  if nDelta > 7 then
+    _nLastDataDevourerPopTime = nCurrentTime
+    _DataDevourerCount = _DataDevourerCount + 1
+    if _DataDevourerCount < 3 then
+      DBM:SetTimerAlert(self, "DATA_DEVOURER", 10, nil)
+    elseif _DataDevourerCount % 2 then
+      DBM:SetTimerAlert(self, "DATA_DEVOURER", 5, nil)
+    else
+      DBM:SetTimerAlert(self, "DATA_DEVOURER", 10, nil)
+    end
+  end
 end
 
 ------------------------------------------------------------------------------
@@ -24,11 +54,13 @@ end
 do
   DBM:RegisterEncounter({
     nZoneMapParentId = 98,
-    nZoneMapId = nil,
+    nZoneMapId = 116,
     sEncounterName = "VOLATILITY_LATTICE",
-    tTriggerNames = { "VOLATILITY_LATTICE", },
+    tTriggerNames = { "AVATUS", },
     tUnits = {
-      VOLATILITY_LATTICE = VolatilityLattice,
+      AVATUS = Avatus,
+      OBSTINATE_LOGIC_WALL = ObstinateLogicWall,
+      DATA_DEVOURER = DataDevourer,
     },
   })
 end

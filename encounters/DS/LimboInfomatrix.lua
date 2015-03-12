@@ -11,20 +11,23 @@
 require "Apollo"
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local GetPlayerUnit = GameLib.GetPlayerUnit
-local LimboInfomatrix = {}
+local InvisibleHateUnit = {}
 local KeeperOfSands = {}
 local InfomatrixAntlion = {}
-local AOE = {}
+local AOE_MiniSandworm = {}
 
 ------------------------------------------------------------------------------
 -- OnStartCombat function.
 ------------------------------------------------------------------------------
+function InvisibleHateUnit:OnStartCombat()
+  DBM:ActivateDetection(true)
+end
+
 function InfomatrixAntlion:OnDetection()
   DBM:CreateHealthBar(self, "INFOMATRIX_ANTLION")
 end
 
 function KeeperOfSands:OnStartCombat()
-  DBM:ActivateDetection(true)
   DBM:CreateHealthBar(self, "KEEPER_OF_SANDS")
   DBM:SetCastStartAlert(self, "CAST_EXHAUST", function(self)
     local d = DBM:GetDistBetween2Unit(GetPlayerUnit(), self.tUnit)
@@ -39,16 +42,11 @@ function KeeperOfSands:OnStartCombat()
   end)
 end
 
-function AOE:OnDetection()
+function AOE_MiniSandworm:OnDetection()
   local d = DBM:GetDistBetween2Unit(GetPlayerUnit(), self.tUnit)
   if d and d < 50 then
-    Print("Mark")
     DBM:SetMarkOnUnit("GraySkull", self.nId, 52)
   end
-end
-
-function InfomatrixAntlion:OnStartCombat()
-  DBM:ActivateDetection(true)
 end
 
 ------------------------------------------------------------------------------
@@ -59,11 +57,12 @@ do
     nZoneMapParentId = 98,
     nZoneMapId = 114,
     sEncounterName = "LIMBO_INFOMATRIX",
-    tTriggerNames = { "KEEPER_OF_SANDS", "INFOMATRIX_ANTLION"},
+    tTriggerNames = {"INVISIBLE_HATE_UNIT"},
     tUnits = {
-      LIMBO_INFOMATRIX = LimboInfomatrix,
+      INVISIBLE_HATE_UNIT = InvisibleHateUnit,
       KEEPER_OF_SANDS = KeeperOfSands,
       INFOMATRIX_ANTLION = InfomatrixAntlion,
+      AOE_MINI_SANDWORM = AOE_MiniSandworm,
     },
   })
 end

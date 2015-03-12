@@ -50,7 +50,7 @@ end
 
 local function GUI_BuildEncounterLog(wndControl, sNamespace)
   -- retrieve grid windows and reset it.
-  local wndParent = wndControl:GetParent()
+  local wndParent = wndControl:GetParent():GetParent()
   local wndGrid = nil
   local tLastBuffer = {}
   for _, wnd in next, wndParent:GetChildren() do

@@ -171,13 +171,16 @@ L["THE_PLATFORM_SHAKES"] = "The platform shakes !"
 L["NEXT_PLATFORM_SHAKES"] = "Next platform shakes"
 ------ Encounter: Volatility Lattice
 L["VOLATILITY_LATTICE"] = "Volatility Lattice"
+L["OBSTINATE_LOGIC_WALL"] = "Obstinate Logic Wall"
+L["DATA_DEVOURER"] = "Data Devourer"
 ------ Encounter: Limbo Infomatrix
 L["LIMBO_INFOMATRIX"] = "Limbo Infomatrix"
+L["INVISIBLE_HATE_UNIT"] = "Invisible Hate Unit"
 L["KEEPER_OF_SANDS"] = "Keeper of Sands"
 L["INFOMATRIX_ANTLION"] = "Infomatrix Antlion"
+L["AOE_MINI_SANDWORM"] = "Mini Sandworm"
 L["CAST_EXHAUST"] = "Exhaust"
 L["CAST_DESICCATE"] = "Desiccate"
-L["HOSTILE_INVISIBLE_UNIT"] = "Hostile invisible unit"
 L["MSG_WARNING_KNOCKBACK"] = "Warning: Knock-Back"
 ------ Encounter: Avatus
 L["AVATUS"] = "Avatus"

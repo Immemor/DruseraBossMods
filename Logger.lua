@@ -24,7 +24,7 @@ local GetUnitById = GameLib.GetUnitById
 -- Constants.
 ------------------------------------------------------------------------------
 local NO_BREAK_SPACE = string.char(194, 160)
-local LOG_BUFFER_MAX = 5
+local LOG_BUFFER_MAX = 2
 -- Description of an entry log.
 local LOG_ENTRY__TIME = 1
 local LOG_ENTRY__TEXT = 2
@@ -113,7 +113,11 @@ end
 function DBM:NextLogBuffer()
   if LOG_BUFFER_MAX > 0 then
     -- Increase current index.
-    _nBufferIdx = (_nBufferIdx + 1) % LOG_BUFFER_MAX
+    _nBufferIdx = _nBufferIdx + 1
+    -- Variable must be between 1 to MAX.
+    if _nBufferIdx > LOG_BUFFER_MAX then
+      _nBufferIdx = 1
+    end
     -- Reset buffers pointed by current index.
     for _,tLogger in next, _tAllLogger do
       tLogger:ResetCurrentBuffer()
@@ -123,7 +127,7 @@ end
 
 function DBM:GetLastBufferIndex()
   if LOG_BUFFER_MAX > 0 then
-    local prev = (_nBufferIdx - 1) % LOG_BUFFER_MAX
+    local prev = _nBufferIdx - 1
     if prev == 0 then
       return LOG_BUFFER_MAX
     else

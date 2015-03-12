@@ -48,7 +48,6 @@ local SPELLID_BLACKLISTED = {
 ------------------------------------------------------------------------------
 -- Working variables.
 ------------------------------------------------------------------------------
---local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
 local DruseraBossMods = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local CombatInterface = {}
 
@@ -82,12 +81,12 @@ local function ManagerCall(sMethod, ...)
   fMethod = _tCombatManager[sMethod]
   -- Protected call.
   local s, sErrMsg = pcall(fMethod, _tCombatManager, ...)
-  --@alpha@
   if not s then
+    --@alpha@
     Print(sMethod .. ": " .. sErrMsg)
+    --@end-alpha@
     Add2Logs("ERROR", nil, sErrMsg)
   end
-  --@end-alpha@
 end
 
 local function GetAllBuffs(tUnit)
@@ -224,6 +223,9 @@ local function UpdateMemberList()
           tBuffs = {},
           bIsACharacter = true,
         }
+      elseif _tMembers[sName].tUnit ~= tUnit then
+        Add2Logs("Strange Member", tUnit:GetId())
+        _tMembers[sName].tUnit = tUnit
       end
     end
   end
@@ -280,6 +282,7 @@ end
 -- Combat Interface layer.
 ------------------------------------------------------------------------------
 function CombatInterface:ActivateDetection(bState)
+  Add2Logs("Activate Detection", nil, bState)
   if _bRunning and bState then
     RegisterEventHandler(_tHandlers.UnitCreated, "OnUnitCreated", self)
     RegisterEventHandler(_tHandlers.UnitDestroyed, "OnUnitDestroyed", self)
@@ -298,26 +301,33 @@ function CombatInterface:OnScanUpdate()
     local bIsOnline = tMember.tData.bIsOnline
     local bIsInCombat = bIsValid and tMember.tUnit:IsInCombat()
 
-    if bIsValid and bIsInCombat then
+    if bIsValid and bIsInCombat or bOutOfRange then
       bEndOfCombat = false
     end
     if bIsValid then
       local f, err = pcall(ProcessAllBuffs, tMember)
       if not f then
-        Print (err)
+        Print(err)
       end
     end
   end
 
-  if _bCheckMembers and bEndOfCombat then
-    StopEncounter()
+  if _bCheckMembers then
+    local tPlayerUnit = GetPlayerUnit()
+    if bEndOfCombat then
+      Add2Logs("No more member in combat")
+      StopEncounter()
+    elseif tPlayerUnit and tPlayerUnit:GetHealth() ~= 0 and not tPlayerUnit:IsInCombat() then
+      Add2Logs("Player is again in life")
+      StopEncounter()
+    end
   end
   for nId, data in next, _tTrackedUnits do
     if data.tUnit:IsValid() then
       -- Process buff tracking.
       local f, err = pcall(ProcessAllBuffs, data)
       if not f then
-        Print (err)
+        Print(err)
       end
 
       -- Process cast tracking.
@@ -413,11 +423,19 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
         _bCheckMembers = true
         Add2Logs("Player is dead", nId)
       else
+        Add2Logs("Player exiting combat in life", nId)
         StopEncounter()
       end
     end
   elseif tUnit:IsInYourGroup() then
     -- Members of the raid are not managed here.
+    if bInCombat then
+      Add2Logs("Member entering combat", nId)
+    elseif tUnit:GetHealth() == 0 then
+      Add2Logs("Member is dead", nId)
+    else
+      Add2Logs("Member exiting combat", nId)
+    end
   elseif _tTrackedUnits[nId] then
     if bInCombat then
       ManagerCall("UnitEnteringCombat", nId, tUnit ,sName)
@@ -507,6 +525,8 @@ function CombatInterface:ExtraLog2Text(sText, tExtraData, nRefTime)
     sResult = string.format(sFormat, sCastName, nCastEndTime)
   elseif sText == "NPCSay" or sText == "Datachron" then
     sResult = tExtraData[1]
+  elseif sText == "Activate Detection" then
+    sResult = tostring(tExtraData[1])
   end
   return sResult
 end

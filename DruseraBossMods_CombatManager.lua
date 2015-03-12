@@ -541,6 +541,8 @@ function DruseraBossMods:PlaySound(sFileName)
 end
 
 function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId, nLocation)
+  --[[
+  --XXX: Doesn't work very well, must be completely redone.
   local wPoint = _tMarksOnUnit[nTargetId]
   if wPoint then
     wPoint:Destroy()
@@ -552,6 +554,7 @@ function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId, nLocation)
     wPoint:SetUnit(tUnit, nLocation)
     _tMarksOnUnit[nTargetId] = wPoint
   end
+  --]]
 end
 
 function DruseraBossMods:ActivateDetection(flag)
