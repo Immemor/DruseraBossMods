@@ -27,12 +27,10 @@ local next, pcall, unpack = next, pcall, unpack
 ------------------------------------------------------------------------------
 -- Constants.
 ------------------------------------------------------------------------------
-local NO_BREAK_SPACE = string.char(194, 160)
 
 ------------------------------------------------------------------------------
 -- Working variables.
 ------------------------------------------------------------------------------
---local DruseraBossMods = Apollo.GetAddon("DruseraBossMods")
 local DruseraBossMods = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local CombatManager = {}
 
