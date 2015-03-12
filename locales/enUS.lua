@@ -173,9 +173,11 @@ L["NEXT_PLATFORM_SHAKES"] = "Next platform shakes"
 L["VOLATILITY_LATTICE"] = "Volatility Lattice"
 ------ Encounter: Limbo Infomatrix
 L["LIMBO_INFOMATRIX"] = "Limbo Infomatrix"
-L["KEEPER_OF_SANDS"] = "Keeper Of Sands"
+L["KEEPER_OF_SANDS"] = "Keeper of Sands"
 L["INFOMATRIX_ANTLION"] = "Infomatrix Antlion"
 L["CAST_EXHAUST"] = "Exhaust"
+L["CAST_DESICCATE"] = "Desiccate"
+L["HOSTILE_INVISIBLE_UNIT"] = "Hostile invisible unit"
 L["MSG_WARNING_KNOCKBACK"] = "Warning: Knock-Back"
 ------ Encounter: Avatus
 L["AVATUS"] = "Avatus"
