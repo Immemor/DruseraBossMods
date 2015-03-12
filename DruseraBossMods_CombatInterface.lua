@@ -313,13 +313,22 @@ function CombatInterface:OnScanUpdate()
 
       -- Process cast tracking.
       local bCasting = data.tUnit:IsCasting()
+      local nCurrentTime
+      local sCastName
+      local nCastDuration
+      local nCastElapsed
+      local nCastEndTime
       if bCasting then
-        local nCurrentTime = GetGameTime()
-        local sCastName = data.tUnit:GetCastName()
-        local nCastDuration = data.tUnit:GetCastDuration()
-        local nCastElapsed = data.tUnit:GetCastElapsed()
-        local nCastEndTime = nCurrentTime + (nCastDuration - nCastElapsed) / 1000
-
+        nCurrentTime = GetGameTime()
+        sCastName = data.tUnit:GetCastName()
+        nCastDuration = data.tUnit:GetCastDuration()
+        nCastElapsed = data.tUnit:GetCastElapsed()
+        nCastEndTime = nCurrentTime + (nCastDuration - nCastElapsed) / 1000
+        -- refresh needed if the function is called at the end of cast.
+        -- Like that, previous data retrieved are valid.
+        bCasting = data.tUnit:IsCasting()
+      end
+      if bCasting then
         sCastName = string.gsub(sCastName, NO_BREAK_SPACE, " ")
         if not data.tCast.bCasting then
           -- New cast
