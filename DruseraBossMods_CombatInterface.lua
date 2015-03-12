@@ -422,8 +422,8 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
     if bInCombat then
       ManagerCall("UnitEnteringCombat", nId, tUnit ,sName)
     elseif tUnit:GetHealth() == 0 then
-      UnTrackThisUnit(nId)
       ManagerCall("UnitDead", nId, tUnit, sName)
+      UnTrackThisUnit(nId)
     else
       ManagerCall("UnitLeftCombat", nId, tUnit, sName)
     end
