@@ -19,7 +19,7 @@ require "Apollo"
 ------------------------------------------------------------------------------
 -- Constants
 ------------------------------------------------------------------------------
-local DRUSERABOSSMODS_VERSION =  "0.17-alpha" -- "@project-version@"
+local DRUSERABOSSMODS_VERSION =  "0.17" -- "@project-version@"
 local DEFAULTS = {
   profile = {
     dbm = {
