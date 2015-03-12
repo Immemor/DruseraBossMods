@@ -41,6 +41,9 @@ local NO_BREAK_SPACE = string.char(194, 160)
 local SCAN_PERIOD = 0.1 -- in seconds.
 local CHANNEL_NPCSAY = ChatSystemLib.ChatChannel_NPCSay
 local CHANNEL_DATACHRON = ChatSystemLib.ChatChannel_Datachron
+local SPELLID_BLACKLISTED = {
+  [60883] = "Irradiate", -- On war class.
+}
 
 ------------------------------------------------------------------------------
 -- Working variables.
@@ -95,11 +98,13 @@ local function GetAllBuffs(tUnit)
         r[sType] = {}
         for _,obj in next, tBuffs do
           local nSpellId = obj.splEffect:GetId()
-          r[sType][obj.idBuff] = {
-            nCount = obj.nCount,
-            nSpellId = nSpellId,
-            --nTimeRemaining = obj.fTimeRemaining,
-          }
+          if nSpellId and not SPELLID_BLACKLISTED[nSpellId] then
+            r[sType][obj.idBuff] = {
+              nCount = obj.nCount,
+              nSpellId = nSpellId,
+              --nTimeRemaining = obj.fTimeRemaining,
+            }
+          end
         end
       end
     end
