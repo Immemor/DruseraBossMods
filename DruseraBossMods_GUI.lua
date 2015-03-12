@@ -67,7 +67,7 @@ local function GUI_BuildEncounterLog(wndControl, sNamespace)
     tLastBuffer = tLogger._tBuffers[nIndex]
   end
   -- Interpret last combat, and set info in the grid.
-  if wndGrid and next(tLastBuffer) then
+  if wndGrid and tLastBuffer and next(tLastBuffer) then
     local nStartTime = nil
     for _, tEntry in next, tLastBuffer do
       local sText = tEntry[2]

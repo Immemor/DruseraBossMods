@@ -67,37 +67,39 @@ end
 
 function Logger:Add(sText, ...)
   --@alpha@
-  local nId = nil
-  local sName = nil
-  local bIsValid = nil
+  if LOG_BUFFER_MAX > 0 then
+    local nId = nil
+    local sName = nil
+    local bIsValid = nil
 
-  local tExtraInfo = {}
-  local args = select("#", ...)
-  if args > 0 then
-    nId = select(1, ...)
-    if args > 1 then
-      tExtraInfo = { select(2, ...) }
+    local tExtraInfo = {}
+    local args = select("#", ...)
+    if args > 0 then
+      nId = select(1, ...)
+      if args > 1 then
+        tExtraInfo = { select(2, ...) }
+      end
     end
-  end
-  if type(nId) == "number" then
-    local tUnit = GetUnitById(nId)
-    if tUnit then
-      sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
-      bIsValid = tUnit:IsValid()
+    if type(nId) == "number" then
+      local tUnit = GetUnitById(nId)
+      if tUnit then
+        sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
+        bIsValid = tUnit:IsValid()
+      end
+    else
+      nId = nil
+      sName = ""
     end
-  else
-    nId = nil
-    sName = ""
+    -- Add an entry in current buffer.
+    table.insert(self._tBuffers[_nBufferIdx], {
+      [LOG_ENTRY__TIME] = GetGameTime(),
+      [LOG_ENTRY__TEXT] = sText,
+      [LOG_ENTRY__ID] = nId,
+      [LOG_ENTRY__NAME] = sName,
+      [LOG_ENTRY__ISVALID] = bIsValid,
+      [LOG_ENTRY__EXTRAINFO] = tExtraInfo,
+    })
   end
-  -- Add an entry in current buffer.
-  table.insert(self._tBuffers[_nBufferIdx], {
-    [LOG_ENTRY__TIME] = GetGameTime(),
-    [LOG_ENTRY__TEXT] = sText,
-    [LOG_ENTRY__ID] = nId,
-    [LOG_ENTRY__NAME] = sName,
-    [LOG_ENTRY__ISVALID] = bIsValid,
-    [LOG_ENTRY__EXTRAINFO] = tExtraInfo,
-  })
   --@end-alpha@
 end
 
@@ -109,21 +111,26 @@ function DBM:NewLoggerNamespace(tModule, sNamespace)
 end
 
 function DBM:NextLogBuffer()
-  -- Increase current index.
-  _nBufferIdx = (_nBufferIdx + 1) % LOG_BUFFER_MAX
-  -- Reset buffers pointed by current index.
-  for _,tLogger in next, _tAllLogger do
-    tLogger:ResetCurrentBuffer()
+  if LOG_BUFFER_MAX > 0 then
+    -- Increase current index.
+    _nBufferIdx = (_nBufferIdx + 1) % LOG_BUFFER_MAX
+    -- Reset buffers pointed by current index.
+    for _,tLogger in next, _tAllLogger do
+      tLogger:ResetCurrentBuffer()
+    end
   end
 end
 
 function DBM:GetLastBufferIndex()
-  local prev = (_nBufferIdx - 1) % LOG_BUFFER_MAX
-  if prev == 0 then 
-    return LOG_BUFFER_MAX
-  else
-    return prev
+  if LOG_BUFFER_MAX > 0 then
+    local prev = (_nBufferIdx - 1) % LOG_BUFFER_MAX
+    if prev == 0 then
+      return LOG_BUFFER_MAX
+    else
+      return prev
+    end
   end
+  return 0
 end
 
 function DBM:GetLoggerByNamespace(sNamespace)
