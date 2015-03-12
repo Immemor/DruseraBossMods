@@ -23,7 +23,7 @@ function ExperimentX89:OnStartCombat()
   DBM:CreateHealthBar(self, "EXPERIMENT_X89")
 
   -- Small bomb alert.
-  DBM:SetDebuffAddAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, sName, nStack)
+  DBM:SetDebuffAddAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
     local bItself = nTargetId == GetPlayerUnit():GetId()
     DBM:SetMessage({
       sLabel = "MSG_SMALL_BOMB",
@@ -36,12 +36,12 @@ function ExperimentX89:OnStartCombat()
       DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
     end
   end)
-  DBM:SetDebuffRemoveAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, sName, nStack)
+  DBM:SetDebuffRemoveAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
     DBM:SetMarkOnUnit(nil, nTargetId, 51)
   end)
 
   -- Big bomb alert.
-  DBM:SetDebuffAddAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, sName, nStack)
+  DBM:SetDebuffAddAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
     local bItself = nTargetId == GetPlayerUnit():GetId()
     DBM:SetMessage({
       sLabel = "MSG_BIG_BOMB",
@@ -54,7 +54,7 @@ function ExperimentX89:OnStartCombat()
       DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
     end
   end)
-  DBM:SetDebuffRemoveAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, sName, nStack)
+  DBM:SetDebuffRemoveAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
     DBM:SetMarkOnUnit(nil, nTargetId, 51)
   end)
 end

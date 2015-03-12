@@ -143,21 +143,21 @@ local function SetBuffAlert(BuffType, tFoe, nSpellId, fCallback)
   tFoe[BuffType][nSpellId] = fCallback
 end
 
-local function BuffProcess(sBuffType, nId, nSpellId, sName, nStack)
+local function BuffProcess(sBuffType, nId, nSpellId, nStack)
   local tFoe = _tFoes[nId]
   if _bEncounterInProgress and tFoe and nSpellId then
     local cb = tFoe[sBuffType][nSpellId]
     if cb then
-      EncounterCall(sBuffType, cb, tFoe, sName, nStack)
+      EncounterCall(sBuffType, cb, tFoe, nStack)
     end
   end
 end
-local function DebuffProcess(sDebuffType, nId, sName, nSpellId, nStack)
+local function DebuffProcess(sDebuffType, nId, nSpellId, nStack)
   if _bEncounterInProgress and nSpellId then
     for _,tFoe in next, _tFoes do
       local cb = tFoe[sDebuffType][nSpellId]
       if cb then
-        EncounterCall(sDebuffType, cb, tFoe, nId, sName, nStack)
+        EncounterCall(sDebuffType, cb, tFoe, nId, nStack)
       end
     end
   end
@@ -320,28 +320,28 @@ function CombatManager:CastSuccess(nId, sCastName, nCastEndTime)
   CastProcess("tCastSuccessAlerts", nId, sCastName, nCastEndTime)
 end
 
-function CombatManager:BuffAdd(nId, nSpellId, sName, nStack)
-  BuffProcess("tBuffAddAlerts", nId, nSpellId, sName, nStack)
+function CombatManager:BuffAdd(nId, nSpellId, nStack)
+  BuffProcess("tBuffAddAlerts", nId, nSpellId, nStack)
 end
 
-function CombatManager:BuffRemove(nId, nSpellId, sName)
-  BuffProcess("tBuffRemoveAlerts", nId, nSpellId, sName, 0)
+function CombatManager:BuffRemove(nId, nSpellId)
+  BuffProcess("tBuffRemoveAlerts", nId, nSpellId, 0)
 end
 
-function CombatManager:BuffUpdate(nId, nSpellId, sName, nStackOld, nStackNew)
-  BuffProcess("tBuffUpdateAlerts", nId, nSpellId, sName, nStackNew)
+function CombatManager:BuffUpdate(nId, nSpellId, nStackOld, nStackNew)
+  BuffProcess("tBuffUpdateAlerts", nId, nSpellId, nStackNew)
 end
 
-function CombatManager:DebuffAdd(nId, nSpellId, sName, nStack)
-  DebuffProcess("tDebuffAddAlerts", nId, nSpellId, sName, nStack)
+function CombatManager:DebuffAdd(nId, nSpellId, nStack)
+  DebuffProcess("tDebuffAddAlerts", nId, nSpellId, nStack)
 end
 
-function CombatManager:DebuffRemove(nId, nSpellId, sName)
-  DebuffProcess("tDebuffRemoveAlerts", nId, nSpellId, sName, 0)
+function CombatManager:DebuffRemove(nId, nSpellId)
+  DebuffProcess("tDebuffRemoveAlerts", nId, nSpellId, 0)
 end
 
-function CombatManager:DebuffUpdate(nId, nSpellId, sName, nStackOld, nStackNew)
-  DebuffProcess("tDebuffUpdateAlerts", nId, nSpellId, sName, nStackNew)
+function CombatManager:DebuffUpdate(nId, nSpellId, nStackOld, nStackNew)
+  DebuffProcess("tDebuffUpdateAlerts", nId, nSpellId, nStackNew)
 end
 
 

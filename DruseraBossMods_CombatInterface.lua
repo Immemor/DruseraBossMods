@@ -94,13 +94,11 @@ local function GetAllBuffs(tUnit)
       for sType, tBuffs in next, tAllBuffs do
         r[sType] = {}
         for _,obj in next, tBuffs do
-          local sName = obj.splEffect:GetName() or ""
           local nSpellId = obj.splEffect:GetId()
           r[sType][obj.idBuff] = {
             nCount = obj.nCount,
             nSpellId = nSpellId,
             --nTimeRemaining = obj.fTimeRemaining,
-            sName = string.gsub(sName, NO_BREAK_SPACE, " "),
           }
         end
       end
@@ -160,18 +158,18 @@ local function ProcessAllBuffs(tMyUnit)
         if tNew.nCount ~= current.nCount then
           tDebuffs[nIdBuff].nCount = tNew.nCount
           --tDebuffs[nIdBuff].nTimeRemaining = tNew.nTimeRemaining
-          ManagerCall("DebuffUpdate", nId, current.nSpellId, current.sName, current.nCount, tNew.nCount)
+          ManagerCall("DebuffUpdate", nId, current.nSpellId, current.nCount, tNew.nCount)
         end
         -- Remove this entry for second loop.
         tNewDebuffs[nIdBuff] = nil
       else
         tDebuffs[nIdBuff] = nil
-        ManagerCall("DebuffRemove", nId, current.nSpellId, current.sName)
+        ManagerCall("DebuffRemove", nId, current.nSpellId)
       end
     end
     for nIdBuff,tNew in next, tNewDebuffs do
       tDebuffs[nIdBuff] = tNew
-      ManagerCall("DebuffAdd", nId, tNew.nSpellId, tNew.sName, tNew.nCount)
+      ManagerCall("DebuffAdd", nId, tNew.nSpellId, tNew.nCount)
     end
   end
 
@@ -184,18 +182,18 @@ local function ProcessAllBuffs(tMyUnit)
         if tNew.nCount ~= current.nCount then
           tBuffs[nIdBuff].nCount = tNew.nCount
           --tBuffs[nIdBuff].nTimeRemaining = tNew.nTimeRemaining
-          ManagerCall("BuffUpdate", nId, current.nSpellId, current.sName, current.nCount, New.nCount)
+          ManagerCall("BuffUpdate", nId, current.nSpellId, current.nCount, tNew.nCount)
         end
         -- Remove this entry for second loop.
         tNewBuffs[nIdBuff] = nil
       else
         tBuffs[nIdBuff] = nil
-        ManagerCall("BuffRemove", nId, current.nSpellId, current.sName)
+        ManagerCall("BuffRemove", nId, current.nSpellId)
       end
     end
     for nIdBuff, tNew in next, tNewBuffs do
       tBuffs[nIdBuff] = tNew
-      ManagerCall("BuffAdd", nId, tNew.nSpellId, tNew.sName, tNew.nCount)
+      ManagerCall("BuffAdd", nId, tNew.nSpellId, tNew.nCount)
     end
   end
 end
@@ -461,20 +459,23 @@ function CombatInterface:ExtraLog2Text(sText, tExtraData, nRefTime)
     sResult = tExtraData[1]
   elseif sText == "DebuffAdd" or sText == "BuffAdd" then
     local nSpellId = tExtraData[1]
-    local sSpellName = tExtraData[2]
-    local nStackCount = tExtraData[3]
+    local nStackCount = tExtraData[2]
+    local sSpellName = GameLib.GetSpell(nSpellId):GetName()
+    sSpellName = string.gsub(sSpellName, NO_BREAK_SPACE, " ")
     local sFormat = "Name='%s' Id=%d StackCount=%d"
     sResult = string.format(sFormat, sSpellName, nSpellId, nStackCount)
   elseif sText == "DebuffRemove" or sText == "BuffRemove" then
     local nSpellId = tExtraData[1]
-    local sSpellName = tExtraData[2]
+    local sSpellName = GameLib.GetSpell(nSpellId):GetName()
+    sSpellName = string.gsub(sSpellName, NO_BREAK_SPACE, " ")
     local sFormat = "Name='%s' Id=%d"
     sResult = string.format(sFormat, sSpellName, nSpellId)
   elseif sText == "DebuffUpdate" or sText == "BuffUpdate" then
     local nSpellId = tExtraData[1]
-    local sSpellName = tExtraData[2]
-    local nOldStackCount = tExtraData[3]
-    local nNewStackCount = tExtraData[4]
+    local nOldStackCount = tExtraData[2]
+    local nNewStackCount = tExtraData[3]
+    local sSpellName = GameLib.GetSpell(nSpellId):GetName()
+    sSpellName = string.gsub(sSpellName, NO_BREAK_SPACE, " ")
     local sFormat = "Name='%s' Id=%d OldStack=%d NewStack=%d"
     sResult = string.format(sFormat, sSpellName, nSpellId, nOldStackCount, nNewStackCount)
   elseif sText == "CastStart" or sText == "CastSuccess" or sText == "CastFailed" then

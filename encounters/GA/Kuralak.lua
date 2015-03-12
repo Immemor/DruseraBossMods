@@ -50,7 +50,7 @@ function Kuralak:OnStartCombat()
     DBM:SetTimerAlert(self, "DNA_SIPHON", 90, nil)
   end)
 
-  DBM:SetDebuffAddAlert(self, SPELLID__CHROMOSOME_CORRUPTION, function(self, nTargetId, sName, nStack)
+  DBM:SetDebuffAddAlert(self, SPELLID__CHROMOSOME_CORRUPTION, function(self, nTargetId, nStack)
     local bItself = nTargetId == GetPlayerUnit():GetId()
     if bItself then
       DBM:PlaySound("Info")
