@@ -18,6 +18,7 @@ local _bTerraform = true
 -- OnStartCombat function.
 ------------------------------------------------------------------------------
 function FullyOptimizedCanimid:OnStartCombat()
+  DBM:CreateHealthBar(self, "FULLY_OPTIMIZED_CANIMID")
   _nUndermine_count = 0
   _bTerraform = true
 

@@ -25,7 +25,7 @@ function BioEnhancedBroodmother:OnStartCombat()
   end)
 
    -- Initialization
-   DBM:SetTimerAlert(self, "AUGMENTED_BIO_WEB", 46, nil)
+   DBM:SetTimerAlert(self, "AUGMENTED_BIO_WEB", 48, nil)
 end
 
 ------------------------------------------------------------------------------
