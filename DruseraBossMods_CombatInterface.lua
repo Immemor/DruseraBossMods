@@ -56,6 +56,7 @@ local _tCombatManager = nil
 local _bRunning = false
 local _bCheckMembers = false
 local _tScanTimer
+local _tAllUnits = {}
 local _tTrackedUnits = {}
 local _tMembers = {}
 local _tHandlers = {
@@ -117,6 +118,7 @@ local function TrackThisUnit(nId)
   if not _tTrackedUnits[nId] and tUnit then
     Add2Logs("TrackThisUnit", nId)
     local tAllBuffs = GetAllBuffs(tUnit)
+    _tAllUnits[nId] = true
     _tTrackedUnits[nId] = {
       tUnit = tUnit,
       tBuffs = tAllBuffs["arBeneficial"] or {},
@@ -144,6 +146,7 @@ local function StopEncounter()
   Activate(false)
   ManagerCall("StopEncounter")
   _tTrackedUnits = {}
+  _tAllUnits = {}
   _tMembers = {}
   DruseraBossMods:NextLogBuffer()
 end
@@ -247,6 +250,7 @@ end
 function DruseraBossMods:CombatInterfaceInit(class, bTest)
   _tCombatManager = class
   _tTrackedUnits = {}
+  _tAllUnits = {}
   _tMembers = {}
   _bRunning = false
   _bCheckMembers = false
@@ -447,13 +451,17 @@ function CombatInterface:OnUnitCreated(tUnit)
   local sName = string.gsub(tUnit:GetName(), NO_BREAK_SPACE, " ")
 
   if not tUnit:IsInYourGroup() and nId ~= GetPlayerUnit():GetId() then
-    ManagerCall("UnitDetected", nId, tUnit, sName)
+    if not _tAllUnits[nId] then
+      _tAllUnits[nId] = true
+      ManagerCall("UnitDetected", nId, tUnit, sName)
+    end
   end
 end
 
 function CombatInterface:OnUnitDestroyed(tUnit)
   local nId = tUnit:GetId()
-  if _tTrackedUnits[nId] then
+  if _tAllUnits[nId] then
+    _tAllUnits[nId] = nil
     UnTrackThisUnit(nId)
     ManagerCall("UnitDestroyed", nId, tUnit, sName)
   end
