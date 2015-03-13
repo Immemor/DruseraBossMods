@@ -13,7 +13,7 @@
     <Script Name="locales\koKR.lua"/>
     <!-- LUA Script -->
     <Script Name="DruseraBossMods.lua"/>
-    <Script Name="DruseraBossMods_CombatInterface.lua"/>
+    <Script Name="CombatInterface.lua"/>
     <Script Name="DruseraBossMods_CombatManager.lua"/>
     <Script Name="DruseraBossMods_HUD.lua"/>
     <Script Name="DruseraBossMods_GUI.lua"/>
