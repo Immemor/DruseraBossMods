@@ -30,7 +30,8 @@ local RemoveEventHandler = Apollo.RemoveEventHandler
 local GetGameTime = GameLib.GetGameTime
 local GetPlayerUnit = GameLib.GetPlayerUnit
 local GetUnitById = GameLib.GetUnitById
-local debug, next, string, pcall, unpack = debug, next, string, pcall, unpack
+local GetSpell = GameLib.GetSpell
+local next, string, pcall  = next, string, pcall
 
 ------------------------------------------------------------------------------
 -- Constants.
@@ -247,7 +248,7 @@ function Activate(bState)
 end
 
 ------------------------------------------------------------------------------
--- Relations between DruseraBossMods and CombatInterface objects.
+-- Relations between DruseraBossMods and CombatInterface class.
 ------------------------------------------------------------------------------
 function DruseraBossMods:CombatInterfaceInit(class, bTest)
   _tCombatManager = class
@@ -500,13 +501,13 @@ function CombatInterface:ExtraLog2Text(sText, tExtraData, nRefTime)
   elseif sText == "DebuffAdd" or sText == "BuffAdd" then
     local nSpellId = tExtraData[1]
     local nStackCount = tExtraData[2]
-    local sSpellName = GameLib.GetSpell(nSpellId):GetName()
+    local sSpellName = GetSpell(nSpellId):GetName()
     sSpellName = string.gsub(sSpellName, NO_BREAK_SPACE, " ")
     local sFormat = "Name='%s' Id=%d StackCount=%d"
     sResult = string.format(sFormat, sSpellName, nSpellId, nStackCount)
   elseif sText == "DebuffRemove" or sText == "BuffRemove" then
     local nSpellId = tExtraData[1]
-    local sSpellName = GameLib.GetSpell(nSpellId):GetName()
+    local sSpellName = GetSpell(nSpellId):GetName()
     sSpellName = string.gsub(sSpellName, NO_BREAK_SPACE, " ")
     local sFormat = "Name='%s' Id=%d"
     sResult = string.format(sFormat, sSpellName, nSpellId)
@@ -514,7 +515,7 @@ function CombatInterface:ExtraLog2Text(sText, tExtraData, nRefTime)
     local nSpellId = tExtraData[1]
     local nOldStackCount = tExtraData[2]
     local nNewStackCount = tExtraData[3]
-    local sSpellName = GameLib.GetSpell(nSpellId):GetName()
+    local sSpellName = GetSpell(nSpellId):GetName()
     sSpellName = string.gsub(sSpellName, NO_BREAK_SPACE, " ")
     local sFormat = "Name='%s' Id=%d OldStack=%d NewStack=%d"
     sResult = string.format(sFormat, sSpellName, nSpellId, nOldStackCount, nNewStackCount)
