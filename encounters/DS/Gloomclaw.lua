@@ -95,8 +95,6 @@ end
 function InsignificantMobs:OnStartCombat()
   local nCurrentTime = GetGameTime()
   local delta = nCurrentTime - _nLastPopMobsTime
-  -- The pop time is not regular between two fight, implement a patch like RaidCore.
-  -- No real choice.
   if delta > 10 then
     _nLastPopMobsTime = nCurrentTime
     _nWaveIndex = _nWaveIndex + 1
