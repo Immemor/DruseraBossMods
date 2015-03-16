@@ -79,6 +79,7 @@ function Gloomclaw:OnStartCombat()
 end
 
 function DangerousMobs:OnStartCombat()
+  DBM:CreateHealthBar(self, self.sName)
   DBM:SetCastStartAlert(self, "CORRUPTING_RAYS", function(self)
     local d = DBM:GetDistBetween2Unit(GetPlayerUnit(), self.tUnit)
     if d and d < 35 then
