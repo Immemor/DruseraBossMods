@@ -29,8 +29,9 @@ end
 do
   DBM:RegisterEncounter({
     nZoneMapParentId = 98,
-    nZoneMapId = nil,
+    nZoneMapId = 120,
     sEncounterName = "MAELSTROM_AUTHORITY",
+    tTriggerNames = { "MAELSTROM_AUTHORITY", },
     tUnits = {
       MAELSTROM_AUTHORITY = MaelstromAuthority,
     },
