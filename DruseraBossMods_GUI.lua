@@ -62,14 +62,16 @@ local function GUI_BuildEncounterLog(wndControl, sNamespace)
   end
   -- Retrieve last combat.
   local tLogger = DruseraBossMods:GetLoggerByNamespace(sNamespace)
+  local tCILogger = DruseraBossMods:GetLoggerByNamespace("CombatInterface")
   if tLogger then
     local nIndex = DruseraBossMods:GetLastBufferIndex()
     tLastBuffer = tLogger._tBuffers[nIndex]
+    tCILastBuffer = tCILogger._tBuffers[nIndex]
   end
   -- Interpret last combat, and set info in the grid.
-  if wndGrid and tLastBuffer and next(tLastBuffer) then
+  if wndGrid and tCILastBuffer and next(tCILastBuffer) then
     local nStartTime = nil
-    for _, tEntry in next, tLastBuffer do
+    for _, tEntry in next, tCILastBuffer do
       local sText = tEntry[2]
       if sText == "StartEncounter" then
         nStartTime = tEntry[1]
