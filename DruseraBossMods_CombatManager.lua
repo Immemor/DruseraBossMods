@@ -177,11 +177,6 @@ function DruseraBossMods:RegisterEncounterSecond(tData)
   local nMapId = tData.nZoneMapId
 
   if not nMapParentId or not nMapId or not tData.tTriggerNames then
-    if tData.sEncounterName then
-      Print("Invalid encounter: " .. tData.sEncounterName)
-    else
-      Print("Invalid encounter ZoneMap definition!")
-    end
     return
   end
 
