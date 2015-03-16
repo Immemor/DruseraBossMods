@@ -35,7 +35,7 @@ end
 function DataDevourer:OnDetection()
   local nCurrentTime = GetGameTime()
   local nDelta = nCurrentTime - _nLastDataDevourerPopTime
-  if nDelta > 7 then
+  if nDelta > 3 then
     _nLastDataDevourerPopTime = nCurrentTime
     _DataDevourerCount = _DataDevourerCount + 1
     if _DataDevourerCount < 3 then
