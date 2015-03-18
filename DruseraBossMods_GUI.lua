@@ -266,3 +266,7 @@ end
 function DruseraBossMods:OnCombatManagerLog(wndHandler, wndControl, eMouseButton)
   GUI_BuildEncounterLog(wndControl, "CombatManager")
 end
+
+function DruseraBossMods:OnOverlayLog(wndHandler, wndControl, eMouseButton)
+  GUI_BuildEncounterLog(wndControl, "Overlay")
+end

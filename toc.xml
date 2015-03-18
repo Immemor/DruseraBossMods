@@ -14,6 +14,7 @@
     <!-- LUA Script -->
     <Script Name="DruseraBossMods.lua"/>
     <Script Name="CombatInterface.lua"/>
+    <Script Name="HUDOverlay.lua"/>
     <Script Name="DruseraBossMods_CombatManager.lua"/>
     <Script Name="DruseraBossMods_HUD.lua"/>
     <Script Name="DruseraBossMods_GUI.lua"/>

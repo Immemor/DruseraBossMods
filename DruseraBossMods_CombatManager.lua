@@ -169,6 +169,7 @@ function DruseraBossMods:CombatManagerInit()
   _bEncounterInProgress = false
   _CombatInterface = self:CombatInterfaceInit(CombatManager, false)
   CombatManager.tLogger = self:NewLoggerNamespace(CombatManager, "CombatManager")
+  self.Overlay = self:OverlayInitialize()
   return CombatManager
 end
 
@@ -243,6 +244,7 @@ function CombatManager:StopEncounter()
   for _,wPoint in next, _tMarksOnUnit do
     wPoint:Destroy()
   end
+  DruseraBossMods.Overlay:DestroyAll()
   _tMarksOnUnit = {}
   _tCurrentEncounter = nil
   _tNPCSayAlerts = {}
@@ -536,6 +538,7 @@ function DruseraBossMods:PlaySound(sFileName)
 end
 
 function DruseraBossMods:SetMarkOnUnit(sMarkName, nTargetId, nLocation)
+  self.Overlay:SetIcon(nTargetId, sMarkName)
   --[[
   --XXX: Doesn't work very well, must be completely redone.
   local wPoint = _tMarksOnUnit[nTargetId]
