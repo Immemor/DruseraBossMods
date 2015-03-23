@@ -304,30 +304,32 @@ function Overlay:OnDrawUpdate()
   _tOverlay:DestroyAllPixies()
 
   local tPUnit = GetPlayerUnit()
-  local tPWorldPosition = tPUnit:GetPosition()
-  local tPWorldVector = Vector3.New(tPWorldPosition)
-  local tPScreenPoint = WorldLocToScreenPoint(tPWorldVector)
-  local tPlayer = {
-    tUnit = tPUnit,
-    tWorldPosition = tPWorldPosition,
-    tWorldVector = tPWorldVector,
-    tScreenPoint = tPScreenPoint,
-  }
+  if tPUnit and tPUnit:IsValid() then
+    local tPWorldPosition = tPUnit:GetPosition()
+    local tPWorldVector = Vector3.New(tPWorldPosition)
+    local tPScreenPoint = WorldLocToScreenPoint(tPWorldVector)
+    local tPlayer = {
+      tUnit = tPUnit,
+      tWorldPosition = tPWorldPosition,
+      tWorldVector = tPWorldVector,
+      tScreenPoint = tPScreenPoint,
+    }
 
-  -- Get Table reference in case where DestroyAll is called during drawing.
-  local tDrawUnits = _tDrawUnits
-  for _, tDrawUnit in next, tDrawUnits do
-    local r, sErrMsg = pcall(UpdateCalcul, tDrawUnit, tPlayer)
-    if not r then
-      InternalError(sErrMsg)
-      break
-    end
-    if tDrawUnit.bProcessDraw then
-      -- Protected call without logging.
-      r, sErrMsg = pcall(Draw, tDrawUnit, tPlayer)
+    -- Get Table reference in case where DestroyAll is called during drawing.
+    local tDrawUnits = _tDrawUnits
+    for _, tDrawUnit in next, tDrawUnits do
+      local r, sErrMsg = pcall(UpdateCalcul, tDrawUnit, tPlayer)
       if not r then
         InternalError(sErrMsg)
         break
+      end
+      if tDrawUnit.bProcessDraw then
+        -- Protected call without logging.
+        r, sErrMsg = pcall(Draw, tDrawUnit, tPlayer)
+        if not r then
+          InternalError(sErrMsg)
+          break
+        end
       end
     end
   end

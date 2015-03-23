@@ -44,6 +44,11 @@ local CHANNEL_NPCSAY = ChatSystemLib.ChatChannel_NPCSay
 local CHANNEL_DATACHRON = ChatSystemLib.ChatChannel_Datachron
 local SPELLID_BLACKLISTED = {
   [60883] = "Irradiate", -- On war class.
+  [76652] = "Surge Focus Drain", -- On arcanero class.
+}
+local UNITNAME_BLACKLISTED = {
+  ["Phantom"] = true, -- Esper dps.
+  ["Artillerybot"] = true, -- Inge.
 }
 
 ------------------------------------------------------------------------------
@@ -362,8 +367,9 @@ function CombatInterface:OnScanUpdate()
         elseif data.tCast.bCasting then
           if sCastName ~= data.tCast.sCastName then
             -- New cast just after a previous one.
-            ManagerCall("CastSuccess", nId,
+            ManagerCall("CastEnd", nId,
                         data.tCast.sCastName,
+                        false,
                         data.tCast.nCastEndTime)
             data.tCast = {
               bCasting = true,
@@ -374,8 +380,9 @@ function CombatInterface:OnScanUpdate()
             ManagerCall("CastStart", nId, sCastName, nCastEndTime)
           elseif not data.tCast.bSuccess and nCastElapsed >= nCastDuration then
             -- The have reached the end.
-            ManagerCall("CastSuccess", nId,
+            ManagerCall("CastEnd", nId,
                         data.tCast.sCastName,
+                        false,
                         data.tCast.nCastEndTime)
             data.tCast = {
               bCasting = true,
@@ -389,15 +396,14 @@ function CombatInterface:OnScanUpdate()
         if not data.tCast.bSuccess then
           -- Let's compare with the nCastEndTime
           local nThreshold = GetGameTime() + SCAN_PERIOD
+          local bIsFailed
           if nThreshold < data.tCast.nCastEndTime then
-            ManagerCall("CastFailed", nId,
-                        data.tCast.sCastName,
-                        data.tCast.nCastEndTime)
+            bIsInterrupted = true
           else
-            ManagerCall("CastSuccess", nId,
-                        data.tCast.sCastName,
-                        data.tCast.nCastEndTime)
+            bIsInterrupted = false
           end
+          ManagerCall("CastEnd", nId, data.tCast.sCastName,
+                      bIsInterrupted, data.tCast.nCastEndTime)
         end
         data.tCast = {
           bCasting = false,
@@ -472,7 +478,7 @@ function CombatInterface:OnUnitCreated(tUnit)
   if not tUnit:IsInYourGroup() and nId ~= GetPlayerUnit():GetId() then
     if not _tAllUnits[nId] then
       _tAllUnits[nId] = true
-      ManagerCall("UnitDetected", nId, tUnit, sName)
+      ManagerCall("OnUnitCreated", nId, tUnit, sName)
     end
   end
 end
@@ -482,7 +488,7 @@ function CombatInterface:OnUnitDestroyed(tUnit)
   if _tAllUnits[nId] then
     _tAllUnits[nId] = nil
     UnTrackThisUnit(nId)
-    ManagerCall("UnitDestroyed", nId, tUnit, sName)
+    ManagerCall("OnUnitDestroyed", nId, tUnit, sName)
   end
 end
 
@@ -519,11 +525,17 @@ function CombatInterface:ExtraLog2Text(sText, tExtraData, nRefTime)
     sSpellName = string.gsub(sSpellName, NO_BREAK_SPACE, " ")
     local sFormat = "Name='%s' Id=%d OldStack=%d NewStack=%d"
     sResult = string.format(sFormat, sSpellName, nSpellId, nOldStackCount, nNewStackCount)
-  elseif sText == "CastStart" or sText == "CastSuccess" or sText == "CastFailed" then
+  elseif sText == "CastStart" then
     local sCastName = tExtraData[1]
     local nCastEndTime = tExtraData[2] - nRefTime
     local sFormat = "CastName='%s' CastEndTime=%.3f"
     sResult = string.format(sFormat, sCastName, nCastEndTime)
+  elseif sText == "CastEnd" then
+    local sCastName = tExtraData[1]
+    local sIsInterrupted = tostring(tExtraData[2])
+    local nCastEndTime = tExtraData[3] - nRefTime
+    local sFormat = "CastName='%s' IsInterrupted=%s CastEndTime=%.3f"
+    sResult = string.format(sFormat, sCastName, sIsInterrupted, nCastEndTime)
   elseif sText == "NPCSay" or sText == "Datachron" then
     sResult = tExtraData[1]
   elseif sText == "Activate Detection" then

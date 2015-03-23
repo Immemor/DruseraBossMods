@@ -10,31 +10,40 @@
 
 require "Apollo"
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("AVATUS")
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("WARMONGER_TALARII")
 
 ------------------------------------------------------------------------------
--- Gloomclaw.
+-- WarmongerTalarii.
 ------------------------------------------------------------------------------
-local Avatus = {}
+local WarmongerTalarii = {}
 
-function Avatus:OnStartCombat()
-  self:ActivateDetection(true)
+function WarmongerTalarii:NextProtectBubble()
+  self:SetTimer("NEXT_PROTECT_BUBBLE", 60, self.NextProtectBubble)
+  self:PlaySound("Long")
+end
+
+function WarmongerTalarii:OnStartCombat()
+  self:CreateHealthBar()
+  self:SetTimer("NEXT_PROTECT_BUBBLE", 53, self.NextProtectBubble)
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
 function ENCOUNTER:OnInitialize()
-  self:RegisterZoneMap(98, nil) -- TODO
-  self:RegisterTriggerNames({"AVATUS"})
+  self:RegisterZoneMap(98, 110)
+  self:RegisterTriggerNames({"WARMONGER_TALARII"})
   self:RegisterUnitClass({
-    -- All units allowed to be tracked.
-    AVATUS = Avatus,
+    -- All units allow to be tracked.
+    WARMONGER_TALARII = WarmongerTalarii,
   })
   self:RegisterEnglishLocale({
-    ["AVATUS"] = "Avatus",
+    ["WARMONGER_TALARII"] = "Warmonger Talarii",
+    ["NEXT_PROTECT_BUBBLE"] = "Next protection bubble",
   })
   self:RegisterFrenchLocale({
-    ["AVATUS"] = "Avatus",
+    ["WARMONGER_TALARII"] = "Guerroyeuse Talarii",
+    ["NEXT_PROTECT_BUBBLE"] = "Prochaine bulle de protection",
   })
+  self:RegisterTimer("NEXT_PROTECT_BUBBLE", { color = "xkcdBrightYellow" })
 end

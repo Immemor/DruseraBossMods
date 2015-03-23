@@ -10,31 +10,48 @@
 
 require "Apollo"
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local LogicGuidedRockslide = {}
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("LOGIC_GUIDED_ROCKSLIDE")
 
 ------------------------------------------------------------------------------
--- OnStartCombat function.
+-- Constants.
 ------------------------------------------------------------------------------
+local SPELLID_DDDD = 77534
+
+------------------------------------------------------------------------------
+-- LogicGuidedRockslide.
+------------------------------------------------------------------------------
+local LogicGuidedRockslide = {}
+
 function LogicGuidedRockslide:OnStartCombat()
+  self:CreateHealthBar()
+
+  --[[
+  self:SetDebuffAddAlert(SPELLID_DDDD, function(self, nTargetId)
+    self:SetMarkOnUnit("crosshair", nTargetId)
+  end)
+  self:SetDebuffAddRemove(SPELLID_DDDD, function(self, nTargetId)
+    self:SetMarkOnUnit(nil, nTargetId)
+  end)
+  --]]
+
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
-do
-  DBM:RegisterEncounter({
-    nZoneMapParentId = 98,
-    nZoneMapId = 108,
-    sEncounterName = "LOGIC_GUIDED_ROCKSLIDE",
-    tTriggerNames = { "LOGIC_GUIDED_ROCKSLIDE" },
-    tUnits = {
-      LOGIC_GUIDED_ROCKSLIDE = LogicGuidedRockslide,
-    },
-    tCustom = {
-      LOGIC_GUIDED_ROCKSLIDE = {
-        BarsCustom = {
-        },
-      },
-    },
+function ENCOUNTER:OnInitialize()
+  self:RegisterZoneMap(98, 108)
+  self:RegisterTriggerNames({"LOGIC_GUIDED_ROCKSLIDE"})
+  self:RegisterUnitClass({
+    -- All units allowed to be tracked.
+    LOGIC_GUIDED_ROCKSLIDE = LogicGuidedRockslide,
+  })
+  self:RegisterEnglishLocale({
+    ["LOGIC_GUIDED_ROCKSLIDE"] = "Logic Guided Rockslide",
+    ["DATACHRON_ROCKSLIDE_FOCUS"] = "TODO",
+  })
+  self:RegisterFrenchLocale({
+    ["LOGIC_GUIDED_ROCKSLIDE"] = "Éboulement guidé par la logique",
+    ["DATACHRON_ROCKSLIDE_FOCUS"] = "L'Éboulement guidé par la logique est focalisé sur %%PlayerName !",
   })
 end

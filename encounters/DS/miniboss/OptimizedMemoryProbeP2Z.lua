@@ -11,42 +11,31 @@
 require "Apollo"
 
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("BIO_ENHANCED_BROODMOTHER")
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("OPTIMIZED_MEMORY_PROBE_P2Z")
 
 ------------------------------------------------------------------------------
--- BioEnhancedBroodmother class.
+-- ProbeP2Z.
 ------------------------------------------------------------------------------
-local BioEnhancedBroodmother = {}
+local ProbeP2Z = {}
 
-function BioEnhancedBroodmother:OnStartCombat()
+function ProbeP2Z:OnStartCombat()
   self:CreateHealthBar()
-  self:SetTimer("AUGMENTED_BIO_WEB", 48)
-
-  self:SetCastStart("AUGMENTED_BIO_WEB", function(self)
-    self:PlaySound("Alarm")
-  end)
-  self:SetCastEnd("AUGMENTED_BIO_WEB", function(self)
-    self:SetTimer("AUGMENTED_BIO_WEB", 40)
-  end)
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
 function ENCOUNTER:OnInitialize()
-  self:RegisterZoneMap(98, 108)
-  self:RegisterTriggerNames({"BIO_ENHANCED_BROODMOTHER"})
+  self:RegisterZoneMap(98, 105)
+  self:RegisterTriggerNames({"OPTIMIZED_MEMORY_PROBE_P2Z"})
   self:RegisterUnitClass({
     -- All units allowed to be tracked.
-    BIO_ENHANCED_BROODMOTHER = BioEnhancedBroodmother,
+    OPTIMIZED_MEMORY_PROBE_P2Z = ProbeP2Z,
   })
   self:RegisterEnglishLocale({
-    ["BIO_ENHANCED_BROODMOTHER"] = "Bio-Enhanced Broodmother",
-    ["AUGMENTED_BIO_WEB"] = "Augmented Bio-Web",
+    ["OPTIMIZED_MEMORY_PROBE_P2Z"] = "Optimized Memory Probe P2-Z",
   })
   self:RegisterFrenchLocale({
-    ["BIO_ENHANCED_BROODMOTHER"] = "Mère de couvée augmentée",
-    ["AUGMENTED_BIO_WEB"] = "Bio-soie augmentée",
+    ["OPTIMIZED_MEMORY_PROBE_P2Z"] = "Optimized Memory Probe P2-Z" -- TODO,
   })
-  self:RegisterTimer("AUGMENTED_BIO_WEB", { color = "xkcdBrightRed" })
 end

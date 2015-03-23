@@ -10,60 +10,64 @@
 
 require "Apollo"
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local FullyOptimizedCanimid = {}
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("FULLY_OPTIMIZED_CANIMID")
+
 local _nUndermine_count = 0
 local _bTerraform = true
 
 ------------------------------------------------------------------------------
--- OnStartCombat function.
+-- FullyOptimizedCanimid.
 ------------------------------------------------------------------------------
+local FullyOptimizedCanimid = {}
+
 function FullyOptimizedCanimid:OnStartCombat()
-  DBM:CreateHealthBar(self, "FULLY_OPTIMIZED_CANIMID")
+  self:CreateHealthBar()
   _nUndermine_count = 0
   _bTerraform = true
 
-  DBM:SetCastStartAlert(self, "UNDERMINE", function(self)
+  self:SetCastStart("UNDERMINE", function(self)
     _nUndermine_count = _nUndermine_count + 1
   end)
-  DBM:SetCastSuccessAlert(self, "UNDERMINE", function(self)
+  self:SetCastEnd("UNDERMINE", function(self)
     if _nUndermine_count == 5 then
       _nUndermine_count = 0
       if not _bTerraform then
-        DBM:SetTimerAlert(self, "UNDERMINE", 9, nil)
+        self:SetTimer("UNDERMINE", 9)
       end
       _bTerraform = not _bTerraform
     end
   end)
 
   -- DPS check to break an aborb defense.
-  DBM:SetCastFailedAlert(self, "TERRAFORMATION", function(self)
-    DBM:SetTimerAlert(self, "TERRAFORMATION", 75, nil)
-    DBM:SetTimerAlert(self, "UNDERMINE", 13, nil)
+  self:SetCastEnd("TERRAFORMATION", function(self)
+    self:SetTimer("TERRAFORMATION", 75)
+    self:SetTimer("UNDERMINE", 13)
   end)
   -- Initialization
-  DBM:SetTimerAlert(self, "TERRAFORMATION", 63, nil)
-  DBM:SetTimerAlert(self, "UNDERMINE", 30, nil)
+  self:SetTimer("TERRAFORMATION", 63)
+  self:SetTimer("UNDERMINE", 30)
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
-do
-  DBM:RegisterEncounter({
-    nZoneMapParentId = 98,
-    nZoneMapId = 108,
-    sEncounterName = "FULLY_OPTIMIZED_CANIMID",
-    tTriggerNames = { "FULLY_OPTIMIZED_CANIMID" },
-    tUnits = {
-      FULLY_OPTIMIZED_CANIMID = FullyOptimizedCanimid,
-    },
-    tCustom = {
-      FULLY_OPTIMIZED_CANIMID = {
-        BarsCustom = {
-          UNDERMINE = { color = "xkcdBrightYellow" },
-          TERRAFORMATION = { color = "xkcdBrightRed" },
-        },
-      },
-    },
+function ENCOUNTER:OnInitialize()
+  self:RegisterZoneMap(98, 108)
+  self:RegisterTriggerNames({"FULLY_OPTIMIZED_CANIMID"})
+  self:RegisterUnitClass({
+    -- All units allowed to be tracked.
+    FULLY_OPTIMIZED_CANIMID = FullyOptimizedCanimid,
   })
+  self:RegisterEnglishLocale({
+    ["FULLY_OPTIMIZED_CANIMID"] = "Fully-Optimized Canimid",
+    ["UNDERMINE"] = "Undermine",
+    ["TERRAFORMATION"] = "Terra-forme",
+  })
+  self:RegisterFrenchLocale({
+    ["FULLY_OPTIMIZED_CANIMID"] = "Canimide entièrement optimisé",
+    ["UNDERMINE"] = "Ébranler",
+    ["TERRAFORMATION"] = "Terra-forme",
+  })
+  self:RegisterTimer("UNDERMINE", { color = "xkcdBrightYellow" })
+  self:RegisterTimer("TERRAFORMATION", { color = "xkcdBrightRed" })
 end

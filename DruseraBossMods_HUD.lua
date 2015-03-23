@@ -102,7 +102,7 @@ local function HUDUpdateHealthBar(nId)
   end
 end
 
-local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_data, nId, tOptions)
+local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_class, tCallback_data, nId, tOptions)
   local nCurrentTime = GetGameTime()
   if nEndTime > nCurrentTime then
     local nRemaining = nEndTime - nCurrentTime
@@ -147,6 +147,7 @@ local function CreateTimerBar(nEndTime, sLabel, nDuration, fCallback, tCallback_
       tOptions = tOptions,
       -- Data to return on time out.
       fCallback = fCallback,
+      tCallback_class = tCallback_class,
       tCallback_data = tCallback_data,
       nId = nId,
       -- Windows objects.
@@ -289,7 +290,9 @@ function DruseraBossMods:_HUDMoveTimerBar(i, nRemaining)
     self:HUDRemoveTimerBar(i)
     CreateTimerBar(TimerBar.nEndTime, TimerBar.sLabel,
                    nRemaining,
-                   TimerBar.fCallback, TimerBar.tCallback_data,
+                   TimerBar.fCallback,
+                   TimerBar.tCallback_class,
+                   TimerBar.tCallback_data,
                    TimerBar.nId, TimerBar.tOptions)
   end
 end
@@ -316,7 +319,9 @@ function DruseraBossMods:HUDCreateTimerBar(tTimer, tOptions)
   -- If the nDuration is 0, the timer is destroyed.
   if nEndTime > nCurrentTime then
     CreateTimerBar(nEndTime, sLabel, tTimer.nDuration,
-                   tTimer.fCallback, tTimer.tCallback_data,
+                   tTimer.fCallback,
+                   tTimer.tCallback_class,
+                   tTimer.tCallback_data,
                    tTimer.nId, tOptions)
   end
 end
@@ -417,7 +422,7 @@ function DruseraBossMods:OnHUDProcess()
       end
     else
       if TimerBar.fCallback then
-        table.insert(Timeout, {TimerBar.fCallback, TimerBar.tCallback_data})
+        table.insert(Timeout, {TimerBar.fCallback, TimerBar.tCallback_class, TimerBar.tCallback_data})
       end
       self:HUDRemoveTimerBar(i)
     end
@@ -437,7 +442,7 @@ function DruseraBossMods:OnHUDProcess()
   end
   -- Provide all timers with callback to CombatManager.
   for _, TimerBar in next, Timeout do
-    TimerBar[1](self, TimerBar[2])
+    TimerBar[1](TimerBar[2], TimerBar[3])
   end
   -- Be careful, stop the timer only after callbacks.
   -- Because a callback can add timer bars or health bars.

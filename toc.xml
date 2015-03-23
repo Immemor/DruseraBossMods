@@ -13,27 +13,36 @@
     <Script Name="locales\koKR.lua"/>
     <!-- LUA Script -->
     <Script Name="DruseraBossMods.lua"/>
-    <Script Name="CombatInterface.lua"/>
+    <Script Name="Logger.lua"/>
     <Script Name="HUDOverlay.lua"/>
-    <Script Name="DruseraBossMods_CombatManager.lua"/>
+    <Script Name="CombatInterface.lua"/>
+    <Script Name="EncounterManager.lua"/>
     <Script Name="DruseraBossMods_HUD.lua"/>
     <Script Name="DruseraBossMods_GUI.lua"/>
-    <Script Name="Logger.lua"/>
     <!-- Encounters -->
-    <Script Name="encounters\TEST\test.lua"/>
     <Script Name="encounters\GA\ExperimentX89.lua"/>
     <Script Name="encounters\GA\Kuralak.lua"/>
     <Script Name="encounters\GA\Prototypes.lua"/>
     <Script Name="encounters\GA\PhageMaw.lua"/>
     <Script Name="encounters\GA\Convergence.lua"/>
     <Script Name="encounters\GA\Ohmna.lua"/>
+
+    <Script Name="encounters\DS\SystemDaemon.lua"/>
+    <Script Name="encounters\DS\VolatilityLattice.lua"/>
+    <Script Name="encounters\DS\LimboInfomatrix.lua"/>
+    <Script Name="encounters\DS\Gloomclaw.lua"/>
+    <Script Name="encounters\DS\MaelstromAuthority.lua"/>
+    <Script Name="encounters\DS\EarthElementalPairs.lua"/>
+    <Script Name="encounters\DS\FrostElementalPairs.lua"/>
+    <Script Name="encounters\DS\LifeElementalPairs.lua"/>
+    <Script Name="encounters\DS\Avatus.lua"/>
     <Script Name="encounters\DS\miniboss\BioEnhancedBroodmother.lua"/>
     <Script Name="encounters\DS\miniboss\FullyOptimizedCanimid.lua"/>
     <Script Name="encounters\DS\miniboss\LogicGuidedRockslide.lua"/>
-    <Script Name="encounters\DS\SystemDaemon.lua"/>
-    <Script Name="encounters\DS\Gloomclaw.lua"/>
-    <Script Name="encounters\DS\MaelstromAuthority.lua"/>
-    <Script Name="encounters\DS\VolatilityLattice.lua"/>
-    <Script Name="encounters\DS\LimboInfomatrix.lua"/>
-    <Script Name="encounters\DS\Avatus.lua"/>
+    <Script Name="encounters\DS\miniboss\OptimizedMemoryProbeED1.lua"/>
+    <Script Name="encounters\DS\miniboss\OptimizedMemoryProbeP2Z.lua"/>
+    <Script Name="encounters\DS\miniboss\OptimizedMemoryProbeTX67.lua"/>
+    <Script Name="encounters\DS\miniboss\WarmongerChuna.lua"/>
+
+    <Script Name="encounters\TEST\test.lua"/>
 </Addon>

@@ -16,10 +16,15 @@ require "Window"
 require "GameLib"
 require "Apollo"
 
+local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:NewAddon("DruseraBossMods", false)
+local ModulePrototype = {}
+
+_G["DBM"] = DBM
+
 ------------------------------------------------------------------------------
 -- Constants
 ------------------------------------------------------------------------------
-local DRUSERABOSSMODS_VERSION =  "0.17" -- "@project-version@"
+local DRUSERABOSSMODS_VERSION =  "0.18-alpha" -- "@project-version@"
 local DEFAULTS = {
   profile = {
     dbm = {
@@ -61,14 +66,18 @@ local DEFAULTS = {
   },
 }
 
-local tmp = {}
+
 
 ------------------------------------------------------------------------------
--- Initialization
+-- DruseraBossMods Addon
 ------------------------------------------------------------------------------
-local DruseraBossMods = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:NewAddon("DruseraBossMods", false)
+do
+  -- Sub modules are created when other files are loaded.
+  DBM:SetDefaultModulePrototype(ModulePrototype)
+  DBM:SetDefaultModuleState(false)
+end
 
-function DruseraBossMods:OnInitialize()
+function DBM:OnInitialize()
   local GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
   local GeminiDB = Apollo.GetPackage("Gemini:DB-1.0").tPackage
 
@@ -82,42 +91,37 @@ function DruseraBossMods:OnInitialize()
   self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 end
 
-function DruseraBossMods:OnEnable()
-  for _,tData in next, tmp do
-    self:RegisterEncounterSecond(tData)
+function DBM:OnDocLoaded()
+  if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then
+    Apollo.AddAddonErrorText(self, "For an unknown reason, the xmlDoc is not loaded.")
+  else
+    Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+    -- From highest layer to lowest layer.
+    self:GUIInit()
+    self:HUDInit()
+    self:EnableModule("EncounterManager")
   end
-  tmp = nil
 end
 
-function DruseraBossMods:OnDisable()
-end
-
-function DruseraBossMods:RegisterEncounter(tData)
-  table.insert(tmp, tData)
-end
-
-function DruseraBossMods:OnDocLoaded()
-  if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
-
-  Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
-  -- From highest layer to lowest layer.
-  self:GUIInit()
-  self:HUDInit()
-  self.CombatManager = self:CombatManagerInit()
-end
-
-function DruseraBossMods:OnWindowManagementReady()
+function DBM:OnWindowManagementReady()
   self:GUIWindowsManagementAdd()
   self:HUDWindowsManagementAdd()
 end
 
---[[
 ------------------------------------------------------------------------------
--- DruseraBossMods Instance
+-- ModulePrototype
 ------------------------------------------------------------------------------
-local DruseraBossModsInst = DruseraBossMods:new()
-DruseraBossModsInst:Init()
--- For debugging purpose through GeminiConsole, quite useful.
---]]
+function ModulePrototype:Add2Logs(sText, ...)
+  if self.tLogger then
+    self.tLogger:Add(sText, ...)
+  end
+end
 
-_G["DBM"] = DruseraBossMods
+function ModulePrototype:LogInitialize()
+  self.tLogger = DBM:NewLoggerNamespace(self, self:GetName())
+end
+
+function ModulePrototype:AddAddonErrorText(sText)
+  Apollo.AddAddonErrorText(DBM, "AddOnError: " .. sText)
+end
+

@@ -9,75 +9,87 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
+
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local Kuralak = {}
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("KURALAK_THE_DEFILER")
+
 local GetPlayerUnit = GameLib.GetPlayerUnit
 
+------------------------------------------------------------------------------
+-- Constants.
+------------------------------------------------------------------------------
 local SPELLID__CHROMOSOME_CORRUPTION = 56652
 
 ------------------------------------------------------------------------------
--- Extra functions.
+-- Kuralak.
 ------------------------------------------------------------------------------
+local Kuralak = {}
+
 function Kuralak:CultivateCorruption()
-  DBM:SetTimerAlert(self, "CULTIVATE_CORRUPTION", 60, nil)
+  self:SetTimer("CULTIVATE_CORRUPTION", 60)
 end
 
-------------------------------------------------------------------------------
--- OnStartCombat functions.
-------------------------------------------------------------------------------
 function Kuralak:OnStartCombat()
-  DBM:CreateHealthBar(self, "KURALAK_THE_DEFILER")
-  DBM:SetCastStartAlert(self, "CULTIVATE_CORRUPTION", self.CultivateCorruption)
-  DBM:SetCastStartAlert(self, "CHROMOSOME_CORRUPTION", function(self)
+  self:CreateHealthBar()
+  self:SetCastStart("CULTIVATE_CORRUPTION", self.CultivateCorruption)
+  self:SetCastStart("CHROMOSOME_CORRUPTION", function(self)
     -- Remove trigger
-    DBM:SetCastStartAlert(self, "VANISH_INTO_DARKNESS", nil)
-    DBM:SetTimerAlert(self, "VANISH_INTO_DARKNESS", 0, nil)
+    self:SetCastStart("VANISH_INTO_DARKNESS", nil)
+    self:SetTimer("VANISH_INTO_DARKNESS", 0)
     self:CultivateCorruption()
   end)
 
   -- Outbreak
-  DBM:SetCastSuccessAlert(self, "OUTBREAK", function(self)
-    DBM:SetTimerAlert(self, "OUTBREAK", 40, nil)
+  self:SetCastEnd("OUTBREAK", function(self)
+    self:SetTimer("OUTBREAK", 40)
   end)
 
   -- Vanish into Darkness
-  DBM:SetCastStartAlert(self, "VANISH_INTO_DARKNESS", function(self)
-    DBM:SetTimerAlert(self, "VANISH_INTO_DARKNESS", 50, nil)
+  self:SetCastStart("VANISH_INTO_DARKNESS", function(self)
+    self:SetTimer("VANISH_INTO_DARKNESS", 50)
   end)
 
   -- DNA Siphon
-  DBM:SetCastSuccessAlert(self, "DNA_SIPHON", function(self)
-    DBM:SetTimerAlert(self, "DNA_SIPHON", 90, nil)
+  self:SetCastEnd("DNA_SIPHON", function(self)
+    self:SetTimer("DNA_SIPHON", 90)
   end)
 
-  DBM:SetDebuffAddAlert(self, SPELLID__CHROMOSOME_CORRUPTION, function(self, nTargetId, nStack)
-    local bItself = nTargetId == GetPlayerUnit():GetId()
-    if bItself then
-      DBM:PlaySound("Info")
+  self:SetDebuffAddAlert(SPELLID__CHROMOSOME_CORRUPTION,
+  function(self, nTargetId, nStack)
+    local bItSelf = nTargetId == GetPlayerUnit():GetId()
+    if bItSelf then
+      self:PlaySound("Info")
     end
-    DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
+    self:SetMarkOnUnit("crosshair", nTargetId)
   end)
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
-do
-  DBM:RegisterEncounter({
-    nZoneMapParentId = 147,
-    nZoneMapId = 148,
-    sEncounterName = "KURALAK_THE_DEFILER",
-    tTriggerNames = { "KURALAK_THE_DEFILER", },
-    tUnits = {
-      KURALAK_THE_DEFILER = Kuralak,
-    },
-    tCustom = {
-      KURALAK_THE_DEFILER = {
-        BarsCustom = {
-          CULTIVATE_CORRUPTION = { color = "xkcdBrightOrange", },
-          VANISH_INTO_DARKNESS = { color = "xkcdBrightPurple", },
-        },
-      },
-    },
+function ENCOUNTER:OnInitialize()
+  self:RegisterZoneMap(147, 148)
+  self:RegisterTriggerNames({"KURALAK_THE_DEFILER"})
+  self:RegisterUnitClass({
+    -- All units allowed to be tracked.
+    KURALAK_THE_DEFILER = Kuralak,
   })
+  self:RegisterEnglishLocale({
+    ["KURALAK_THE_DEFILER"] = "Kuralak the Defiler",
+    ["CULTIVATE_CORRUPTION"] = "Cultivate Corruption",
+    ["CHROMOSOME_CORRUPTION"] = "Chromosome Corruption",
+    ["OUTBREAK"] = "Outbreak",
+    ["VANISH_INTO_DARKNESS"] = "Vanish into Darkness",
+    ["DNA_SIPHON"] = "DNA Siphon",
+  })
+  self:RegisterFrenchLocale({
+    ["KURALAK_THE_DEFILER"] = "Kuralak la Profanatrice",
+    ["CULTIVATE_CORRUPTION"] = "Nourrir la corruption",
+    ["CHROMOSOME_CORRUPTION"] = "Corruption chromosomique",
+    ["OUTBREAK"] = "Invasion",
+    ["VANISH_INTO_DARKNESS"] = "Disparaître dans les ténèbres",
+    ["DNA_SIPHON"] = "Siphon DNA", --<< TODO: To check.
+  })
+  self:RegisterTimer("CULTIVATE_CORRUPTION", { color = "xkcdBrightOrange" })
+  self:RegisterTimer("VANISH_INTO_DARKNESS", { color = "xkcdBrightPurple" })
 end

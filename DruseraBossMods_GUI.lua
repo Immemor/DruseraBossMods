@@ -63,32 +63,33 @@ local function GUI_BuildEncounterLog(wndControl, sNamespace)
   -- Retrieve last combat.
   local tLogger = DruseraBossMods:GetLoggerByNamespace(sNamespace)
   local tCILogger = DruseraBossMods:GetLoggerByNamespace("CombatInterface")
-  if tLogger then
+  if tLogger and tCILogger then
     local nIndex = DruseraBossMods:GetLastBufferIndex()
     tLastBuffer = tLogger._tBuffers[nIndex]
     tCILastBuffer = tCILogger._tBuffers[nIndex]
-  end
-  -- Interpret last combat, and set info in the grid.
-  if wndGrid and tCILastBuffer and next(tCILastBuffer) then
-    local nStartTime = nil
-    for _, tEntry in next, tCILastBuffer do
-      local sText = tEntry[2]
-      if sText == "StartEncounter" then
-        nStartTime = tEntry[1]
-        break
-      elseif nStartTime == nil then
-        nStartTime = tEntry[1]
-      end
-    end
 
     -- Interpret last combat, and set info in the grid.
-    local tLines = DruseraBossMods:GetLog2Grid(nStartTime, tLogger.tModule, tLastBuffer)
-    for _, tColumns in next, tLines do
-      local idx = wndGrid:AddRow("")
-      for i = 1, 5 do
-        wndGrid:SetCellText(idx, i, tColumns[i])
+    if wndGrid and tCILastBuffer and next(tCILastBuffer) then
+      local nStartTime = nil
+      for _, tEntry in next, tCILastBuffer do
+        local sText = tEntry[2]
+        if sText == "StartEncounter" then
+          nStartTime = tEntry[1]
+          break
+        elseif nStartTime == nil then
+          nStartTime = tEntry[1]
+        end
       end
-      wndGrid:SetCellSortText(idx, 1, tLastBuffer[idx][1])
+
+      -- Interpret last combat, and set info in the grid.
+      local tLines = DruseraBossMods:GetLog2Grid(nStartTime, tLogger.tModule, tLastBuffer)
+      for _, tColumns in next, tLines do
+        local idx = wndGrid:AddRow("")
+        for i = 1, 5 do
+          wndGrid:SetCellText(idx, i, tColumns[i])
+        end
+        wndGrid:SetCellSortText(idx, 1, tLastBuffer[idx][1])
+      end
     end
   end
 end
@@ -217,6 +218,7 @@ function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)
   self:HUDCreateTimerBar({
     sLabel = self.L["END_OF_TEST"],
     nDuration = 33,
+    tCallback_class = self,
     fCallback = function(self)
       self:HUDRemoveHealthBar(GameLib.GetPlayerUnit():GetId())
     end,
@@ -224,37 +226,37 @@ function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)
   self:HUDCreateTimerBar({
     sLabel = self.L["THIS_SHOULD_BE_4"],
     nDuration = 28,
+    tCallback_class = self,
     fCallback = function(self)
       self:HUDCreateMessage({sLabel = self.L["YOU_ARE_DEATH_AGAIN"]})
-      self:PlaySound("4")
     end
   }, nil)
   self:HUDCreateTimerBar({
     sLabel = self.L["THIS_SHOULD_BE_2"],
     nDuration = 10,
+    tCallback_class = self,
     fCallback = function(self)
       self:HUDCreateMessage({sLabel = self.L["ARE_YOU_READY"]})
-      self:PlaySound("2")
     end
   }, { color = "xkcdBrightOrange"})
   self:HUDCreateTimerBar({
     sLabel = self.L["THIS_SHOULD_BE_3"],
     nDuration = 20,
+    tCallback_class = self,
     fCallback = function(self)
       self:HUDCreateMessage({
         sLabel = self.L["INTERRUPT_THIS_CAST"],
         bHighlight = true,
         nDuration=3
       })
-      self:PlaySound("3")
     end
   }, { color = "xkcdBrightYellow"})
   self:HUDCreateTimerBar({
     sLabel = self.L["THIS_SHOULD_BE_1"],
     nDuration = 4,
+    tCallback_class = self,
     fCallback = function(self)
       self:HUDCreateMessage({sLabel = self.L["WELCOME_IN_DBM"], bHighlight = true})
-      self:PlaySound("1")
     end,
   }, nil)
 end
@@ -264,7 +266,7 @@ function DruseraBossMods:OnCombatInterfaceLog(wndHandler, wndControl, eMouseButt
 end
 
 function DruseraBossMods:OnCombatManagerLog(wndHandler, wndControl, eMouseButton)
-  GUI_BuildEncounterLog(wndControl, "CombatManager")
+  GUI_BuildEncounterLog(wndControl, "EncounterManager")
 end
 
 function DruseraBossMods:OnOverlayLog(wndHandler, wndControl, eMouseButton)

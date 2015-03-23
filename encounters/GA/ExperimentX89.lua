@@ -10,75 +10,89 @@
 
 require "Apollo"
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local ExperimentX89 = {}
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("EXPERIMENT_X89")
+
 local GetPlayerUnit = GameLib.GetPlayerUnit
 
-local SPELLID__SMALL_BOMB = 61460
-local SPELLID__BIG_BOMB = 47286
+------------------------------------------------------------------------------
+-- Constants.
+------------------------------------------------------------------------------
+local SPELLID__SMALL_BOMB = 47316
+local SPELLID__BIG_BOMB = 47285
 
 ------------------------------------------------------------------------------
--- OnStartCombat functions.
+-- ExperimentX89.
 ------------------------------------------------------------------------------
+local ExperimentX89 = {}
+
 function ExperimentX89:OnStartCombat()
-  DBM:CreateHealthBar(self, "EXPERIMENT_X89")
+  self:CreateHealthBar()
 
   -- Small bomb alert.
-  DBM:SetDebuffAddAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
-    local bItself = nTargetId == GetPlayerUnit():GetId()
-    DBM:SetMessage({
+  self:SetDebuffAddAlert(SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
+    local bItSelf = nTargetId == GetPlayerUnit():GetId()
+    self:SetMessage({
       sLabel = "MSG_SMALL_BOMB",
       nDuration = 5,
-      bHighlight = bItself,
+      bHighlight = bItSelf,
     })
-    if bItself then
-      DBM:PlaySound("Alarm")
+    if bItSelf then
+      self:PlaySound("Alarm")
     else
-      DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
+      self:SetMarkOnUnit("crosshair", nTargetId)
     end
   end)
-  DBM:SetDebuffRemoveAlert(self, SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
-    DBM:SetMarkOnUnit(nil, nTargetId, 51)
+  self:SetDebuffRemoveAlert(SPELLID__SMALL_BOMB, function(self, nTargetId, nStack)
+    self:SetMarkOnUnit(nil, nTargetId)
   end)
 
   -- Big bomb alert.
-  DBM:SetDebuffAddAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
-    local bItself = nTargetId == GetPlayerUnit():GetId()
-    DBM:SetMessage({
+  self:SetDebuffAddAlert(SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
+    local bItSelf = nTargetId == GetPlayerUnit():GetId()
+    self:SetMessage({
       sLabel = "MSG_BIG_BOMB",
       nDuration = 5,
-      bHighlight = bItself,
+      bHighlight = bItSelf,
     })
-    if bItself then
-      DBM:PlaySound("Alarm")
+    if bItSelf then
+      self:PlaySound("Alarm")
     else
-      DBM:SetMarkOnUnit("Crosshair", nTargetId, 51)
+      self:SetMarkOnUnit("crosshair", nTargetId)
     end
   end)
-  DBM:SetDebuffRemoveAlert(self, SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
-    DBM:SetMarkOnUnit(nil, nTargetId, 51)
+  self:SetDebuffRemoveAlert(SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
+    DBM:SetMarkOnUnit(nil, nTargetId)
   end)
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
-do
-  DBM:RegisterEncounter({
-    nZoneMapParentId = 147,
-    nZoneMapId = 148,
-    sEncounterName = "EXPERIMENT_X89",
-    tTriggerNames = { "EXPERIMENT_X89", },
-    tUnits = {
-      EXPERIMENT_X89 = ExperimentX89,
-    },
-    tCustom = {
-      EXPERIMENT_X89 = {
-        BarsCustom = {
-          SHATTERING_SHOCKWAVE = { color = "xkcdBrightOrange" },
-          REPUGNANT_SPEW = { color = "xkcdBrightOrange" },
-          RESOUNDING_SHOUT = { color = "xkcdBrightOrange" },
-        },
-      },
-    },
+function ENCOUNTER:OnInitialize()
+  self:RegisterZoneMap(147, 148)
+  self:RegisterTriggerNames({"EXPERIMENT_X89"})
+  self:RegisterUnitClass({
+    -- All units allowed to be tracked.
+    EXPERIMENT_X89 = ExperimentX89,
+  })
+  self:RegisterEnglishLocale({
+    ["EXPERIMENT_X89"] = "Experiment X-89",
+    ["RESOUNDING_SHOUT"] = "Resounding Shout",
+    ["REPUGNANT_SPEW"] = "Repugnant Spew",
+    ["SHATTERING_SHOCKWAVE"] = "Shattering Shockwave",
+    ["CORRUPTION_GLOBULE"] = "Corruption Globule",
+    ["STRAIN_BOMB"] = "Strain Bomb",
+    ["MSG_SMALL_BOMB"] = "Small bomb! Go to the edge!",
+    ["MSG_BIG_BOMB"] = "BIG bomb! Jump down!",
+  })
+  self:RegisterFrenchLocale({
+    ["EXPERIMENT_X89"] = "Expérience X-89",
+    ["RESOUNDING_SHOUT"] = "Hurlement retentissant",
+    ["REPUGNANT_SPEW"] = "Crachat répugnant",
+    ["SHATTERING_SHOCKWAVE"] = "Onde de choc dévastatrice",
+    ["CORRUPTION_GLOBULE"] = "Globule de corruption",
+    ["STRAIN_BOMB"] = "Bombe de Souillure",
+    ["MSG_SMALL_BOMB"] = "Petite bombe! Allez au bord!",
+    ["MSG_BIG_BOMB"] = "Grosse bombe! Sautez!",
   })
 end

@@ -9,49 +9,56 @@
 ------------------------------------------------------------------------------
 
 require "Apollo"
+
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("PHAGE_MAW")
+
+------------------------------------------------------------------------------
+-- PhageMaw.
+------------------------------------------------------------------------------
 local PhageMaw = {}
 
-------------------------------------------------------------------------------
--- Extra functions.
-------------------------------------------------------------------------------
-
-------------------------------------------------------------------------------
--- OnStartCombat functions.
-------------------------------------------------------------------------------
 function PhageMaw:OnStartCombat()
-  DBM:CreateHealthBar(self, "PHAGE_MAW")
-  DBM:SetCastStartAlert(self, "DETONATION_BOMBS", function(self)
-    DBM:SetTimerAlert(self, "DETONATION_BOMBS", 29, nil)
+  self:ActivateDetection(true)
+  self:CreateHealthBar()
+  self:SetCastStart("DETONATION_BOMBS", function(self)
+    self:SetTimer("DETONATION_BOMBS", 29)
   end)
-  DBM:SetCastStartAlert(self, "CRATER", function(self)
-    DBM:SetTimerAlert(self, "AIR_PHASE", 112, nil)
+  self:SetCastStart("CRATER", function(self)
+    self:SetTimer("NEXT_AIR_PHASE", 112)
   end)
-  DBM:SetCastStartAlert(self, "BOMBS", function(self)
-    DBM:SetTimerAlert(self, "BOMBS", 112, nil)
+  self:SetCastStart("BOMBS", function(self)
+    self:SetTimer("BOMBS", 112)
   end)
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
-do
-  DBM:RegisterEncounter({
-    nZoneMapParentId = 147,
-    nZoneMapId = 149,
-    sEncounterName = "PHAGE_MAW",
-    tTriggerNames = { "PHAGE_MAW" },
-    tUnits = {
-      PHAGE_MAW = PhageMaw,
-    },
-    tCustom = {
-      PHAGE_MAW = {
-        BarsCustom = {
-          DETONATION_BOMBS = { color = "xkcdBrightOrange" },
-          AIR_PHASE = { color = "xkcdBrightSkyBlue" },
-          BOMBS = { color = "xkcdBrightRed" },
-        },
-      },
-    },
+function ENCOUNTER:OnInitialize()
+  self:RegisterZoneMap(147, 149)
+  self:RegisterTriggerNames({ "PHAGE_MAW" })
+  self:RegisterUnitClass({
+    -- All units allowed to be tracked.
+    PHAGE_MAW = PhageMaw,
   })
+  self:RegisterEnglishLocale({
+    ["PHAGE_MAW"] = "Phage Maw",
+    ["DETONATION_BOMB"] = "Detonation Bomb",
+    ["DETONATION_BOMBS"] = "Detonation Bombs",
+    ["CRATER"] = "Crater",
+    ["NEXT_AIR_PHASE"] = "Next air phase",
+    ["BOMBS"] = "Bombs",
+  })
+  self:RegisterFrenchLocale({
+    ["PHAGE_MAW"] = "Phagegueule",
+    ["DETONATION_BOMB"] = "Bombe à détonateur",
+    ["DETONATION_BOMBS"] = "Bombes explosives",
+    ["CRATER"] = "Cratère",
+    ["NEXT_AIR_PHASE"] = "Prochaine phase d'air",
+    ["BOMBS"] = "Bombes",
+  })
+  self:RegisterTimer("DETONATION_BOMBS", { color = "xkcdBrightOrange" })
+  self:RegisterTimer("NEXT_AIR_PHASE", { color = "xkcdBrightSkyBlue" })
+  self:RegisterTimer("BOMBS", { color = "xkcdBrightRed" })
 end

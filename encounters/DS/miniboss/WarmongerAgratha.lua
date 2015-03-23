@@ -10,31 +10,40 @@
 
 require "Apollo"
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
-local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("AVATUS")
+local ENCOUNTER = DBM:GetModule("EncounterManager"):NewModule("WARMONGER_AGRATHA")
 
 ------------------------------------------------------------------------------
--- Gloomclaw.
+-- WarmongerAgratha.
 ------------------------------------------------------------------------------
-local Avatus = {}
+local WarmongerAgratha = {}
 
-function Avatus:OnStartCombat()
-  self:ActivateDetection(true)
+function WarmongerAgratha:NextProtectBubble()
+  self:SetTimer("NEXT_PROTECT_BUBBLE", 60, self.NextProtectBubble)
+  self:PlaySound("Long")
+end
+
+function WarmongerAgratha:OnStartCombat()
+  self:CreateHealthBar()
+  self:SetTimer("NEXT_PROTECT_BUBBLE", 53, self.NextProtectBubble)
 end
 
 ------------------------------------------------------------------------------
 -- Registering.
 ------------------------------------------------------------------------------
 function ENCOUNTER:OnInitialize()
-  self:RegisterZoneMap(98, nil) -- TODO
-  self:RegisterTriggerNames({"AVATUS"})
+  self:RegisterZoneMap(98, 110)
+  self:RegisterTriggerNames({"WARMONGER_AGRATHA"})
   self:RegisterUnitClass({
-    -- All units allowed to be tracked.
-    AVATUS = Avatus,
+    -- All units allow to be tracked.
+    WARMONGER_AGRATHA = WarmongerAgratha,
   })
   self:RegisterEnglishLocale({
-    ["AVATUS"] = "Avatus",
+    ["WARMONGER_AGRATHA"] = "Warmonger Agratha",
+    ["NEXT_PROTECT_BUBBLE"] = "Next protection bubble",
   })
   self:RegisterFrenchLocale({
-    ["AVATUS"] = "Avatus",
+    ["WARMONGER_AGRATHA"] = "Guerroyeuse Agratha",
+    ["NEXT_PROTECT_BUBBLE"] = "Prochaine bulle de protection",
   })
+  self:RegisterTimer("NEXT_PROTECT_BUBBLE", { color = "xkcdBrightYellow" })
 end
