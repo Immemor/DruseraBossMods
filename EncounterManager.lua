@@ -60,7 +60,7 @@ local function EncounterCall(sInfo, fCallback, tFoe, ...)
   if not s then
     local sMsg = sInfo .. ": " .. sErrMsg
     Print(sMsg)
-    DBM:AddAddonErrorText(sMsg)
+    EncounterManager:AddAddonErrorText(sMsg)
   end
 end
 
