@@ -50,7 +50,7 @@ local Hydroflux = {}
 function Hydroflux:OnStartCombat()
   -- Frost Bomb.
   self:SetDebuffAddAlert(SPELLID_FROSTBOMB, function(self, nTargetId)
-    self:SetMarkOnUnit("crosshair", nTargetId)
+    self:SetMarkOnUnit("Crosshair", nTargetId)
     BombExplosion(nTargetId)
   end)
   self:SetDebuffAddRemove(SPELLID_FROSTBOMB, function(self, nTargetId)
@@ -65,7 +65,7 @@ function Hydroflux:OnStartCombat()
 
   -- Frost Tomb.
   self:SetDebuffAddAlert(SPELLID_ICETOMB, function(self, nTargetId)
-    self:SetMarkOnUnit("crosshair", nTargetId)
+    self:SetMarkOnUnit("Crosshair", nTargetId)
     BombExplosion(nTargetId)
   end)
   self:SetDebuffAddRemove(SPELLID_ICETOMB, function(self, nTargetId)
@@ -102,7 +102,7 @@ function Pyrobane:OnStartCombat()
   self:SetNPCSayAlert(SAY_IGNITES_YOU , self.NextBombs)
 
   self:SetDebuffAddAlert(SPELLID_FIREBOMB, function(self, nTargetId)
-    self:SetMarkOnUnit("crosshair", nTargetId)
+    self:SetMarkOnUnit("Crosshair", nTargetId)
     BombExplosion(nTargetId)
   end)
   self:SetDebuffAddRemove(SPELLID_FIREBOMB, function(self, nTargetId)

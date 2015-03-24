@@ -60,7 +60,7 @@ function Kuralak:OnStartCombat()
     if bItSelf then
       self:PlaySound("Info")
     end
-    self:SetMarkOnUnit("crosshair", nTargetId)
+    self:SetMarkOnUnit("Crosshair", nTargetId)
   end)
 end
 

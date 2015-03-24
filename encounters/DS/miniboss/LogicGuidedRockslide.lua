@@ -27,7 +27,7 @@ function LogicGuidedRockslide:OnStartCombat()
 
   --[[
   self:SetDebuffAddAlert(SPELLID_DDDD, function(self, nTargetId)
-    self:SetMarkOnUnit("crosshair", nTargetId)
+    self:SetMarkOnUnit("Crosshair", nTargetId)
   end)
   self:SetDebuffAddRemove(SPELLID_DDDD, function(self, nTargetId)
     self:SetMarkOnUnit(nil, nTargetId)
