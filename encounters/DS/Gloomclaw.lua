@@ -38,7 +38,7 @@ function Gloomclaw:NewSection()
   _nWaveIndex = 0
   local nFirstRupture = _nSection == 1 and 31 or 25
   if _nSection ~= 4 then
-    self:SetTimer("RUPTURE", nFirstRupture)
+    self:SetTimer("APPROXIMATE_RUPTURE", nFirstRupture)
   end
 end
 
@@ -54,9 +54,12 @@ function Gloomclaw:OnStartCombat()
       nDuration = 3,
       bHighlight = true,
     })
-    self:SetTimer("RUPTURE", 43)
+    self:SetTimer("NEXT_RUPTURE", 43)
   end)
   self:SetDatachronAlert("DATACHRON_GLOOMCLAW_IS_REDUCED", function(self)
+    self:ClearAllTimerAlert()
+  end)
+  self:SetDatachronAlert("DATACHRON_GLOOMCLAW_IS_VULNERABLE", function(self)
     self:ClearAllTimerAlert()
   end)
   self:SetDatachronAlert("DATACHRON_GLOOMCLAW_IS_PUSHED_BACK", function(self)
@@ -145,7 +148,10 @@ function ENCOUNTER:OnInitialize()
     ["RUPTURE"] = "Rupture",
     ["ADDS_WAVE"] = "Adds wave",
     ["NEXT_ADD_WAVE"] = "Next add wave",
+    ["NEXT_RUPTURE"] = "Next Rupture",
+    ["APPROXIMATE_RUPTURE"] = "First Rupture (approximate)",
     ["DATACHRON_GLOOMCLAW_IS_REDUCED"] = "Gloomclaw is reduced to a weakened state!",
+    ["DATACHRON_GLOOMCLAW_IS_VULNERABLE"] = "Gloomclaw is vulnerable!",
     ["DATACHRON_GLOOMCLAW_IS_PUSHED_BACK"] = "Gloomclaw is pushed back by the purification of the essences!",
     ["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Gloomclaw is moving forward to corrupt more essences!",
     ["GLOOMCLAW_IS_PUSHED_BACK"] = "Glooclaw is pushed back",
@@ -160,11 +166,14 @@ function ENCOUNTER:OnInitialize()
     ["EMPOWERED_RAVAGER"] = "Ravageur renforcé",
     ["STRAIN_PARASITE"] = "Parasite de la Souillure",
     ["GLOOMCLAW_SKURGE"] = "Skurge serrenox",
-    ["CORRUPTED_FRAZ"] = "Friz corrumpu",
+    ["CORRUPTED_FRAZ"] = "Friz corrompu",
     ["RUPTURE"] = "Rupture",
     ["ADDS_WAVE"] = "Vague d'adds",
     ["NEXT_ADD_WAVE"] = "Prochaine vague d'adds",
+    ["NEXT_RUPTURE"] = "Prochaine Rupture",
+    ["APPROXIMATE_RUPTURE"] = "1ère Rupture (approximatif)",
     ["DATACHRON_GLOOMCLAW_IS_REDUCED"] = "Serrenox a été affaibli !",
+    ["DATACHRON_GLOOMCLAW_IS_VULNERABLE"] = "Serrenox est vulnérable !",
     ["DATACHRON_GLOOMCLAW_IS_PUSHED_BACK"] = "Serrenox est repoussé par la purification des essences !",
     ["DATACHRON_GLOOMCLAW_IS_MOVING_FORWARD"] = "Serrenox s'approche pour corrompre davantage d'essences !",
     ["GLOOMCLAW_IS_PUSHED_BACK"] = "Serrenox est repoussé",
@@ -172,6 +181,7 @@ function ENCOUNTER:OnInitialize()
     ["CORRUPTING_RAYS"] = "Rayons de corruption",
     ["INTERRUPT_CORRUPTING_RAYS"] = "Coupez: Rayons Corrompus !",
   })
-  self:RegisterTimer("RUPTURE", { color = "xkcdBrightOrange" })
+  self:RegisterTimer("NEXT_RUPTURE", { color = "xkcdBrightOrange" })
+  self:RegisterTimer("APPROXIMATE_RUPTURE", { color = "xkcdBrightOrange" })
   self:RegisterTimer("NEXT_ADD_WAVE", { color = "xkcdBrightGreen" })
 end
