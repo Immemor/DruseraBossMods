@@ -24,6 +24,7 @@ local GetGameTime = GameLib.GetGameTime
 local wndForm
 local wndLeftMenuList
 local wndBodyContainer
+local wndDefaultMenuLeft
 
 ------------------------------------------------------------------------------
 -- Local functions.
@@ -39,6 +40,7 @@ end
 
 local function GUI_SetActiveItem(wndControl)
   local data = wndControl:GetData()
+  wndControl:SetCheck(true)
 
   for _,wnd in next, wndBodyContainer:GetChildren() do
     wnd:Show(false, true)
@@ -112,7 +114,7 @@ function DruseraBossMods:GUIInit()
   wndLeftMenuList = wndBody:FindChild("MenuLeft")
   wndBodyContainer = wndBody:FindChild("Frame"):FindChild("Container")
 
-  local default = self:GUI_AddLeftMenuItem("HOME", "DBM_Home")
+  wndDefaultMenuLeft = self:GUI_AddLeftMenuItem("HOME", "DBM_Home")
   self:GUI_AddLeftMenuItem("BARS", "DBM_BarCustom")
   self:GUI_AddLeftMenuItem("MESSAGES", "DBM_MessageCustom")
   self:GUI_AddLeftMenuItem("SOUNDS", "DBM_SoundCustom")
@@ -120,7 +122,7 @@ function DruseraBossMods:GUIInit()
   self:GUI_AddLeftMenuItem("BOSSES", "DBM_Bosses")
   self:GUI_AddLeftMenuItem("ENCOUNTER_LOG", "DBM_EncounterLog")
 
-  GUI_SetActiveItem(default)
+  GUI_SetActiveItem(wndDefaultMenuLeft)
   TranslateWindows(wndTopMenuList)
   TranslateWindows(wndBodyContainer)
   self.SoundMuteAll = false
@@ -205,7 +207,11 @@ function DruseraBossMods:GUI_AddLeftMenuItem(sLabel, sBody)
 end
 
 function DruseraBossMods:OnLeftMenuItem(wndHandler, wndControl, eMouseButton)
-  GUI_SetActiveItem(wndControl)
+  if wndControl:IsChecked() then
+    GUI_SetActiveItem(wndControl)
+  else
+    GUI_SetActiveItem(wndDefaultMenuLeft)
+  end
 end
 
 function DruseraBossMods:OnStartTest(wndHandler, wndControl, eMouseButton)

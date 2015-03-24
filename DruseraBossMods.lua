@@ -87,6 +87,7 @@ function DBM:OnInitialize()
   self.db = GeminiDB:New(self, DEFAULTS, true)
 
   Apollo.LoadSprites("DruseraBossMods_Sprites.xml")
+  Apollo.LoadSprites("Textures_GUI.xml")
   self.xmlDoc = XmlDoc.CreateFromFile("DruseraBossMods.xml")
   self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 end
