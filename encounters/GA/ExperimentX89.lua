@@ -57,7 +57,7 @@ function ExperimentX89:OnStartCombat()
     if bItSelf then
       self:PlaySound("Alarm")
     else
-      self:SetMarkOnUnit("Crosshair", nTargetId)
+      self:SetMarkOnUnit("BloodySkull", nTargetId)
     end
   end)
   self:SetDebuffRemoveAlert(SPELLID__BIG_BOMB, function(self, nTargetId, nStack)
