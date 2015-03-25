@@ -20,7 +20,6 @@ local ObstinateLogicWall = {}
 local DataDevourer = {}
 local _DataDevourerCount = 0
 local _nLastDataDevourerPopTime = 0
-local _nPhase = 1
 local _Avatus_ctx
 
 function ObstinateLogicWall:OnStartCombat()
@@ -29,48 +28,40 @@ end
 
 function Avatus:OnStartCombat()
   _Avatus_ctx = self
-  _nPhase = 1
   _DataDevourerCount = 0
   _nLastDataDevourerPopTime = 0
   self:ActivateDetection(true)
   self:SetTimer("NEXT_DATA_DEVOURER", 10)
-  self:SetTimer("NEXT_PILLAR", 47)
-  self:SetCastEnd("CAST_NULL_AND_VOID", function(self)
-    if _nPhase == 1 then
-      self:SetTimer("NEXT_PILLAR", 50)
-    end
-  end)
+  self:SetTimer("NEXT_PILLAR", 45)
 
   self:SetDatachronAlert("DATACHRON_AVATUS_PREPARES_TO_DELETE_ALL",
   function(self)
-    _nPhase = 1
-    self:PlaySound("Alert")
+    self:SetTimer("NEXT_PILLAR", 50)
+    self:PlaySound("Info")
   end)
   self:SetDatachronAlert("DATACHRON_SECURE_SECTOR", function(self)
-    _nPhase = 2
-    -- context stich, cancel few timers.
-    self:SetTimer("NEXT_DATA_DEVOURER", 0)
     -- Protect phase
-    self:PlaySound("Info")
+    self:PlaySound("Long")
     self:SetMessage({
-      sLabel = "SHIELD_PHASE",
+      sLabel = "MSG_SHIELD_PHASE",
       nDuration = 5,
       bHighlight = true,
     })
+    -- context switch, reprogram few timers.
+    self:SetTimer("NEXT_DATA_DEVOURER", 53)
     self:SetTimer("NEXT_PILLAR", 58)
   end)
   self:SetDatachronAlert("DATACHRON_VERTICAL_LOCOMOTION", function(self)
-    _nPhase = 2
-    -- context stich, cancel few timers.
-    self:SetTimer("NEXT_DATA_DEVOURER", 0)
     -- Jump phase
-    self:PlaySound("Info")
+    self:PlaySound("Long")
     self:SetMessage({
-      sLabel = "JUMP_PHASE",
+      sLabel = "MSG_JUMP_PHASE",
       nDuration = 5,
       bHighlight = true,
     })
-    self:SetTimer("NEXT_PILLAR", 58)
+    -- context switch, reprogram few timers.
+    self:SetTimer("NEXT_PILLAR", 73)
+    self:SetTimer("NEXT_DATA_DEVOURER", 68)
   end)
 end
 
@@ -80,13 +71,7 @@ function DataDevourer:OnCreate()
   if nDelta > 3 then
     _nLastDataDevourerPopTime = nCurrentTime
     _DataDevourerCount = _DataDevourerCount + 1
-    if _DataDevourerCount < 3 then
-      _Avatus_ctx:SetTimer("NEXT_DATA_DEVOURER", 10)
-    elseif _DataDevourerCount % 2 then
-      _Avatus_ctx:SetTimer("NEXT_DATA_DEVOURER", 5)
-    else
-      _Avatus_ctx:SetTimer("NEXT_DATA_DEVOURER", 10)
-    end
+    _Avatus_ctx:SetTimer("NEXT_DATA_DEVOURER", 15)
   end
   self:SetMarkOnUnit("WhiteSkull", self.nId)
 end
@@ -118,8 +103,8 @@ function ENCOUNTER:OnInitialize()
     ["DATACHRON_VERTICAL_LOCOMOTION"] = "The Vertical Locomotion Enhancement Ports have been activated!",
     ["NEXT_PILLAR"] = "Next pillars to click",
     ["NEXT_DATA_DEVOURER"] = "Next data devourer",
-    ["JUMP_PHASE"] = "Jump phase",
-    ["SHIELD_PHASE"] = "Protection phase",
+    ["MSG_JUMP_PHASE"] = "Jump phase",
+    ["MSG_SHIELD_PHASE"] = "Protection phase",
   })
   self:RegisterFrenchLocale({
     ["VOLATILITY_LATTICE"] = "Réseau instable",
@@ -127,13 +112,13 @@ function ENCOUNTER:OnInitialize()
     ["OBSTINATE_LOGIC_WALL"] = "Mur de logique obstiné",
     ["DATA_DEVOURER"] = "Dévoreur de données",
     ["CAST_NULL_AND_VOID"] = "Caduque",
-    ["DATACHRON_AVATUS_PREPARES_TO_DELETE_ALL"] = "Avatus se prépare à effacer toutes les données",
+    ["DATACHRON_AVATUS_PREPARES_TO_DELETE_ALL"] = "Avatus se prépare à effacer toutes les données !",
     ["DATACHRON_SECURE_SECTOR"] = "Les ports d'amélioration de secteur sécurisé ont été activés !",
-    ["DATACHRON_VERTICAL_LOCOMOTION"] = "Les ports d'amélioration de locomotion verticale on été activés !",
+    ["DATACHRON_VERTICAL_LOCOMOTION"] = "Les ports d'amélioration de locomotion verticale ont été activés !",
     ["NEXT_PILLAR"] = "Prochain pilliers à cliquer",
     ["NEXT_DATA_DEVOURER"] = "Prochain dévoreur de données",
-    ["JUMP_PHASE"] = "Phase de saut",
-    ["SHIELD_PHASE"] = "Phase de protection",
+    ["MSG_JUMP_PHASE"] = "Phase de saut",
+    ["MSG_SHIELD_PHASE"] = "Phase de protection",
   })
   self:RegisterTimer("NEXT_DATA_DEVOURER", { color = "xkcdBrightPurple" })
   self:RegisterTimer("NEXT_PILLAR", { color = "xkcdBrightOrange" })
