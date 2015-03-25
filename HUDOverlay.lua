@@ -125,7 +125,7 @@ function DrawUnit:Destroy()
 end
 
 function DrawUnit:SetIcon(sIconName)
-  assert(type(sIconName) == "string" or type(sIconName) == nil)
+  assert(type(sIconName) == "string" or sIconName == nil)
   Add2Logs("SetIcon", self.nId, sIconName)
   if sIconName and ALLMARKS[sIconName] then
     self.sSprite = "DruseraBossMods_Sprites:mark_" .. sIconName
