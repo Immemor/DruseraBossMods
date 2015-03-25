@@ -26,7 +26,7 @@ end
 -- Registering.
 ------------------------------------------------------------------------------
 function ENCOUNTER:OnInitialize()
-  self:RegisterZoneMap(98, 105)
+  self:RegisterZoneMap(98, 104)
   self:RegisterTriggerNames({"OPTIMIZED_MEMORY_PROBE_ED1"})
   self:RegisterUnitClass({
     -- All units allowed to be tracked.
