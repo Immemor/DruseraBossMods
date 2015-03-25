@@ -94,7 +94,7 @@ function ENCOUNTER:OnInitialize()
     ["MINI_SANDWORM"] = "Mini Tempête de sable",
     ["HOSTILE_INVISIBLE_UNIT"] = "Unité hostile invisible de", -- TODO
     ["CAST_EXHAUST"] = "Épuiser",
-    ["CAST_DESICCATE"] = "Arracher",
+    ["CAST_DESICCATE"] = "Dessécher",
     ["MSG_WARNING_KNOCKBACK"] = "Attention: Knock-Back",
   })
 end
