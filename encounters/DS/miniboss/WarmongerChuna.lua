@@ -63,7 +63,7 @@ function TotemFire:OnCreate()
   local nCurrentTime = GetGameTime()
   if _firetotem_last_pop + 10 < nCurrentTime then
     _firetotem_last_pop = nCurrentTime
-    _WarmongerChunaContext:SetTimer("NEXT_FIRE_TOTEM", 25)
+    _WarmongerChunaContext:SetTimer("NEXT_FIRE_TOTEM", 26)
   end
 end
 
