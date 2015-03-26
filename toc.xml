@@ -26,7 +26,6 @@
     <Script Name="encounters\GA\PhageMaw.lua"/>
     <Script Name="encounters\GA\Convergence.lua"/>
     <Script Name="encounters\GA\Ohmna.lua"/>
-
     <Script Name="encounters\DS\SystemDaemon.lua"/>
     <Script Name="encounters\DS\VolatilityLattice.lua"/>
     <Script Name="encounters\DS\LimboInfomatrix.lua"/>
@@ -43,6 +42,7 @@
     <Script Name="encounters\DS\miniboss\OptimizedMemoryProbeP2Z.lua"/>
     <Script Name="encounters\DS\miniboss\OptimizedMemoryProbeTX67.lua"/>
     <Script Name="encounters\DS\miniboss\WarmongerChuna.lua"/>
-
+    <Script Name="encounters\DS\miniboss\WarmongerTalarii.lua"/>
+    <Script Name="encounters\DS\miniboss\WarmongerAgratha.lua"/>
     <Script Name="encounters\TEST\test.lua"/>
 </Addon>
