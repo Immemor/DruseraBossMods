@@ -74,7 +74,7 @@ function ENCOUNTER:OnInitialize()
     ["MEGALITH"] = "Megalith", -- TOCHECK
     ["PYROBANE"] = "Pyromagnus",
     ["MNEMESIS"] = "Mnemesis", -- TOCHECK
-    ["AILERON"] = "Aileron", -- TOCHECK
+    ["AILERON"] = "Ventemort", -- TOCHECK
   })
 end
 

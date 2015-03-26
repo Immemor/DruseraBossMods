@@ -177,7 +177,7 @@ function ENCOUNTER:OnInitialize()
     ["HYDROFLUX"] = "Hydroflux",
     ["PYROBANE"] = "Pyromagnus",
     ["MNEMESIS"] = "Mnemesis", -- TOCHECK
-    ["AILERON"] = "Aileron", -- TOCHECK
+    ["AILERON"] = "Ventemort",
 
     ["ICE_TOMB"] = "Tombeau Glacée", -- TOCHECK
     ["FLAME_WAVE"] = "Vague de flamme", -- TOCHECK

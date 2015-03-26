@@ -74,7 +74,7 @@ function ENCOUNTER:OnInitialize()
     ["VISCERALUS"] = "Visceralus", -- TOCHECK
     ["PYROBANE"] = "Pyromagnus",
     ["MNEMESIS"] = "Mnemesis", -- TOCHECK
-    ["AILERON"] = "Aileron", -- TOCHECK
+    ["AILERON"] = "Ventemort",
   })
 end
 
