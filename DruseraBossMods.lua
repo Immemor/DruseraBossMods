@@ -24,7 +24,7 @@ _G["DBM"] = DBM
 ------------------------------------------------------------------------------
 -- Constants
 ------------------------------------------------------------------------------
-local DRUSERABOSSMODS_VERSION =  "0.18-alpha" -- "@project-version@"
+local DRUSERABOSSMODS_VERSION =  "0.18-beta" -- "@project-version@"
 local DEFAULTS = {
   profile = {
     dbm = {
