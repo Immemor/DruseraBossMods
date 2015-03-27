@@ -242,6 +242,15 @@ function EncounterManager:OnUnitDestroyed(nId, tUnit, sName)
   end
 end
 
+function EncounterManager:MemberEnteringCombat(nId, tUnit, sName)
+end
+
+function EncounterManager:MemberDead(nId, tUnit, sName)
+end
+
+function EncounterManager:MemberLeftCombat(nId, tUnit, sName)
+end
+
 function EncounterManager:UnitEnteringCombat(nId, tUnit, sName)
   local bExist = true
   if _tFoes[nId] then

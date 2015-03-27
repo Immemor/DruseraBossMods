@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Sprites>
+    <Sprite Name="DropList" Cycle="1">
+        <Frame Texture="DruseraBossMods\Textures\GUI\DropList.tga" x0="0" x1="0" x2="0" x3="5" x4="155" x5="160" y0="0" y1="0" y2="0" y3="8" y4="127" y5="135" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="DropListDouble" Cycle="1">
+        <Frame Texture="DruseraBossMods\Textures\GUI\DropListDouble.tga" x0="0" x1="0" x2="0" x3="10" x4="290" x5="300" y0="0" y1="0" y2="0" y3="10" y4="155" y5="166" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
     <AutoButton Name="DefaultButton" Texture="DruseraBossMods\Textures\GUI\DefautBouton.tga" x0="0" x1="0" x2="0" x3="6" x4="114" x5="120" y0="0" y1="0" y2="0" y3="7" y4="23" y5="30" Stretchy="1" StateBits="15" Direction="Across"/>
+    <AutoButton Name="DropListItem" Texture="DruseraBossMods\Textures\GUI\DropList.tga" x0="0" x1="0" x2="0" x3="1" x4="159" x5="160" y0="135" y1="135" y2="135" y3="137" y4="162" y5="163" Stretchy="1" StateBits="7" Direction="Across"/>
+    <AutoButton Name="DropListDoubleItem" Texture="DruseraBossMods\Textures\GUI\DropListDouble.tga" x0="0" x1="2" x2="116" x3="143" x4="298" x5="300" y0="168" y1="168" y2="168" y3="169" y4="206" y5="221" Stretchy="1" StateBits="3" Direction="Across"/>
 </Sprites>

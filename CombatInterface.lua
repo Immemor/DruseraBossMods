@@ -233,6 +233,8 @@ local function UpdateMemberList()
         Add2Logs("Strange Member", tUnit:GetId())
         _tMembers[sName].tUnit = tUnit
       end
+    else
+      Add2Logs("Invalid tMemberData or tUnit ", nil, i)
     end
   end
 end
@@ -320,7 +322,7 @@ function CombatInterface:OnScanUpdate()
 
   if _bCheckMembers then
     local tPlayerUnit = GetPlayerUnit()
-    if bEndOfCombat then
+    if bEndOfCombat == true then
       Add2Logs("No more member in combat")
       StopEncounter()
     elseif tPlayerUnit and tPlayerUnit:GetHealth() ~= 0 and not tPlayerUnit:IsInCombat() then
@@ -435,13 +437,12 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
       end
     end
   elseif tUnit:IsInYourGroup() then
-    -- Members of the raid are not managed here.
     if bInCombat then
-      Add2Logs("Member entering combat", nId)
+      ManagerCall("MemberEnteringCombat", nId, tUnit ,sName)
     elseif tUnit:GetHealth() == 0 then
-      Add2Logs("Member is dead", nId)
+      ManagerCall("MemberDead", nId, tUnit, sName)
     else
-      Add2Logs("Member exiting combat", nId)
+      ManagerCall("MemberLeftCombat", nId, tUnit, sName)
     end
   elseif _tTrackedUnits[nId] then
     if bInCombat then

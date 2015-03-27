@@ -115,7 +115,7 @@ function DruseraBossMods:GUIInit()
   wndBodyContainer = wndBody:FindChild("Frame"):FindChild("Container")
 
   wndDefaultMenuLeft = self:GUI_AddLeftMenuItem("HOME", "DBM_Home")
-  self:GUI_AddLeftMenuItem("BARS", "DBM_BarCustom")
+  local wndBars = self:GUI_AddLeftMenuItem("BARS", "DBM_BarCustom")
   self:GUI_AddLeftMenuItem("MESSAGES", "DBM_MessageCustom")
   self:GUI_AddLeftMenuItem("SOUNDS", "DBM_SoundCustom")
   self:GUI_AddLeftMenuItem("MARKERS", "DBM_MarkerCustom")
@@ -277,4 +277,13 @@ end
 
 function DruseraBossMods:OnOverlayLog(wndHandler, wndControl, eMouseButton)
   GUI_BuildEncounterLog(wndControl, "Overlay")
+end
+
+---------------------------------------------------------------------------------------------------
+-- DBM_DropList Functions
+---------------------------------------------------------------------------------------------------
+function DruseraBossMods:OnDropListMouseExit(wndHandler, wndControl, x, y)
+end
+
+function DruseraBossMods:OnDropListItemSignal(wndHandler, wndControl, eMouseButton)
 end
