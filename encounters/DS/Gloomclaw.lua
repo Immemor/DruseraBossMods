@@ -55,6 +55,7 @@ function Gloomclaw:OnStartCombat()
       bHighlight = true,
     })
     self:SetTimer("NEXT_RUPTURE", 43)
+    self:SetTimer("APPROXIMATE_RUPTURE", 0)
   end)
   self:SetDatachronAlert("DATACHRON_GLOOMCLAW_IS_REDUCED", function(self)
     self:ClearAllTimerAlert()
