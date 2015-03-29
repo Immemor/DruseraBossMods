@@ -54,7 +54,7 @@ end
 ------------------------------------------------------------------------------
 function ENCOUNTER:OnInitialize()
   self:RegisterZoneMap(98, nil)
-  self:RegisterTriggerNames({"VISCERALUS"})
+  self:RegisterTriggerNames({"VISCERALUS", "PYROBANE", "MNEMESIS", "AILERON"})
   self:RegisterUnitClass({
     -- All units allowed to be tracked.
     VISCERALUS = Visceralus,
