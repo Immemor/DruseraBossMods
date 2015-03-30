@@ -212,6 +212,7 @@ local function ProcessAllBuffs(tMyUnit)
 end
 
 local function UpdateMemberList()
+  local i
   for i = 1, GroupLib.GetMemberCount() do
     local tMemberData = GroupLib.GetGroupMember(i)
     local tUnit = GroupLib.GetUnitForGroupMember(i)
@@ -460,14 +461,14 @@ function CombatInterface:OnEnteredCombat(tUnit, bInCombat)
 end
 
 function CombatInterface:OnChatMessage(tChannelCurrent, tMessage)
-  local ChannelType = tChannelCurrent:GetType()
+  local nChannelType = tChannelCurrent:GetType()
   local sMessage = tMessage.arMessageSegments[1].strText
   sMessage = string.gsub(sMessage, NO_BREAK_SPACE, " ")
 
-  if CHANNEL_NPCSAY == ChannelType then
-    ManagerCall("NPCSay", nil, sMessage)
-  elseif CHANNEL_DATACHRON == ChannelType then
-    ManagerCall("Datachron", nil, sMessage)
+  if CHANNEL_NPCSAY == nChannelType then
+    ManagerCall("OnChatMessage", nil, sMessage, CHANNEL_NPCSAY)
+  elseif CHANNEL_DATACHRON == nChannelType then
+    ManagerCall("OnChatMessage", nil, sMessage, CHANNEL_DATACHRON)
   end
 end
 

@@ -10,6 +10,7 @@
 require "Apollo"
 require "GameLib"
 require "Sound"
+require "GroupLib"
 
 local DBM = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:GetAddon("DruseraBossMods")
 local EncounterManager = DBM:NewModule("EncounterManager")
@@ -30,6 +31,8 @@ local next, string, pcall  = next, string, pcall
 -- Constants.
 ------------------------------------------------------------------------------
 local MT_UNITPROTOTYPE = { __index = UnitPrototype }
+local CHANNEL_NPCSAY = ChatSystemLib.ChatChannel_NPCSay
+local CHANNEL_DATACHRON = ChatSystemLib.ChatChannel_Datachron
 
 ------------------------------------------------------------------------------
 -- Working variables.
@@ -37,7 +40,10 @@ local MT_UNITPROTOTYPE = { __index = UnitPrototype }
 local _tEncounterDB
 local _tFoes
 local _tNPCSayAlerts
-local _tDatachronAlerts
+local _tMessagesAlerts = {
+  [CHANNEL_NPCSAY] = {},
+  [CHANNEL_DATACHRON] = {},
+}
 local _tMarksOnUnit
 local _tCombatInterface
 local _bEncounterInProgress
@@ -145,7 +151,10 @@ function EncounterManager:OnInitialize()
   _tEncounterDB = {}
   _tFoes = {}
   _tNPCSayAlerts = {}
-  _tDatachronAlerts = {}
+  _tMessagesAlerts = {
+    [CHANNEL_NPCSAY] = {},
+    [CHANNEL_DATACHRON] = {},
+  }
   _tMarksOnUnit = {}
   _tCombatInterface = nil
   _tCurrentEncounter = nil
@@ -326,39 +335,43 @@ function EncounterManager:DebuffUpdate(nId, nSpellId, nStackOld, nStackNew)
   DebuffProcess("tDebuffUpdateAlerts", nId, nSpellId, nStackNew)
 end
 
-function EncounterManager:NPCSay(nId, sMessage)
-  -- nId is currently nil.
-  if _bEncounterInProgress then
-    local tCallbacks = _tNPCSayAlerts[sMessage]
-    if tCallbacks then
-      for nFoeId, cb in next, tCallbacks do
+function EncounterManager:OnChatMessage(nId, sMessage, nChannelType)
+  local tAlerts = _tMessagesAlerts[nChannelType]
+  if tAlerts and _bEncounterInProgress then
+    local sCallback = nil
+    -- Identify in which alerts to search
+    if nChannelType == CHANNEL_NPCSAY then
+      sCallback = "NPCSay"
+    elseif nChannelType == CHANNEL_DATACHRON then
+      sCallback = "Datachron"
+    end
+    -- Check simple message.
+    if tAlerts[sMessage] then
+      for nFoeId, cb in next, tAlerts[sMessage] do
         if _tFoes[nFoeId] then
-          EncounterCall("NPCSay", cb, _tFoes[nFoeId])
-        else
-          -- Auto clean.
-          _tNPCSayAlerts[sMessage][nFoeId] = nil
-          if next(_tNPCSayAlerts[sMessage]) == nil then
-            _tNPCSayAlerts[sMessage] = nil
-          end
+          EncounterCall(sCallback, cb, _tFoes[nFoeId])
         end
       end
-    end
-  end
-end
-
-function EncounterManager:Datachron(nId, sMessage)
-  -- nId is always nil for datachron.
-  if _bEncounterInProgress then
-    local tCallbacks = _tDatachronAlerts[sMessage]
-    if tCallbacks then
-      for nFoeId, cb in next, tCallbacks do
-        if _tFoes[nFoeId] then
-          EncounterCall("Datachron", cb, _tFoes[nFoeId])
-        else
-          -- Auto clean.
-          _tDatachronAlerts[sMessage][nFoeId] = nil
-          if next(_tDatachronAlerts[sMessage]) == nil then
-            _tDatachronAlerts[sMessage] = nil
+    else
+      -- Check message with member name inside.
+      local sRegEx, tCallbacks
+      for sRegEx, tCallbacks in next, tAlerts do
+        sPlayerName = sMessage:match(sRegEx)
+        local tMemberUnit = nil
+        if sPlayerName and tCallbacks then
+          local i
+          -- Retrieve tUnit related to the member name
+          for i = 1, GroupLib.GetMemberCount() do
+            local tUnit = GroupLib.GetUnitForGroupMember(i)
+            if tUnit and tUnit:IsValid() then
+              tMemberUnit = tUnit
+              break
+            end
+          end
+          for nFoeId, cb in next, tCallbacks do
+            if _tFoes[nFoeId] then
+              EncounterCall(sCallback, cb, _tFoes[nFoeId], tMemberUnit)
+            end
           end
         end
       end
@@ -399,8 +412,10 @@ function EncounterManager:StopEncounter()
   end
   _tMarksOnUnit = {}
   _tCurrentEncounter = nil
-  _tNPCSayAlerts = {}
-  _tDatachronAlerts = {}
+  _tMessagesAlerts = {
+    [CHANNEL_NPCSAY] = {},
+    [CHANNEL_DATACHRON] = {},
+  }
   _bEncounterInProgress = false
 end
 
@@ -429,6 +444,17 @@ local function RegisterCustom(tEncounter, sType, sKey, tCustom)
     tEncounter.tCustom[sType] = {}
   end
   tEncounter.tCustom[sType][sKey] = tCustom
+end
+
+local function LoadCustom(sType, sKey)
+  if _tCurrentEncounter then
+    local tCustomType = _tCurrentEncounter.tCustom[sType]
+    if tCustomType and tCustomType[sKey] then
+      return tCustomType[sKey]
+    else
+      EncounterManager:Add2Logs("Missing Custom", nil, sType, sKey)
+    end
+  end
 end
 
 function EncounterPrototype:RegisterZoneMap(nParentId, nId)
@@ -492,12 +518,15 @@ function EncounterPrototype:ExtraLog2Text(sText, tExtraData, nRefTime)
     local sFileName = tExtraData[1]
     local sFormat = "FileName='%s'"
     sResult = string.format(sFormat, sFileName)
+  elseif sText == "Missing Custom" then
+    local sFormat = "sType='%s' sKey='%s'"
+    sResult = string.format(sFormat, tExtraData[1], tExtraData[2])
   end
   return sResult
 end
 
 function EncounterPrototype:SetTimer(sKey, nDuration, fTimeout)
-  local tCustom = self.tCustom.Timers[sKey]
+  local tCustom = LoadCustom("Timers", sKey)
   DBM:HUDCreateTimerBar({
     sLabel = _tCurrentEncounter.L[sKey],
     nDuration = nDuration,
@@ -514,9 +543,29 @@ end
 ------------------------------------------------------------------------------
 -- Unit Prototype functions.
 ------------------------------------------------------------------------------
+local function SetMessageAlert(nChannelType, sKey, nId, fCallback)
+  if _tCurrentEncounter then
+    local tAlerts = _tMessagesAlerts[nChannelType]
+    local msg = _tCurrentEncounter.L[sKey]
+    local msg = msg:gsub("%%PlayerName", "((%%a+)%%s*(%%a+))")
+
+    if fCallback then
+      if not tAlerts[msg] then
+        tAlerts[msg] = {}
+      end
+      tAlerts[msg][nId] = fCallback
+    elseif tAlerts[msg] then
+      tAlerts[msg][nId] = nil
+      if next(tAlerts[msg]) == nil then
+        tAlerts[msg] = nil
+      end
+    end
+  end
+end
+
 function UnitPrototype:SetTimer(sKey, nDuration, fTimeout)
   if _tCurrentEncounter then
-    local tCustom = _tCurrentEncounter.tCustom.Timers[sKey]
+    local tCustom = LoadCustom("Timers", sKey)
     DBM:HUDCreateTimerBar({
       sLabel = _tCurrentEncounter.L[sKey],
       nDuration = nDuration,
@@ -544,38 +593,11 @@ function UnitPrototype:GetTimerRemaining(sKey)
 end
 
 function UnitPrototype:SetDatachronAlert(sKey, fCallback)
-  if _tCurrentEncounter then
-    local msg = _tCurrentEncounter.L[sKey]
-    local state = fCallback and true or false
-    if state then
-      if not _tDatachronAlerts[msg] then
-        _tDatachronAlerts[msg] = {}
-      end
-      _tDatachronAlerts[msg][self.nId] = fCallback
-    elseif _tDatachronAlerts[msg] then
-      _tDatachronAlerts[msg][self.nId] = nil
-      if next(_tDatachronAlerts[msg]) == nil then
-        _tDatachronAlerts[msg] = nil
-      end
-    end
-  end
+  SetMessageAlert(CHANNEL_DATACHRON, sKey, self.nId, Callback)
 end
 
 function UnitPrototype:SetNPCSayAlert(sKey, fCallback)
-  if _tCurrentEncounter then
-    local msg = _tCurrentEncounter.L[sKey]
-    if fCallback then
-      if not _tNPCSayAlerts[msg] then
-        _tNPCSayAlerts[msg] = {}
-      end
-      _tNPCSayAlerts[msg][self.nId] = fCallback
-    elseif _tNPCSayAlerts[msg] then
-      _tNPCSayAlerts[msg][self.nId] = nil
-      if next(_tNPCSayAlerts[msg]) == nil then
-        _tNPCSayAlerts[msg] = nil
-      end
-    end
-  end
+  SetMessageAlert(CHANNEL_NPCSAY, sKey, self.nId, fCallback)
 end
 
 function UnitPrototype:SetBuffAddAlert(nSpellId, fCallback)

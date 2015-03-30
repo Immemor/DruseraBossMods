@@ -52,6 +52,6 @@ function ENCOUNTER:OnInitialize()
   })
   self:RegisterFrenchLocale({
     ["LOGIC_GUIDED_ROCKSLIDE"] = "Éboulement guidé par la logique",
-    ["DATACHRON_ROCKSLIDE_FOCUS"] = "L'Éboulement guidé par la logique est focalisé sur %%PlayerName !",
+    ["DATACHRON_ROCKSLIDE_FOCUS"] = "L'Éboulement guidé par la logique est focalisé sur %PlayerName !",
   })
 end
