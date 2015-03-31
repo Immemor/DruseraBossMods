@@ -363,7 +363,8 @@ function EncounterManager:OnChatMessage(nId, sMessage, nChannelType)
           -- Retrieve tUnit related to the member name
           for i = 1, GroupLib.GetMemberCount() do
             local tUnit = GroupLib.GetUnitForGroupMember(i)
-            if tUnit and tUnit:IsValid() then
+            if tUnit and tUnit:IsValid() and
+              sPlayerName == tUnit:GetName() then
               tMemberUnit = tUnit
               break
             end
