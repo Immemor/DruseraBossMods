@@ -537,8 +537,9 @@ function CombatInterface:ExtraLog2Text(sText, tExtraData, nRefTime)
     local nCastEndTime = tExtraData[3] - nRefTime
     local sFormat = "CastName='%s' IsInterrupted=%s CastEndTime=%.3f"
     sResult = string.format(sFormat, sCastName, sIsInterrupted, nCastEndTime)
-  elseif sText == "NPCSay" or sText == "Datachron" then
-    sResult = tExtraData[1]
+  elseif sText == "OnChatMessage" then
+    local sFormat = "sMessage='%s' nType=%u"
+    sResult = string.format(sFormat, tExtraData[1], tExtraData[2])
   elseif sText == "Activate Detection" then
     sResult = tostring(tExtraData[1])
   end

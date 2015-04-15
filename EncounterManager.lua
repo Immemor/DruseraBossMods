@@ -594,7 +594,7 @@ function UnitPrototype:GetTimerRemaining(sKey)
 end
 
 function UnitPrototype:SetDatachronAlert(sKey, fCallback)
-  SetMessageAlert(CHANNEL_DATACHRON, sKey, self.nId, Callback)
+  SetMessageAlert(CHANNEL_DATACHRON, sKey, self.nId, fCallback)
 end
 
 function UnitPrototype:SetNPCSayAlert(sKey, fCallback)
