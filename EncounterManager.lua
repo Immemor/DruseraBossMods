@@ -38,7 +38,7 @@ local CHANNEL_DATACHRON = ChatSystemLib.ChatChannel_Datachron
 -- Working variables.
 ------------------------------------------------------------------------------
 local _tEncounterDB
-local _tFoes
+local _tFoes = {}
 local _tNPCSayAlerts
 local _tMessagesAlerts = {
   [CHANNEL_NPCSAY] = {},
@@ -149,12 +149,7 @@ end
 
 function EncounterManager:OnInitialize()
   _tEncounterDB = {}
-  _tFoes = {}
   _tNPCSayAlerts = {}
-  _tMessagesAlerts = {
-    [CHANNEL_NPCSAY] = {},
-    [CHANNEL_DATACHRON] = {},
-  }
   _tMarksOnUnit = {}
   _tCombatInterface = nil
   _tCurrentEncounter = nil
@@ -413,10 +408,8 @@ function EncounterManager:StopEncounter()
   end
   _tMarksOnUnit = {}
   _tCurrentEncounter = nil
-  _tMessagesAlerts = {
-    [CHANNEL_NPCSAY] = {},
-    [CHANNEL_DATACHRON] = {},
-  }
+  _tMessagesAlerts[CHANNEL_NPCSAY] = {}
+  _tMessagesAlerts[CHANNEL_DATACHRON] = {}
   _bEncounterInProgress = false
 end
 
